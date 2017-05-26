@@ -10,6 +10,7 @@ from setuptools import setup
 
 # A dirty hack to get around some early import/configurations ambiguities
 import builtins
+
 builtins._ASTROPY_SETUP_ = True
 
 from astropy_helpers.setup_helpers import (register_commands, get_debug_option,
@@ -19,6 +20,7 @@ from astropy_helpers.version_helpers import generate_version_py
 
 # Get some values from the setup.cfg
 from configparser import ConfigParser
+
 conf = ConfigParser()
 conf.read(['setup.cfg'])
 metadata = dict(conf.items('metadata'))
@@ -80,7 +82,6 @@ generate_version_py(PACKAGENAME, VERSION, RELEASE,
 scripts = [fname for fname in glob.glob(os.path.join('scripts', '*'))
            if not os.path.basename(fname).startswith('README')]
 
-
 # Get configuration information from all of the various subpackages.
 # See the docstring for setup_helpers.update_package_files for more
 # details.
@@ -121,31 +122,40 @@ install_requires = [
     'healpy>=1.10',
 ]
 
-# TODO: this gives an error!??
-# Error in hips setup command: 'extras_require' must be a dictionary whose values are strings or lists of strings containing valid project/version requirement specifiers.
-#  extras_require = dict(
-#     plot=[
-#         'matplotlib',
-#     ],
-#     test=[
-#         'pytest>=3.0'
-#     ],
-# ),
+extras_require = dict(
+    plot=[
+        'matplotlib',
+    ],
+    test=[
+        'pytest>=3.0',
+    ],
+)
+
+classifiers = [
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Topic :: Scientific/Engineering :: Astronomy',
+    'Development Status :: 3 - Alpha',
+]
 
 setup(name=PACKAGENAME,
       version=VERSION,
       description=DESCRIPTION,
       scripts=scripts,
       install_requires=install_requires,
-      # extras_require=extras_require,
+      extras_require=extras_require,
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       license=LICENSE,
       url=URL,
       long_description=LONG_DESCRIPTION,
+      classifiers=classifiers,
       cmdclass=cmdclassd,
       zip_safe=False,
       use_2to3=False,
       entry_points=entry_points,
       **package_info
-)
+      )
