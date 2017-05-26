@@ -9,10 +9,7 @@ import ah_bootstrap
 from setuptools import setup
 
 # A dirty hack to get around some early import/configurations ambiguities
-if sys.version_info[0] >= 3:
-    import builtins
-else:
-    import __builtin__ as builtins
+import builtins
 builtins._ASTROPY_SETUP_ = True
 
 from astropy_helpers.setup_helpers import (register_commands, get_debug_option,
@@ -21,11 +18,7 @@ from astropy_helpers.git_helpers import get_git_devstr
 from astropy_helpers.version_helpers import generate_version_py
 
 # Get some values from the setup.cfg
-try:
-    from ConfigParser import ConfigParser
-except ImportError:
-    from configparser import ConfigParser
-
+from configparser import ConfigParser
 conf = ConfigParser()
 conf.read(['setup.cfg'])
 metadata = dict(conf.items('metadata'))
@@ -122,11 +115,29 @@ package_info['package_data'][PACKAGENAME].extend(c_files)
 # ``setup``, since these are now deprecated. See this link for more details:
 # https://groups.google.com/forum/#!topic/astropy-dev/urYO8ckB2uM
 
+install_requires = [
+    'numpy>=1.11',
+    'astropy>=1.3',
+    'healpy>=1.10',
+]
+
+# TODO: this gives an error!??
+# Error in hips setup command: 'extras_require' must be a dictionary whose values are strings or lists of strings containing valid project/version requirement specifiers.
+#  extras_require = dict(
+#     plot=[
+#         'matplotlib',
+#     ],
+#     test=[
+#         'pytest>=3.0'
+#     ],
+# ),
+
 setup(name=PACKAGENAME,
       version=VERSION,
       description=DESCRIPTION,
       scripts=scripts,
-      install_requires=metadata.get('install_requires', 'astropy').strip().split(),
+      install_requires=install_requires,
+      # extras_require=extras_require,
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       license=LICENSE,

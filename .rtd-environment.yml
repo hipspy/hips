@@ -4,9 +4,9 @@ channels:
     - astropy
 
 dependencies:
-    - astropy
-    - Cython
-    - matplotlib
     - numpy
+    - astropy
+    - healpy
+    - matplotlib
 #   - pip:
 #       - dependency_from_pip
