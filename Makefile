@@ -29,7 +29,7 @@ help:
 	@echo ' More info:'
 	@echo ''
 	@echo ' * hips code: https://github.com/hipspy/hips'
-	@echo ' * hips docs: https://hips.readthedocs.io
+	@echo ' * hips docs: https://hips.readthedocs.io'
 	@echo ''
 
 clean:

@@ -36,6 +36,7 @@ User documentation
    installation
    getting_started
    api
+   changelog
 
 Developer documentation
 =======================
