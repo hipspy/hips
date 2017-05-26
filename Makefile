@@ -43,7 +43,8 @@ clean-repo:
 	@git clean -f -x -d
 
 trailing-spaces:
-	find $(PROJECT) examples docs -name "*.py" -exec perl -pi -e 's/[ \t]*$$//' {} \;
+	find $(PROJECT) docs -name "*.py" -exec perl -pi -e 's/[ \t]*$$//' {} \;
+	find $(PROJECT) docs -name "*.rst" -exec perl -pi -e 's/[ \t]*$$//' {} \;
 
 doc-show:
 	open docs/_build/html/index.html

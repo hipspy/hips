@@ -120,21 +120,22 @@ classifiers = [
     'Development Status :: 3 - Alpha',
 ]
 
-setup(name=PACKAGENAME,
-      version=VERSION,
-      description=DESCRIPTION,
-      scripts=scripts,
-      install_requires=install_requires,
-      extras_require=extras_require,
-      author=AUTHOR,
-      author_email=AUTHOR_EMAIL,
-      license=LICENSE,
-      url=URL,
-      long_description=LONG_DESCRIPTION,
-      classifiers=classifiers,
-      cmdclass=cmdclassd,
-      zip_safe=False,
-      use_2to3=False,
-      entry_points=entry_points,
-      **package_info
-      )
+setup(
+    name=PACKAGENAME,
+    version=VERSION,
+    description=DESCRIPTION,
+    scripts=scripts,
+    install_requires=install_requires,
+    extras_require=extras_require,
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    license=LICENSE,
+    url=URL,
+    long_description=LONG_DESCRIPTION,
+    classifiers=classifiers,
+    cmdclass=cmdclassd,
+    zip_safe=False,
+    use_2to3=False,
+    entry_points=entry_points,
+    **package_info
+)
