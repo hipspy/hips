@@ -1,7 +1,12 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-
 """
-This is an Astropy affiliated package.
+A Python astronomy package for HiPS : Hierarchical Progressive Surveys.
+
+At the moment a client for HiPS images, but other contributions (HiPS catalogs or HiPS image generation) welcome!
+
+* Code : https://github.com/hipspy/hips
+* Docs : https://hips.readthedocs.io
+* License : BSD-3 (see licenses folder for license file)
 """
 
 # Affiliated packages may add whatever they like to this file, but
