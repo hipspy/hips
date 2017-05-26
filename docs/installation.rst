@@ -18,23 +18,27 @@ Installation
 The ``hips`` package has the following requirements:
 
 * Python 3.6 or later!
-* `Numpy <http://www.numpy.org>`_ 1.11 or later
-* `Astropy <http://www.astropy.org>`__ 1.2 or later
-* `Healpy <http://healpy.readthedocs.io/>`__ 1.10 or later
+* `Numpy`_ 1.11 or later
+* `Astropy`_ 1.2 or later
+* `Healpy`_ 1.10 or later
 
 In addition, the following packages are needed for optional functionality:
 
-* `Matplotlib <http://www.matplotlib.org>`__ 2.0 or later
+* `Matplotlib`_ 2.0 or later
 
 .. note::
 
     This package requires Python 3.6 or later. It will not work with Python 2.7 or 3.5!
+
     Feature or pull requests asking to support older Python versions will be closed.
     We discussed this point and made an intentional decision to use modern Python features to implement this package.
 
-    E.g. we use e.g. async / await that was introduced in Python 3.5 for asynchronous HiPS tile fetching,
-    f-strings that were introduced in Python 3.6
-    and type annotations that partly were only introduced in Python 3.6.
+    E.g. we use the following Python features (very incomplete list):
+
+    * async / await for asynchronous HiPS tile fetching (introduced in Python 3.5)
+    * Keyword-only arguments (introduced in Python 3.0)
+    * f-strings (introduced in Python 3.6)
+    * Type annotations (some only introduced in Python 3.6)
 
 Stable version
 ==============

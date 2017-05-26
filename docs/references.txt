@@ -1,0 +1,3 @@
+.. _matplotlib: https://matplotlib.org
+.. _Numpy: https://www.numpy.org
+.. _Healpy: https://healpy.readthedocs.io
