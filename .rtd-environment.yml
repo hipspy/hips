@@ -3,6 +3,10 @@ name: hips
 channels:
     - conda-forge
     - astropy
+    # added because it has healpy for Python 3.6:
+    # https://anaconda.org/OpenAstronomy/healpy
+    # which at this time the other channels don't have
+    - openastronomy
 
 dependencies:
     - python=3.6
@@ -13,5 +17,5 @@ dependencies:
 #    - healpy
     - matplotlib
     - sphinx>=1.6
-#   - pip:
-#       - dependency_from_pip
+    - pip:
+        - sphinx_rtd_theme
