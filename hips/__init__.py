@@ -2,7 +2,8 @@
 """
 A Python astronomy package for HiPS : Hierarchical Progressive Surveys.
 
-At the moment a client for HiPS images, but other contributions (HiPS catalogs or HiPS image generation) welcome!
+At the moment a client for HiPS images, but other contributions
+(HiPS catalogs or HiPS image generation) welcome!
 
 * Code : https://github.com/hipspy/hips
 * Docs : https://hips.readthedocs.io
@@ -19,4 +20,3 @@ if not _ASTROPY_SETUP_:
     # For egg_info test builds to pass, put package imports here.
 
     pass
-
