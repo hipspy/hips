@@ -3,7 +3,6 @@
 
 import glob
 import os
-import sys
 
 import ah_bootstrap
 from setuptools import setup
@@ -98,7 +97,10 @@ package_info['package_data'][PACKAGENAME].extend(c_files)
 install_requires = [
     'numpy>=1.11',
     'astropy>=1.3',
-    'healpy>=1.10',
+    # No healpy package for 1.10 available yet, leading to this error:
+    # https://readthedocs.org/projects/hips/builds/5483435/
+    # So for now, only require 1.9
+    'healpy>=1.9',
 ]
 
 extras_require = dict(
