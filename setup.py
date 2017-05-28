@@ -106,11 +106,11 @@ extras_require = dict(
         'matplotlib>=2.0',
         'reproject>=0.3.1',
     ],
-    plot=[
+    develop=[
         'matplotlib>=2.0',
-    ],
-    test=[
+        'reproject>=0.3.1',
         'pytest>=3.0',
+        'mypy>=0.501',
     ],
 )
 

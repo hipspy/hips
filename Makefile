@@ -8,7 +8,10 @@ help:
 	@echo ''
 	@echo '     help             Print this help message (the default)'
 	@echo ''
+	@echo '     test             Run tests'
+	@echo '     code-analysis    Run static code analysis'
 	@echo '     doc-show         Open local HTML docs in browser'
+	@echo ''
 	@echo '     clean            Remove generated files'
 	@echo '     clean-repo       Remove all untracked files and directories (use with care!)'
 	@echo ''
@@ -32,6 +35,18 @@ help:
 	@echo ' * hips docs: https://hips.readthedocs.io'
 	@echo ''
 
+test:
+	python -m pytest hips
+
+# TODO: add flake8 and pylint
+code-analysis:
+	python -m mypy hips
+	python -m pycodestyle hips --count
+
+
+doc-show:
+	open docs/_build/html/index.html
+
 clean:
 	rm -rf build dist docs/_build docs/api htmlcov MANIFEST hips.egg-info .coverage .cache
 	find . -name "*.pyc" -exec rm {} \;
@@ -45,9 +60,6 @@ clean-repo:
 trailing-spaces:
 	find $(PROJECT) docs -name "*.py" -exec perl -pi -e 's/[ \t]*$$//' {} \;
 	find $(PROJECT) docs -name "*.rst" -exec perl -pi -e 's/[ \t]*$$//' {} \;
-
-doc-show:
-	open docs/_build/html/index.html
 
 conda:
 	python setup.py bdist_conda
