@@ -16,7 +16,8 @@ dependencies:
     - astropy
     # TODO: no Python 3.6 package for healpy available yet
     # See https://readthedocs.org/projects/hips/builds/5476419/
-#    - healpy
+    - healpy
+    - reproject
     - matplotlib
     - sphinx>=1.6
     - pip:

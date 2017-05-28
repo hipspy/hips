@@ -38,7 +38,7 @@ env:
         
         # List other runtime dependencies for the package that are available as
         # conda packages here.
-        - CONDA_DEPENDENCIES=''
+        - CONDA_DEPENDENCIES='pytest numpy astropy healpy reproject matplotlib'
         
         # List other runtime dependencies for the package that are available as
         # pip packages here.
@@ -69,14 +69,20 @@ matrix:
         - os: osx
           env: SETUP_CMD='test'
 
-        # Do a coverage test.
+        # Main build -- used for coverage
         - os: linux
           env: SETUP_CMD='test --coverage'
 
-        # Check for sphinx doc build warnings - we do this first because it
-        # may run for a long time
+        # Docs build
         - os: linux
           env: SETUP_CMD='build_docs -w'
+               CONDA_DEPENDENCIES='numpy astropy healpy reproject matplotlib sphinx'
+               PIP_DEPENDENCIES='sphinx_rtd_theme'
+
+        # Check that install / tests work with minimal required dependencies
+        - os: linux
+          env: SETUP_CMD='test'
+               CONDA_DEPENDENCIES='numpy astropy healpy pytest'
 
         # Now try Astropy dev and LTS versions
         - os: linux

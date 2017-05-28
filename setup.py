@@ -102,8 +102,12 @@ install_requires = [
 ]
 
 extras_require = dict(
+    recommended=[
+        'matplotlib>=2.0',
+        'reproject>=0.3.1',
+    ],
     plot=[
-        'matplotlib',
+        'matplotlib>=2.0',
     ],
     test=[
         'pytest>=3.0',
