@@ -74,10 +74,10 @@ matrix:
           env: SETUP_CMD='test --coverage'
 
         # Docs build
+        # There's a problem with Sphinx 1.6 with astropy-helpers
+        # For now, we pin the Sphinx version to something that works
         - os: linux
           env: SETUP_CMD='build_docs -w'
-               # There's a problem with Sphinx 1.6 with astropy-helpers
-               # For now, we pin the Sphinx version to something that works
                CONDA_DEPENDENCIES='numpy astropy healpy reproject matplotlib sphinx=1.5.6'
                PIP_DEPENDENCIES='sphinx_rtd_theme'
 
