@@ -9,11 +9,13 @@ channels:
     - openastronomy
 
 dependencies:
-    - python=3.6
+    # TODO: change to Python 3.6 once it's supported:
+    # https://github.com/rtfd/readthedocs.org/issues/2584#issuecomment-304366679
+    - python=3.5
     - numpy
     - astropy
-# TODO: no Python 3.6 package for healpy available yet
-# See https://readthedocs.org/projects/hips/builds/5476419/
+    # TODO: no Python 3.6 package for healpy available yet
+    # See https://readthedocs.org/projects/hips/builds/5476419/
 #    - healpy
     - matplotlib
     - sphinx>=1.6
