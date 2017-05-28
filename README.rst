@@ -23,7 +23,7 @@ Project status
     :target: https://travis-ci.org/hipspy/hips
     :alt: Test Status travis-ci
 * .. image:: https://ci.appveyor.com/api/projects/status/9npru9xyu0ex32ln?svg=true
-    :target: https://ci.appveyor.com/project/hipspy/hips/branch/master
+    :target: https://ci.appveyor.com/project/cdeil/hips/branch/master
     :alt: Test Status Appveyor
 * .. image:: https://img.shields.io/coveralls/hipspy/hips.svg
     :target: https://coveralls.io/r/hipspy/hips
