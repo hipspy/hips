@@ -29,4 +29,4 @@ def hello(name: str) -> int:
         Meaning of life
     """
     print('Hello {}'.format(name))
-    return 42
+    return 43
