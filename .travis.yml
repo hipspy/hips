@@ -37,6 +37,7 @@ env:
         - PIP_DEPENDENCIES=''
         - CONDA_CHANNELS='conda-forge astropy-ci-extras astropy openastronomy'
         - SETUP_XVFB=True
+        - DEBUG=True
 
     matrix:
         # Make sure that egg_info works without dependencies
