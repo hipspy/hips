@@ -22,12 +22,12 @@ help:
 	@echo ''
 	@echo ' Common `setup.py` commands:'
 	@echo ''
-	@echo '     python setup.py --help-commands'
-	@echo '     python setup.py install'
-	@echo '     python setup.py develop'
-	@echo '     python setup.py test -V'
-	@echo '     python setup.py test --help # to see available options'
-	@echo '     python setup.py build_docs # use `-l` for clean build'
+	@echo '     python3 setup.py --help-commands'
+	@echo '     python3 setup.py install'
+	@echo '     python3 setup.py develop'
+	@echo '     python3 setup.py test -V'
+	@echo '     python3 setup.py test --help # to see available options'
+	@echo '     python3 setup.py build_docs # use `-l` for clean build'
 	@echo ''
 	@echo ' More info:'
 	@echo ''
@@ -36,14 +36,14 @@ help:
 	@echo ''
 
 test:
-	python -m pytest hips
+	python3 -m pytest hips
 
 # TODO: add flake8 and pylint
 # TODO: activate mypy testing. Fix or configure to ignore these issues:
 # https://travis-ci.org/hipspy/hips/jobs/236913996#L694
 #	python -m mypy hips
 code-analysis:
-	python -m pycodestyle hips --count
+	python3 -m pycodestyle hips --count
 
 doc-show:
 	open docs/_build/html/index.html
@@ -63,4 +63,4 @@ trailing-spaces:
 	find $(PROJECT) docs -name "*.rst" -exec perl -pi -e 's/[ \t]*$$//' {} \;
 
 conda:
-	python setup.py bdist_conda
+	python3 setup.py bdist_conda
