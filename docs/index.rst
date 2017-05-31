@@ -4,7 +4,7 @@
 Python HiPS package documentation
 #################################
 
-.. attention::
+.. note::
 
     This package is being developed as a Google Summer of Code 2017 project. The progress 
     of this package will be updated on this `blog <https://adl1995.github.io>`_ and the student's
