@@ -4,8 +4,11 @@
 Python HiPS package documentation
 #################################
 
-.. warning::
+.. note::
 
+    This package is being developed as a Google Summer of Code 2017 project. The progress 
+    of this package will be updated on this `blog <https://adl1995.github.io>`_ and the student's
+    application can be found `here <https://github.com/adl1995/HIPS-to-Py/blob/master/documents/application.md>`_.
     This ``hips`` package is in a very early stage of development.
     We started to work on it in June 2017 and expect to have a first v0.1 release in summer 2017.
     That said, please have a look and try to use it for your applications.
