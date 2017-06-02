@@ -39,6 +39,7 @@ User documentation
 
    installation
    getting_started
+   drawing_algo
    api
    changelog
 
