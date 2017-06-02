@@ -61,13 +61,6 @@ matrix:
         - os: osx
           env: SETUP_CMD='test'
 
-        # Now try Astropy dev and LTS versions
-        - os: linux
-          env: ASTROPY_VERSION=development
-               EVENT_TYPE='pull_request push cron'
-        - os: linux
-          env: ASTROPY_VERSION=lts
-
         # Try older Numpy versions
         - os: linux
           env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.11
