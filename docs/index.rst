@@ -36,14 +36,16 @@ User documentation
 
 .. toctree::
    :maxdepth: 1
+   :caption: User documentation
 
    installation
    getting_started
-   drawing_algo
    api
    changelog
 
-Developer documentation
-=======================
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer documentation
 
-Coming soon ...
+   develop
+   drawing_algo
