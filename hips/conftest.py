@@ -15,10 +15,11 @@ from astropy.tests.pytest_plugins import *
 try:
     PYTEST_HEADER_MODULES['Astropy'] = 'astropy'
     PYTEST_HEADER_MODULES['healpy'] = 'healpy'
+    PYTEST_HEADER_MODULES['reproject'] = 'reproject'
     PYTEST_HEADER_MODULES['matplotlib'] = 'matplotlib'
-    del PYTEST_HEADER_MODULES['h5py']
-    del PYTEST_HEADER_MODULES['pandas']
-except (NameError, KeyError):  # NameError is needed to support Astropy < 1.0
+    PYTEST_HEADER_MODULES.pop('h5py', None)
+    PYTEST_HEADER_MODULES.pop('Pandas', None)
+except KeyError:
     pass
 
 ## Uncomment the following lines to display the version number of the
