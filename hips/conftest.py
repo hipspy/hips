@@ -12,27 +12,26 @@ from astropy.tests.pytest_plugins import *
 ## the list of packages for which version numbers are displayed when running
 ## the tests. Making it pass for KeyError is essential in some cases when
 ## the package uses other astropy affiliated packages.
-# try:
-#     PYTEST_HEADER_MODULES['Astropy'] = 'astropy'
-#     PYTEST_HEADER_MODULES['scikit-image'] = 'skimage'
-#     del PYTEST_HEADER_MODULES['h5py']
-# except (NameError, KeyError):  # NameError is needed to support Astropy < 1.0
-#     pass
+try:
+    PYTEST_HEADER_MODULES['Astropy'] = 'astropy'
+    PYTEST_HEADER_MODULES['healpy'] = 'healpy'
+    PYTEST_HEADER_MODULES['matplotlib'] = 'matplotlib'
+    del PYTEST_HEADER_MODULES['h5py']
+    del PYTEST_HEADER_MODULES['pandas']
+except (NameError, KeyError):  # NameError is needed to support Astropy < 1.0
+    pass
 
 ## Uncomment the following lines to display the version number of the
 ## package rather than the version number of Astropy in the top line when
 ## running the tests.
-# import os
-#
-## This is to figure out the affiliated package version, rather than
-## using Astropy's
-# try:
-#     from .version import version
-# except ImportError:
-#     version = 'dev'
-#
-# try:
-#     packagename = os.path.basename(os.path.dirname(__file__))
-#     TESTED_VERSIONS[packagename] = version
-# except NameError:   # Needed to support Astropy <= 1.0.0
-#     pass
+import os
+
+# This is to figure out the affiliated package version, rather than
+# using Astropy's
+try:
+    from .version import version
+except ImportError:
+    version = 'dev'
+
+packagename = os.path.basename(os.path.dirname(__file__))
+TESTED_VERSIONS[packagename] = version
