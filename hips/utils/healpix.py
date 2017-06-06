@@ -10,11 +10,12 @@ __all__ = [
 ]
 
 import healpy
+import numpy as np
 
 
-def boundaries(nside, pix, step=1, nest=False):
-    """Returns an array containing the longitude and latitude.
-
+def boundaries(nside: int, pix: int, nest: bool=False) -> tuple:
+    """Returns an array containing the angle (theta and phi) in radians.
+    This method calls :py:meth:`.healpy.boundaries` and :py:meth:`.healpy.vec2ang`
     Parameters
     ----------
         nside : int
@@ -25,20 +26,16 @@ def boundaries(nside, pix, step=1, nest=False):
 
             Pixel identifier
 
-        step : int, optional
-
-            Number of elements for each side of the pixel
-
         nest : bool, optional
 
             If True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
-    longitude, latitude : float, array
-        Longitude and latitude positions
+    theta, phi : float, array
+        Returns the angle (theta and phi) in radians
     """
 
     boundary_coords = healpy.boundaries(nside, pix, nest=nest)
-    lon, lat = healpy.vec2ang(boundary_coords, lonlat=True)
-    return [lon, lat]
+    theta, phi = healpy.vec2ang(np.transpose(boundary_coords))
+    return theta, phi

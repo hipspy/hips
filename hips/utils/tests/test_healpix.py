@@ -6,8 +6,9 @@ import numpy as np
 def test_boundaries():
     nside = 8
     pix = 450
-    lon = boundaries(nside, pix, nest=True)
-    lonlat_precomp = [[242.19350089, 270., 226.97382512, 229.39870535],
-                      [-22.6263803, -43.1943471, -19.37793463, -33.05573115]]
+    theta, phi = boundaries(nside, pix, nest=True)
 
-    np.testing.assert_array_almost_equal(lon, lonlat_precomp, decimal=8)
+    thetaphi_precomp = ([[2.00057176,  2.0943951,  2.19362291,  2.0943951],
+                         [4.61421421,  4.51603944,  4.61421421,  4.71238898]])
+
+    np.testing.assert_allclose([theta, phi], thetaphi_precomp)
