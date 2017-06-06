@@ -16,6 +16,7 @@ import numpy as np
 def boundaries(nside: int, pix: int, nest: bool=False) -> tuple:
     """Returns an array containing the angle (theta and phi) in radians.
     This method calls :py:meth:`.healpy.boundaries` and :py:meth:`.healpy.vec2ang`
+    
     Parameters
     ----------
         nside : int
