@@ -15,21 +15,17 @@ import numpy as np
 
 def boundaries(nside: int, pix: int, nest: bool=False) -> tuple:
     """Returns an array containing the angle (theta and phi) in radians.
-    This method calls :py:meth:`.healpy.boundaries` and :py:meth:`.healpy.vec2ang`
-    
+
+    This method calls `healpy.boundaries` and `healpy.vec2ang`.
+
     Parameters
     ----------
-        nside : int
-
-            The nside of the HEALPix map
-
-        pix : int
-
-            Pixel identifier
-
-        nest : bool, optional
-
-            If True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    nside : int
+        The nside of the HEALPix map
+    pix : int
+        Pixel identifier
+    nest : bool, optional
+        If True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
