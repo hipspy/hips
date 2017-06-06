@@ -31,6 +31,14 @@ def boundaries(nside: int, pix: int, nest: bool=False) -> tuple:
     -------
     theta, phi : float, array
         Returns the angle (theta and phi) in radians
+
+    Examples
+    -------
+    nside = 8
+    pix = 450
+    theta, phi = boundaries(nside, pix, nest=True)
+
+    radec = SkyCoord(ra=phi, dec=np.pi/2 - theta, unit='radian', frame='icrs')
     """
 
     boundary_coords = healpy.boundaries(nside, pix, nest=nest)
