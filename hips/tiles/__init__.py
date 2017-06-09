@@ -1,3 +1,3 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""HiPS description class -- provides methods for parsing the HiPS file properties."""
+"""Classes and functions to manage HiPS tiles."""
 from .description import *
