@@ -10,7 +10,7 @@ def test_boundaries():
     order = 3
     nside = hp.order2nside(order)
     pix = 450
-    theta, phi = boundaries(nside, pix, nest=True)
+    theta, phi = boundaries(nside, pix)
 
     radec = SkyCoord(ra=phi, dec=np.pi/2 - theta, unit='radian', frame='icrs')
 

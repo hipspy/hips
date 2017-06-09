@@ -13,10 +13,13 @@ import healpy as hp
 import numpy as np
 
 
-def boundaries(nside: int, pix: int, nest: bool=False) -> tuple:
+def boundaries(nside: int, pix: int, nest: bool=True) -> tuple:
     """Returns an array containing the angle (theta and phi) in radians.
 
-    This function calls `healpy.boundaries` and `healpy.vec2ang`.
+    This function calls `healpy.boundaries` and `healpy.pixelfunc.vec2ang`
+    and computes the four corners of a HiPS tile. The order of the returned
+    corners is: N, W, S, E where N (resp. W, S, E) is the corner roughly 
+    pointing towards the North (resp. West, South and East).
 
     Parameters
     ----------
@@ -41,7 +44,7 @@ def boundaries(nside: int, pix: int, nest: bool=False) -> tuple:
         >>> from astropy.coordinates import SkyCoord
         >>> nside = 8
         >>> pix = 450
-        >>> theta, phi = boundaries(nside, pix, nest=True)
+        >>> theta, phi = boundaries(nside, pix)
         >>> SkyCoord(ra=phi, dec=np.pi/2 - theta, unit='radian', frame='icrs')
         <SkyCoord (ICRS): (ra, dec) in deg
         [( 264.375, -24.62431835), ( 258.75 , -30.        ),
