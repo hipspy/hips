@@ -18,7 +18,7 @@ def boundaries(nside: int, pix: int, nest: bool=True) -> tuple:
 
     This function calls `healpy.boundaries` and `healpy.pixelfunc.vec2ang`
     and computes the four corners of a HiPS tile. The order of the returned
-    corners is: N, W, S, E where N (resp. W, S, E) is the corner roughly 
+    corners is: N, W, S, E where N (resp. W, S, E) is the corner roughly
     pointing towards the North (resp. West, South and East).
 
     Parameters
