@@ -1,6 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-from .. hipsdescription import HipsDescription
+from ..description import HipsDescription
 
 class TestHiPSDescription:
     @classmethod
@@ -60,20 +60,20 @@ class TestHiPSDescription:
         """
         cls.hipsdescription = HipsDescription(hips_properties)
 
-    def test_get_base_url(cls):
-        assert cls.hipsdescription.get_base_url() == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
+    def test_base_url(cls):
+        assert cls.hipsdescription.base_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
 
-    def test_get_title(cls):
-        assert cls.hipsdescription.get_title() == 'DSS colored'
+    def test_title(cls):
+        assert cls.hipsdescription.title == 'DSS colored'
 
-    def test_get_hips_version(cls):
-        assert cls.hipsdescription.get_hips_version() == 1.31
+    def test_hips_version(cls):
+        assert cls.hipsdescription.hips_version == 1.31
 
-    def test_get_hips_frame(cls):
-        assert cls.hipsdescription.get_hips_frame() == 'equatorial'
+    def test_hips_frame(cls):
+        assert cls.hipsdescription.hips_frame == 'equatorial'
 
-    def test_get_hips_order(cls):
-        assert cls.hipsdescription.get_hips_order() == 9
+    def test_hips_order(cls):
+        assert cls.hipsdescription.hips_order == 9
 
-    def test_get_tile_format(cls):
-        assert cls.hipsdescription.get_tile_format() == 'jpeg'
+    def test_tile_format(cls):
+        assert cls.hipsdescription.tile_format == 'jpeg'
