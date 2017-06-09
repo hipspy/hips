@@ -9,8 +9,8 @@ from collections import OrderedDict
 
 
 class HipsDescription:
-    """This class provides method for parsing the HiPS properties file.
-       It also provides various getters around the commonly used properties.
+    """This class provides methods for parsing the HiPS properties file.
+       It also provides multiple getters around the commonly used properties.
     """
 
     def __init__(self, properties: str) -> None:
@@ -28,6 +28,7 @@ class HipsDescription:
         ----------
         properties : str
             HiPS file properties
+        
         Returns
         -------
         dict_properties : OrderedDict
@@ -46,7 +47,7 @@ class HipsDescription:
         """OrderedDict: Returns the ordered dictionary containing the HiPS properties."""
         return self.properties
 
-    def get_base_url(self) -> [str, None]:
+    def get_base_url(self) -> str:
         """str: Returns the base url from the HiPS file properties."""
         try:
             return self.properties['hips_service_url']
