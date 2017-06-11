@@ -31,9 +31,6 @@ More:
 * HiPS page at CDS: http://aladin.u-strasbg.fr/hips/ (contains links to HiPS paper and available data)
 * Small example HiPS datasets we use for testing and docs examples: https://github.com/hipspy/hips-extra
 
-User documentation
-==================
-
 .. toctree::
    :maxdepth: 1
    :caption: User documentation

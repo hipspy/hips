@@ -20,7 +20,8 @@ The ``hips`` package has the following requirements:
 * Python 3.6 or later!
 * `Numpy`_ 1.11 or later
 * `Astropy`_ 1.2 or later
-* `Healpy`_ 1.10 or later
+* `Healpy`_ 1.9 or later OK. (Don't know for older versions.)
+* `scikit-image`_ 0.12 or later OK. (Don't know for older versions.)
 
 In addition, the following packages are needed for optional functionality:
 
