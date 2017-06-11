@@ -101,6 +101,7 @@ install_requires = [
     # https://readthedocs.org/projects/hips/builds/5483435/
     # So for now, only require 1.9
     'healpy>=1.9',
+    'scikit-image',
 ]
 
 extras_require = dict(
