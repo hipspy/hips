@@ -19,9 +19,8 @@ class HipsDescription:
         A string containing HiPS tile properties
     """
 
-    def __init__(self, properties: str) -> None:
-        super(HipsDescription, self).__init__()
-        self.properties = self.parse_file_properties(properties)
+    def __init__(self, properties: OrderedDict) -> None:
+        self.properties = properties
 
     @classmethod
     def read_file(cls, filename: str) -> OrderedDict:
@@ -39,8 +38,9 @@ class HipsDescription:
         -------
         dict_properties : OrderedDict
         """
-        file = open(filename, 'r')
-        return cls.parse_file_properties(file.read())
+        with open(filename) as file:
+            text = file.read()
+        return cls.parse_file_properties(text)
 
     @classmethod
     def parse_file_properties(cls, properties: str) -> OrderedDict:
@@ -58,15 +58,15 @@ class HipsDescription:
         -------
         list_properties : OrderedDict
         """
-        properties = properties.split('\n')
+        properties_lines = properties.split('\n')
         list_properties = []
-        for property in properties:
+        for property in properties_lines:
             key_value = property.split('=')
             try:
                 list_properties.append((key_value[0].strip(), key_value[1].strip()))
-            except IndexError: # The case where a property contains comment or a blank line
+            except IndexError: # the case where a property contains a comment or a blank line
                 pass
-        return OrderedDict(list_properties)
+        return cls(OrderedDict(list_properties))
 
     @property
     def base_url(self) -> str:

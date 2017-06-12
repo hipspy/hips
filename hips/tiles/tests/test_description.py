@@ -58,7 +58,7 @@ class TestHiPSDescription:
         isColor            = true
         ~
         """
-        cls.hipsdescription = HipsDescription(hips_properties)
+        cls.hipsdescription = HipsDescription.parse_file_properties(hips_properties)
 
     def test_base_url(cls):
         assert cls.hipsdescription.base_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
