@@ -15,8 +15,8 @@ class HipsDescription:
 
     Parameters
     ----------
-    properties : str
-        A string containing HiPS tile properties
+    properties : OrderedDict
+        An ordered dictionary containing the HiPS file properties
     """
 
     def __init__(self, properties: OrderedDict) -> None:
