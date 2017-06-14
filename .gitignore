@@ -29,6 +29,9 @@ docs/_build
 # Pycharm editor project files
 .idea
 
+# Mypy cache
+.mypy_cache
+
 # Floobits project files
 .floo
 .flooignore
