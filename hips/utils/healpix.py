@@ -6,11 +6,13 @@ the healpy library
 """
 
 __all__ = [
-    'boundaries',
+    'boundaries', 'compute_image_pixels'
 ]
 
 import healpy as hp
 import numpy as np
+from astropy.coordinates.angle_utilities import angular_separation
+from astropy.wcs import WCS
 
 
 def boundaries(nside: int, pix: int, nest: bool=True) -> tuple:
@@ -54,3 +56,33 @@ def boundaries(nside: int, pix: int, nest: bool=True) -> tuple:
     boundary_coords = hp.boundaries(nside, pix, nest=nest)
     theta, phi = hp.vec2ang(np.transpose(boundary_coords))
     return theta, phi
+
+def compute_image_pixels(nside: int, shape: tuple, wcs: WCS) -> np.ndarray:
+    """Returns an array containing the pixels corresponding to an image.
+
+    This function calls `healpy.pixelfunc.ang2vec`, `healpy.query_disc`, and
+    `astropy.coordinates.angle_utilities.angular_separation` to compute
+    the pixel values, which will be use in tile drawing.
+
+    Parameters
+    ----------
+    nside : int
+        The nside of the HEALPix map
+    shape : tuple
+        Shape of the image
+    wcs : astropy.wcs.wcs.WCS
+        A WCS object containing the image header
+
+    Returns
+    -------
+    pixels : `numpy.ndarray`
+        Returns a list of pixel values
+
+    """
+
+    y_center, x_center = shape[0] // 2, shape[1] // 2
+    lon_center, lat_center = wcs.all_pix2world(x_center, y_center, 1)
+    vec = hp.ang2vec(lon_center, lat_center, lonlat=True)
+    separations = angular_separation(x_center, y_center, lon_center, lat_center)
+    max_separation = np.nanmax(separations)
+    return hp.query_disc(nside, vec, max_separation)
