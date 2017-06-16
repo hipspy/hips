@@ -11,6 +11,7 @@ __all__ = [
 
 import healpy as hp
 import numpy as np
+from .wcs import WCSGeometry
 from astropy.coordinates.angle_utilities import angular_separation
 from astropy.wcs import WCS
 
@@ -52,13 +53,12 @@ def boundaries(nside: int, pix: int, nest: bool=True) -> tuple:
         [( 264.375, -24.62431835), ( 258.75 , -30.        ),
          ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
-
     boundary_coords = hp.boundaries(nside, pix, nest=nest)
     theta, phi = hp.vec2ang(np.transpose(boundary_coords))
     return theta, phi
 
-def compute_image_pixels(nside: int, shape: tuple, wcs: WCS) -> np.ndarray:
-    """Returns an array containing the pixels corresponding to an image.
+def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, nside: int) -> np.ndarray:
+    """Returns an array containing pixels corresponding to an image.
 
     This function calls `healpy.pixelfunc.ang2vec`, `healpy.query_disc`, and
     `astropy.coordinates.angle_utilities.angular_separation` to compute
@@ -66,22 +66,18 @@ def compute_image_pixels(nside: int, shape: tuple, wcs: WCS) -> np.ndarray:
 
     Parameters
     ----------
+    wcs_geometry : WCSGeometry
+        Container for WCS object and image shape
     nside : int
         The nside of the HEALPix map
-    shape : tuple
-        Shape of the image
-    wcs : astropy.wcs.wcs.WCS
-        A WCS object containing the image header
 
     Returns
     -------
     pixels : `numpy.ndarray`
-        Returns a list of pixel values
-
+        HEALPix pixel numbers
     """
-
-    y_center, x_center = shape[0] // 2, shape[1] // 2
-    lon_center, lat_center = wcs.all_pix2world(x_center, y_center, 1)
+    y_center, x_center = wcs_geometry.shape[0] // 2, wcs_geometry.shape[1] // 2
+    lon_center, lat_center = wcs_geometry.wcs.all_pix2world(x_center, y_center, 1)
     vec = hp.ang2vec(lon_center, lat_center, lonlat=True)
     separations = angular_separation(x_center, y_center, lon_center, lat_center)
     max_separation = np.nanmax(separations)
