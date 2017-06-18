@@ -3,11 +3,9 @@ import numpy as np
 import healpy as hp
 from ..wcs import WCSGeometry
 from ..healpix import boundaries
-from ..healpix import compute_image_pixels
-from astropy.io import fits
-from astropy.wcs import WCS
 from astropy.coordinates import SkyCoord
 from numpy.testing import assert_allclose
+from ..healpix import compute_healpix_pixel_indices
 
 
 def test_boundaries():
@@ -31,9 +29,8 @@ def test_compute_healpix_pixel_indices():
     order = 3
     nside = hp.order2nside(order)
 
-    hdu = fits.open('https://github.com/gammapy/gammapy-extra/blob/master/datasets/catalogs/fermi/gll_psch_v08.fit.gz?raw=true')
-    wcs = WCS(hdu[0].header)
-    wcs_geometry = WCSGeometry(wcs, hdu[0].data.shape)
+    skycoord = SkyCoord(10, 20, unit="deg")
+    wcs_geometry = WCSGeometry.create(skycoord, (10, 20), 'CEL', 'AIT', 1.0, 1)
 
     """
     These pixel values were obtained for the all-sky image located at:
@@ -41,5 +38,5 @@ def test_compute_healpix_pixel_indices():
     """
     pixels_precomp = [0, 767]
 
-    pixels = compute_image_pixels(wcs_geometry, nside)
+    pixels = compute_healpix_pixel_indices(wcs_geometry, nside)
     assert_allclose([pixels[0], pixels[-1]], pixels_precomp)

@@ -6,7 +6,7 @@ the healpy library
 """
 
 __all__ = [
-    'boundaries', 'compute_image_pixels'
+    'boundaries', 'compute_healpix_pixel_indices'
 ]
 
 import healpy as hp
