@@ -29,6 +29,8 @@ class HipsTile:
         Order of the HiPS
     ipix : `int`
         HEALPix pixel number
+    tile_width : `int`
+        Width of HiPS tile
     format : `format`
         Format of HiPS tile
     data : `list`
@@ -54,10 +56,11 @@ class HipsTile:
          [4261 3581 3842 ..., 7095 6390 6191]]
     """
 
-    def __init__(self, hips_description: HipsDescription, order: int, ipix: int, format: str, data: list=None) -> None:
+    def __init__(self, hips_description: HipsDescription, order: int, ipix: int, format: str, data: list=None, tile_width: int=512) -> None:
         self.hips_description = hips_description
         self.order = order
         self.ipix = ipix
+        self.tile_width = tile_width
         self.format = format
         self.data = data
 

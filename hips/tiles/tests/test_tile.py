@@ -11,7 +11,7 @@ class TestHipsTile:
         filename = get_pkg_data_filename('data/properties.txt')
         hips_description = HipsDescription.read(filename)
 
-        cls.tile = HipsTile(hips_description, 6, 24185, 'jpg')
+        cls.tile = HipsTile(hips_description, 6, 24185, 'jpg', 512)
         cls.tile.base_url = 'http://alasky.unistra.fr/DSS/DSSColor'
 
     def test_base_url(self):
