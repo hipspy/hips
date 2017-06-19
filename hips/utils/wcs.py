@@ -17,25 +17,36 @@ class WCSGeometry:
         WCS projection object
     shape : tuple
         Shape of the image
+
+    Examples
+    --------
+    ::
+
+        >>> from hips.utils import WCSGeometry
+        >>> from astropy.coordinates import SkyCoord
+        >>> skycoord = SkyCoord(10, 20, unit="deg")
+        >>> wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='CEL', projection='AIT', cdelt=1.0, crpix=1.)
+        >>> wcs_geometry.wcs
+        Number of WCS axes: 2
+        CTYPE : 'RA---AIT'  'DEC--AIT'
+        CRVAL : 10.0  20.0
+        CRPIX : 1.0  1.0
+        PC1_1 PC1_2  : 1.0  0.0
+        PC2_1 PC2_2  : 0.0  1.0
+        CDELT : -1.0  1.0
+        NAXIS : 0  0
+        >>> wcs_geometry.shape
+        (10, 20)
     """
 
     def __init__(self, wcs: WCS, shape: tuple) -> None:
-        self._wcs = wcs
-        self._shape = shape
-
-    @property
-    def shape(self) -> None:
-        """Shape of the image (`None`)."""
-        return self._shape
-
-    @property
-    def wcs(self) -> None:
-        """WCS object containing FITS image header (`None`)."""
-        return self._wcs
+        self.wcs = wcs
+        self.shape = shape
 
     @classmethod
-    def create(cls, skydir: SkyCoord, shape: tuple, coordsys: str='CEL', projection: str='AIT', cdelt: float=1.0, crpix: float=1.) -> 'WCSGeometry':
-        """Read from HiPS description file (`WCSGeometry`).
+    def create(cls, skydir: SkyCoord, shape: tuple, coordsys: str='CEL',
+        projection: str='AIT', cdelt: float=1.0, crpix: tuple=(1., 1.)) -> 'WCSGeometry':
+        """Create WCS object programmatically (`WCSGeometry`).
 
         Parameters
         ----------
@@ -49,15 +60,11 @@ class WCSGeometry:
             Projection of the WCS object
         cdelt : `float`
             Coordinate increment at reference point
-        crpix : `float`
-            Pixel coordinate of reference point
+        crpix : `tuple`
+            Pixel coordinates of reference point
         """
 
-        naxis = 2
-        if shape is not None:
-            naxis += len(shape)
-
-        w = WCS(naxis=naxis)
+        w = WCS(naxis=2)
 
         if coordsys == 'CEL':
             w.wcs.ctype[0] = 'RA---{}'.format(projection)
@@ -72,12 +79,9 @@ class WCSGeometry:
         else:
             raise ValueError('Unrecognized coordinate system.')
 
-        try:
-            w.wcs.crpix[0] = crpix[0]
-            w.wcs.crpix[1] = crpix[1]
-        except:
-            w.wcs.crpix[0] = crpix
-            w.wcs.crpix[1] = crpix
+        w.wcs.crpix[0] = crpix[0]
+        w.wcs.crpix[1] = crpix[1]
+
         w.wcs.cdelt[0] = -cdelt
         w.wcs.cdelt[1] = cdelt
 

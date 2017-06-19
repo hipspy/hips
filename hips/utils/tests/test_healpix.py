@@ -30,13 +30,11 @@ def test_compute_healpix_pixel_indices():
     nside = hp.order2nside(order)
 
     skycoord = SkyCoord(10, 20, unit="deg")
-    wcs_geometry = WCSGeometry.create(skycoord, (10, 20), 'CEL', 'AIT', 1.0, 1)
+    wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='CEL', projection='AIT', cdelt=1.0, crpix=(1., 1.))
 
-    """
-    These pixel values were obtained for the all-sky image located at:
-    https://github.com/gammapy/gammapy-extra/blob/master/datasets/catalogs/fermi/gll_psch_v08.fit.gz?raw=true
-    """
-    pixels_precomp = [0, 767]
-
+    pixels_precomp = [84, 111, 112, 113]
+    len_precomp = 39
     pixels = compute_healpix_pixel_indices(wcs_geometry, nside)
-    assert_allclose([pixels[0], pixels[-1]], pixels_precomp)
+    print(pixels)
+    assert_allclose(len(pixels), len_precomp)
+    assert_allclose(pixels[0:4], pixels_precomp)

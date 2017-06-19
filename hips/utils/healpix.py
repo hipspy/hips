@@ -58,11 +58,11 @@ def boundaries(nside: int, pix: int, nest: bool=True) -> tuple:
     return theta, phi
 
 def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, nside: int) -> np.ndarray:
-    """Returns an array containing pixels corresponding to an image.
+    """Returns an array containing HEALPix pixels corresponding to disk regions.
 
     This function calls `healpy.pixelfunc.ang2vec`, `healpy.query_disc`, and
     `astropy.coordinates.angle_utilities.angular_separation` to compute
-    the pixel values, which will be use in tile drawing.
+    the HEALPix pixel indices, which will be used in tile drawing.
 
     Parameters
     ----------
@@ -75,6 +75,23 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, nside: int) -> np.n
     -------
     pixels : `numpy.ndarray`
         HEALPix pixel numbers
+
+    Examples
+    --------
+    ::
+
+        >>> import healpy as hp
+        >>> from hips.utils import WCSGeometry
+        >>> from astropy.coordinates import SkyCoord
+        >>> from hips.utils import compute_healpix_pixel_indices
+        >>> order = 3
+        >>> nside = hp.order2nside(order)
+        >>> skycoord = SkyCoord(10, 20, unit="deg")
+        >>> wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='CEL', projection='AIT', cdelt=1.0, crpix=(1., 1.))
+        >>> compute_healpix_pixel_indices(wcs_geometry, nside)
+        [ 84 111 112 113 142 143 144 145 146 174 175 176 177 178 206 207 208 209
+        210 238 239 240 241 270 271 272 273 274 302 303 304 305 334 335 336 337
+        367 368 399]
     """
     y_center, x_center = wcs_geometry.shape[0] // 2, wcs_geometry.shape[1] // 2
     lon_center, lat_center = wcs_geometry.wcs.all_pix2world(x_center, y_center, 1)
