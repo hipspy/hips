@@ -1,26 +1,34 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import urllib.request
 from collections import OrderedDict
 
 __all__ = [
-    'HipsDescription',
+    'HipsSurveyProperties',
 ]
 
 
-class HipsDescription:
+class HipsSurveyProperties:
     """HiPS properties container.
 
     Parameters
     ----------
     properties : `~collections.OrderedDict`
-        HiPS description properties
+        HiPS survey properties
+
+    Examples
+    --------
+        >>> url = 'https://raw.githubusercontent.com/hipspy/hips/master/hips/tiles/tests/data/properties.txt'
+        >>> hips_survey_property = HipsSurveyProperties.fetch(url)
+        >>> hips_survey_property.base_url
+        'http://alasky.u-strasbg.fr/DSS/DSSColor'
     """
 
     def __init__(self, properties: OrderedDict) -> None:
         self.properties = properties
 
     @classmethod
-    def read(cls, filename: str) -> 'HipsDescription':
-        """Read from HiPS description file (`HipsDescription`).
+    def read(cls, filename: str) -> 'HipsSurveyProperties':
+        """Read from HiPS survey description file (`HipsSurveyProperties`).
 
         Parameters
         ----------
@@ -33,20 +41,33 @@ class HipsDescription:
         return cls.parse(text)
 
     @classmethod
-    def parse(cls, text: str) -> 'HipsDescription':
-        """Parse HiPS description text (`HipsDescription`).
+    def fetch(cls, url: str) -> 'HipsSurveyProperties':
+        """Read from HiPS survey description file from remote URL (`HipsSurveyProperties`).
+
+        Parameters
+        ----------
+        url : str
+            URL containing HiPS properties
+        """
+
+        response = urllib.request.urlopen(url).read()
+        text = response.decode('utf-8')
+        return cls.parse(text)
+
+    @classmethod
+    def parse(cls, text: str) -> 'HipsSurveyProperties':
+        """Parse HiPS survey description text (`HipsSurveyProperties`).
 
         Parameters
         ----------
         text : str
-            HiPS properties text
+            Text containing HiPS survey properties
         """
         properties = OrderedDict()
         for line in text.split('\n'):
             # Skip empty or comment lines
             if line == '' or line.startswith('#'):
                 continue
-
             try:
                 key, value = [_.strip() for _ in line.split('=')]
                 properties[key] = value
