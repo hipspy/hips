@@ -96,7 +96,7 @@ class HipsTile:
 
     def read(self) -> None:
         """Read HiPS tile data from a directory and load into memory (`None`)."""
-        path = self.path.joinpath(''.join(['Npix', str(self.ipix), '.', self.format]))
+        path = self.path / (''.join(['Npix', str(self.ipix), '.', self.format]))
         if self.format == 'fits':
             hdulist = fits.open(path)
             self.data = np.array(hdulist[0].data)
@@ -112,7 +112,7 @@ class HipsTile:
         filename : `str`
             Name of the file
         """
-        path = self.path.joinpath(''.join([filename, '.', self.format]))
+        path = self.path / (''.join([filename, '.', self.format]))
         if self.format == 'fits':
             hdu = fits.PrimaryHDU(self.data, header=self.header)
             hdulist = fits.HDUList([hdu])
