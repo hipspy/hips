@@ -97,14 +97,12 @@ class HipsTile:
     def read(self) -> None:
         """Read HiPS tile data from a directory and load into memory (`None`)."""
         path = self.path.joinpath(''.join(['Npix', str(self.ipix), '.', self.format]))
-        with path.open('rb') as rf:
-            raw_img = BytesIO(rf.read())
-            if self.format == 'fits':
-                hdulist = fits.open(raw_img)
-                self.data = np.array(hdulist[0].data)
-                self.header = hdulist[0].header
-            else:
-                self.data = np.array(Image.open(raw_img))
+        if self.format == 'fits':
+            hdulist = fits.open(path)
+            self.data = np.array(hdulist[0].data)
+            self.header = hdulist[0].header
+        else:
+            self.data = np.array(Image.open(str(path)))
 
     def write(self, filename: str) -> None:
         """Write HiPS tile by a given filename (`None`).
