@@ -1,8 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""HEALpy wrapper functions.
+"""HiPS tile utility functions.
 
-This module contains wrapper functions around HEALPix utilizing
-the healpy library.
 """
 
 from pathlib import Path

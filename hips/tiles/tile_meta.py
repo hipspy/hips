@@ -7,7 +7,6 @@ __all__ = [
 
 class HipsTileMeta:
     """HiPS tile metadata container.
-
     This class stores HiPS tile meta attributes.
 
     Parameters
@@ -16,8 +15,8 @@ class HipsTileMeta:
         Order of HiPS tile
     ipix : `int`
         Pixel number of HiPS tile
-    format : `str`
-        Format of the HiPS tile
+    format : {'fits', 'jpg', 'png'}
+        File format of the HiPS tile
     tile_width : `int`
         HiPS tile width
     """
