@@ -26,15 +26,14 @@ def test_boundaries():
     assert_allclose([radec.ra, radec.dec], radec_precomp)
 
 def test_compute_healpix_pixel_indices():
-    order = 3
-    nside = hp.order2nside(order)
+    nside = hp.order2nside(order=3)
 
     skycoord = SkyCoord(10, 20, unit="deg")
-    wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='CEL', projection='AIT', cdelt=1.0, crpix=(1., 1.))
-
+    wcs_geometry_CEL = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='CEL',
+                                      projection='AIT', cdelt=1.0, crpix=(1., 1.))
+    wcs_geometry_GAL = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='GAL',
+                                      projection='AIT', cdelt=1.0, crpix=(1., 1.))
     pixels_precomp = [84, 111, 112, 113]
-    len_precomp = 39
-    pixels = compute_healpix_pixel_indices(wcs_geometry, nside)
-    print(pixels)
-    assert_allclose(len(pixels), len_precomp)
+    pixels = compute_healpix_pixel_indices(wcs_geometry_CEL, nside)
+    assert len(pixels) == 39
     assert_allclose(pixels[0:4], pixels_precomp)

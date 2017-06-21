@@ -1,7 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import numpy as np
 from astropy.wcs import WCS
+from collections import namedtuple
 from astropy.coordinates import SkyCoord
+
+__doctest_skip__ = ['WCSGeometry']
 
 __all__ = [
     'WCSGeometry',
@@ -25,7 +28,9 @@ class WCSGeometry:
         >>> from hips.utils import WCSGeometry
         >>> from astropy.coordinates import SkyCoord
         >>> skycoord = SkyCoord(10, 20, unit="deg")
-        >>> wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='CEL', projection='AIT', cdelt=1.0, crpix=1.)
+        >>> wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), \
+coordsys='CEL', projection='AIT', \
+cdelt=1.0, crpix=1.)
         >>> wcs_geometry.wcs
         Number of WCS axes: 2
         CTYPE : 'RA---AIT'  'DEC--AIT'
@@ -41,7 +46,7 @@ class WCSGeometry:
 
     def __init__(self, wcs: WCS, shape: tuple) -> None:
         self.wcs = wcs
-        self.shape = shape
+        self.Shape = namedtuple('Shape', ['ny', 'nx'])(*shape)
 
     @classmethod
     def create(cls, skydir: SkyCoord, shape: tuple, coordsys: str='CEL',
@@ -77,7 +82,7 @@ class WCSGeometry:
             w.wcs.crval[0] = skydir.galactic.l.deg
             w.wcs.crval[1] = skydir.galactic.b.deg
         else:
-            raise ValueError('Unrecognized coordinate system.')
+            raise ValueError('Unrecognized coordinate system.') # pragma: no cover
 
         w.wcs.crpix[0] = crpix[0]
         w.wcs.crpix[1] = crpix[1]

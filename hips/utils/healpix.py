@@ -5,6 +5,8 @@ This module contains wrapper functions around HEALPix utilizing
 the healpy library
 """
 
+__doctest_skip__ = ['boundaries', 'compute_healpix_pixel_indices']
+
 __all__ = [
     'boundaries', 'compute_healpix_pixel_indices'
 ]
@@ -87,15 +89,17 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, nside: int) -> np.n
         >>> order = 3
         >>> nside = hp.order2nside(order)
         >>> skycoord = SkyCoord(10, 20, unit="deg")
-        >>> wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), coordsys='CEL', projection='AIT', cdelt=1.0, crpix=(1., 1.))
+        >>> wcs_geometry = WCSGeometry.create(skydir=skycoord, shape=(10, 20), \
+coordsys='CEL', projection='AIT', \
+cdelt=1.0, crpix=(1., 1.))
         >>> compute_healpix_pixel_indices(wcs_geometry, nside)
         [ 84 111 112 113 142 143 144 145 146 174 175 176 177 178 206 207 208 209
         210 238 239 240 241 270 271 272 273 274 302 303 304 305 334 335 336 337
         367 368 399]
     """
-    y_center, x_center = wcs_geometry.shape[0] // 2, wcs_geometry.shape[1] // 2
+    y_center, x_center = wcs_geometry.Shape.ny / 2, wcs_geometry.Shape.nx / 2
     lon_center, lat_center = wcs_geometry.wcs.all_pix2world(x_center, y_center, 1)
-    vec = hp.ang2vec(lon_center, lat_center, lonlat=True)
     separations = angular_separation(x_center, y_center, lon_center, lat_center)
     max_separation = np.nanmax(separations)
+    vec = hp.ang2vec(lon_center, lat_center, lonlat=True)
     return hp.query_disc(nside, vec, max_separation)
