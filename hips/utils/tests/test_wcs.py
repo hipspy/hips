@@ -29,6 +29,6 @@ class TestWCSGeometry:
 
     def test_center(self):
         c = self.wcs_geometry.center_skycoord
-        assert_allclose(c.l.deg, 2)
-        assert_allclose(c.b.deg, 4.5)
         assert c.frame.name == 'galactic'
+        assert_allclose(c.l.deg, 2, atol=1e-2)
+        assert_allclose(c.b.deg, 4.5, atol=1e-2)

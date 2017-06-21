@@ -10,7 +10,6 @@ from .test_wcs import make_test_wcs_geometry
 def test_boundaries():
     nside = hp.order2nside(order=3)
     theta, phi = boundaries(nside, pix=450)
-
     radec = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian')
 
     """

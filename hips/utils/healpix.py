@@ -4,7 +4,9 @@
 This module contains wrapper functions around HEALPix utilizing
 the healpy library.
 """
+from typing import Tuple
 import numpy as np
+from astropy.coordinates import SkyCoord
 import healpy as hp
 from .wcs import WCSGeometry
 
@@ -14,6 +16,18 @@ __all__ = [
 ]
 
 __doctest_skip__ = ['boundaries', 'compute_healpix_pixel_indices']
+
+
+def _skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
+    """Convert SkyCoord to theta / phi as used in healpy."""
+    theta = np.pi / 2 - skycoord.data.lat.radian
+    phi = skycoord.data.lon.radian
+    return theta, phi
+
+
+def _skycoord_to_vec(skycoord: SkyCoord) -> np.ndarray:
+    """Convert SkyCoord to vec as used in healpy."""
+    return hp.ang2vec(*_skycoord_to_theta_phi(skycoord))
 
 
 def boundaries(nside: int, pix: int, nest: bool = True) -> tuple:
@@ -93,6 +107,6 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, nside: int) -> np.n
     separation = center_coord.separation(pixel_coords)
     radius = np.nanmax(separation.rad)
 
-    vec = hp.ang2vec(center_coord.data.lon.deg, center_coord.data.lat.deg, lonlat=True)
+    vec = _skycoord_to_vec(center_coord)
 
     return hp.query_disc(nside, vec, radius)
