@@ -23,6 +23,5 @@ def test_boundaries():
 
 def test_compute_healpix_pixel_indices():
     wcs_geometry = make_test_wcs_geometry(case=1)
-    nside = hp.order2nside(order=3)
-    pixels = compute_healpix_pixel_indices(wcs_geometry, nside)
+    pixels = compute_healpix_pixel_indices(wcs_geometry, order=3)
     assert_allclose(pixels, [176, 207, 208, 239, 240, 271, 272])
