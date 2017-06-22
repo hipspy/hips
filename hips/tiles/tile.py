@@ -8,7 +8,6 @@ from astropy.io import fits
 from astropy.io.fits.header import Header
 
 from .tile_meta import HipsTileMeta
-from ..utils.tile import tile_path
 
 __all__ = [
     'HipsTile',
@@ -28,15 +27,15 @@ class HipsTile:
         Metadata of HiPS tile
     data : `~numpy.ndarray`
         Data containing HiPS tile
-    header : `astropy.io.fits.Header`
+    header : `~astropy.io.fits.Header`
         Header of HiPS tile
 
     Examples
     --------
         >>> from hips.tiles import HipsTile
         >>> from hips.tiles import HipsTileMeta
-        >>> hips_tile_met = HipsTileMeta(order=6, ipix=30889, format='fits')
-        >>> hips_tile = HipsTile.read(meta, 'Npix30889.fits')
+        >>> meta = HipsTileMeta(order=6, ipix=30889, format='fits')
+        >>> hips_tile = HipsTile.read(meta)
         >>> hips_tile.data
         array([[0, 0, 0, ..., 0, 0, 0],
                [0, 0, 0, ..., 0, 0, 0],
@@ -75,17 +74,15 @@ class HipsTile:
             return cls(meta, data)
 
     @classmethod
-    def read(cls, meta: HipsTileMeta, filename: str) -> 'HipsTile':
+    def read(cls, meta: HipsTileMeta) -> 'HipsTile':
         """Read HiPS tile data from a directory and load into memory (`HipsTile`).
 
         Parameters
         ----------
         meta : `HipsTileMeta`
             Metadata of HiPS tile
-        filename : `str`
-            File name of HiPS tile
         """
-        path = tile_path().absolute() / filename
+        path = meta.path / meta.filename
         if meta.format == 'fits':
             hdulist = fits.open(path)
             data = np.array(hdulist[0].data)
@@ -103,7 +100,7 @@ class HipsTile:
         filename : `str`
             Name of the file
         """
-        path = tile_path().absolute() / filename
+        path = self.meta.path / self.meta.filename
         if self.meta.format == 'fits':
             hdu = fits.PrimaryHDU(self.data, header=self.header).writeto(str(path))
         else:

@@ -25,8 +25,8 @@ class TestHipsTile:
         jpg_tile.write('Npix30889.jpg')
         fits_tile.write('Npix30889.fits')
 
-        fits_tile = HipsTile.read(self.hips_tile_meta_fits, 'Npix30889.fits')
-        jpg_tile = HipsTile.read(self.hips_tile_meta_jpg, 'Npix30889.jpg')
+        fits_tile = HipsTile.read(self.hips_tile_meta_fits)
+        jpg_tile = HipsTile.read(self.hips_tile_meta_jpg)
 
         data_precomp = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
         assert fits_tile.data.shape == (512, 512)
