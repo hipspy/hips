@@ -23,10 +23,10 @@ class HipsTileMeta:
         HiPS tile width
     """
 
-    def __init__(self, order: int, ipix: int, format: str, tile_width: int = 512) -> None:
-        self.order = format
+    def __init__(self, order: int, ipix: int, file_format: str, tile_width: int = 512) -> None:
+        self.order = order
         self.ipix = ipix
-        self.format = format
+        self.file_format = file_format
         self.tile_width = tile_width
 
     @property
@@ -37,4 +37,4 @@ class HipsTileMeta:
     @property
     def filename(self) -> str:
         """Return the filename of HiPS tile (`str`)."""
-        return ''.join(['Npix', str(self.ipix), '.', self.format])
+        return ''.join(['Npix', str(self.ipix), '.', self.file_format])

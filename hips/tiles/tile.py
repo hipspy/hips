@@ -8,7 +8,7 @@ from astropy.io import fits
 from astropy.io.fits.header import Header
 
 from .tile_meta import HipsTileMeta
-
+import py._path.local
 __all__ = [
     'HipsTile',
 ]
@@ -48,7 +48,6 @@ class HipsTile:
 
     def __init__(self, meta: HipsTileMeta, data: np.ndarray = None, header: Header = None) -> None:
         self.meta = meta
-        self.format = format
         self.data = data
         self.header = header
 
@@ -64,7 +63,7 @@ class HipsTile:
             URL containing HiPS tile
         """
         raw_image = BytesIO(urllib.request.urlopen(url).read())
-        if meta.format == 'fits':
+        if meta.file_format == 'fits':
             hdulist = fits.open(raw_image)
             data = np.array(hdulist[0].data)
             header = hdulist[0].header
@@ -74,7 +73,7 @@ class HipsTile:
             return cls(meta, data)
 
     @classmethod
-    def read(cls, meta: HipsTileMeta) -> 'HipsTile':
+    def read(cls, meta: HipsTileMeta, tmpdir: py._path.local = None) -> 'HipsTile':
         """Read HiPS tile data from a directory and load into memory (`HipsTile`).
 
         Parameters
@@ -82,9 +81,13 @@ class HipsTile:
         meta : `HipsTileMeta`
             Metadata of HiPS tile
         """
-        path = meta.path / meta.filename
-        if meta.format == 'fits':
-            hdulist = fits.open(path)
+        if tmpdir == None:
+            path = meta.path / meta.filename
+        else:
+            path = tmpdir / meta.filename
+
+        if meta.file_format == 'fits':
+            hdulist = fits.open(str(path))
             data = np.array(hdulist[0].data)
             header = hdulist[0].header
             return cls(meta, data, header)
@@ -92,7 +95,7 @@ class HipsTile:
             data = np.array(Image.open(str(path)))
             return cls(meta, data)
 
-    def write(self, filename: str) -> None:
+    def write(self, filename: str, tmpdir: py._path.local = None) -> None:
         """Write HiPS tile by a given filename.
 
         Parameters
@@ -100,8 +103,12 @@ class HipsTile:
         filename : `str`
             Name of the file
         """
-        path = self.meta.path / self.meta.filename
-        if self.meta.format == 'fits':
+        if tmpdir == None:
+            path = self.meta.path / self.meta.filename
+        else:
+            path = tmpdir / self.meta.filename
+
+        if self.meta.file_format == 'fits':
             hdu = fits.PrimaryHDU(self.data, header=self.header).writeto(str(path))
         else:
             Image.fromarray(self.data).save(str(path))
