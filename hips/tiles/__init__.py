@@ -3,3 +3,4 @@
 from .tile import *
 from .tile_meta import *
 from .description import *
+from .surveys import *
