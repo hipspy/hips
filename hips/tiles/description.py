@@ -6,25 +6,27 @@ __all__ = [
     'HipsSurveyProperties',
 ]
 
+__doctest_skip__ = ['HipsSurveyProperties']
+
 
 class HipsSurveyProperties:
     """HiPS properties container.
 
     Parameters
     ----------
-    properties : `~collections.OrderedDict`
+    data : `~collections.OrderedDict`
         HiPS survey properties
 
     Examples
     --------
-        >>> url = 'https://raw.githubusercontent.com/hipspy/hips/master/hips/tiles/tests/data/properties.txt'
-        >>> hips_survey_property = HipsSurveyProperties.fetch(url)
-        >>> hips_survey_property.base_url
-        'http://alasky.u-strasbg.fr/DSS/DSSColor'
+    >>> url = 'https://raw.githubusercontent.com/hipspy/hips/master/hips/tiles/tests/data/properties.txt'
+    >>> hips_survey_property = HipsSurveyProperties.fetch(url)
+    >>> hips_survey_property.base_url
+    'http://alasky.u-strasbg.fr/DSS/DSSColor'
     """
 
-    def __init__(self, properties: OrderedDict) -> None:
-        self.properties = properties
+    def __init__(self, data: OrderedDict) -> None:
+        self.data = data
 
     @classmethod
     def read(cls, filename: str) -> 'HipsSurveyProperties':
@@ -63,46 +65,46 @@ class HipsSurveyProperties:
         text : str
             Text containing HiPS survey properties
         """
-        properties = OrderedDict()
+        data = OrderedDict()
         for line in text.split('\n'):
             # Skip empty or comment lines
             if line == '' or line.startswith('#'):
                 continue
             try:
                 key, value = [_.strip() for _ in line.split('=')]
-                properties[key] = value
+                data[key] = value
             except ValueError:
                 # Skip bad lines (silently, might not be a good idea to do this)
                 continue
 
-        return cls(properties)
+        return cls(data)
 
     @property
     def base_url(self) -> str:
         """HiPS service base URL (`str`)."""
-        return self.properties['hips_service_url']
+        return self.data['hips_service_url']
 
     @property
     def title(self) -> str:
         """HiPS title (`str`)."""
-        return self.properties['obs_title']
+        return self.data['obs_title']
 
     @property
     def hips_version(self) -> str:
         """HiPS version (`str`)."""
-        return self.properties['hips_version']
+        return self.data['hips_version']
 
     @property
     def hips_frame(self) -> str:
         """HiPS coordinate frame (`str`)."""
-        return self.properties['hips_frame']
+        return self.data['hips_frame']
 
     @property
     def hips_order(self) -> int:
         """HiPS order (`int`)."""
-        return int(self.properties['hips_order'])
+        return int(self.data['hips_order'])
 
     @property
     def tile_format(self) -> str:
         """HiPS tile format (`str`)."""
-        return self.properties['hips_tile_format']
+        return self.data['hips_tile_format']
