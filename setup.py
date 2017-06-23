@@ -99,6 +99,7 @@ install_requires = [
     'astropy>=1.3',
     'healpy>=1.9',
     'scikit-image',
+    'Pillow',
 ]
 
 extras_require = dict(

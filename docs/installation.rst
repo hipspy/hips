@@ -20,12 +20,14 @@ The ``hips`` package has the following requirements:
 * Python 3.6 or later!
 * `Numpy`_ 1.11 or later
 * `Astropy`_ 1.2 or later
-* `Healpy`_ 1.9 or later OK. (Don't know for older versions.)
-* `scikit-image`_ 0.12 or later OK. (Don't know for older versions.)
+* `Healpy`_ 1.9 or later. (Older versions could work, but aren't tested.)
+* `scikit-image`_ 0.12 or later. (Older versions could work, but aren't tested.)
+* `Pillow`_ 4.0 or later. (Older versions could work, but aren't tested.)
+  Pillow is the friendly Python Imaging Library (``PIL``) fork, for JPEG and PNG tile I/O.
 
 In addition, the following packages are needed for optional functionality:
 
-* `Matplotlib`_ 2.0 or later
+* `Matplotlib`_ 2.0 or later. Used for plotting in examples.
 
 .. note::
 
