@@ -97,9 +97,6 @@ package_info['package_data'][PACKAGENAME].extend(c_files)
 install_requires = [
     'numpy>=1.11',
     'astropy>=1.3',
-    # No healpy package for 1.10 available yet, leading to this error:
-    # https://readthedocs.org/projects/hips/builds/5483435/
-    # So for now, only require 1.9
     'healpy>=1.9',
     'scikit-image',
 ]
@@ -112,7 +109,7 @@ extras_require = dict(
     develop=[
         'matplotlib>=2.0',
         'reproject>=0.3.1',
-        'pytest>=2.8',
+        'pytest>=3.0',
         'mypy>=0.501',
     ],
 )
