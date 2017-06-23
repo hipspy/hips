@@ -3,10 +3,6 @@ name: hips
 channels:
     - conda-forge
     - astropy
-    # added because it has healpy for Python 3.6:
-    # https://anaconda.org/OpenAstronomy/healpy
-    # which at this time the other channels don't have
-    - openastronomy
 
 dependencies:
     # TODO: change to Python 3.6 once it's supported:
@@ -14,8 +10,6 @@ dependencies:
     - python=3.5
     - numpy
     - astropy
-    # TODO: no Python 3.6 package for healpy available yet
-    # See https://readthedocs.org/projects/hips/builds/5476419/
     - healpy
     - reproject
     - matplotlib
