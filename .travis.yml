@@ -27,9 +27,9 @@ env:
         - MAIN_CMD='python setup.py'
         - SETUP_CMD='test'
         - EVENT_TYPE='pull_request push'
-        - CONDA_DEPENDENCIES='healpy scikit-image reproject matplotlib'
+        - CONDA_DEPENDENCIES='healpy scikit-image Pillow reproject matplotlib'
         - PIP_DEPENDENCIES=''
-        - CONDA_CHANNELS='conda-forge astropy-ci-extras astropy openastronomy'
+        - CONDA_CHANNELS='conda-forge astropy-ci-extras astropy'
         - SETUP_XVFB=True
         - DEBUG=True
         - ASTROPY_USE_SYSTEM_PYTEST=1
@@ -55,7 +55,7 @@ matrix:
         # Check that install / tests work with minimal required dependencies
         - os: linux
           env: SETUP_CMD='test'
-               CONDA_DEPENDENCIES='healpy scikit-image'
+               CONDA_DEPENDENCIES='healpy scikit-image Pillow'
 
         # Try MacOS X
         - os: osx

@@ -2,3 +2,4 @@
 .. _Numpy: https://www.numpy.org
 .. _Healpy: https://healpy.readthedocs.io
 .. _scikit-image: http://scikit-image.org
+.. _Pillow: https://python-pillow.org/
