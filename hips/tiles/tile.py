@@ -8,7 +8,7 @@ from astropy.io import fits
 from astropy.io.fits.header import Header
 
 from .tile_meta import HipsTileMeta
-import py._path.local
+
 __all__ = [
     'HipsTile',
 ]
@@ -73,18 +73,20 @@ class HipsTile:
             return cls(meta, data)
 
     @classmethod
-    def read(cls, meta: HipsTileMeta, tmpdir: py._path.local = None) -> 'HipsTile':
+    def read(cls, meta: HipsTileMeta, file_path: str = None) -> 'HipsTile':
         """Read HiPS tile data from a directory and load into memory (`HipsTile`).
 
         Parameters
         ----------
         meta : `HipsTileMeta`
             Metadata of HiPS tile
+        file_path : `str`
+            File path to store a HiPS tile
         """
-        if tmpdir == None:
-            path = meta.path / meta.filename
+        if file_path is None:
+            path = meta.path / meta.filename  # pragma: no cover
         else:
-            path = tmpdir / meta.filename
+            path = file_path
 
         if meta.file_format == 'fits':
             hdulist = fits.open(str(path))
@@ -95,18 +97,20 @@ class HipsTile:
             data = np.array(Image.open(str(path)))
             return cls(meta, data)
 
-    def write(self, filename: str, tmpdir: py._path.local = None) -> None:
+    def write(self, filename: str, file_path: str = None) -> None:
         """Write HiPS tile by a given filename.
 
         Parameters
         ----------
         filename : `str`
             Name of the file
+        file_path : `str`
+            File path to store a HiPS tile
         """
-        if tmpdir == None:
-            path = self.meta.path / self.meta.filename
+        if file_path is None:
+            path = self.meta.path / self.meta.filename  # pragma: no cover
         else:
-            path = tmpdir / self.meta.filename
+            path = file_path
 
         if self.meta.file_format == 'fits':
             hdu = fits.PrimaryHDU(self.data, header=self.header).writeto(str(path))

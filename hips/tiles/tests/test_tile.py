@@ -22,11 +22,11 @@ class TestHipsTile:
         assert jpg_tile.data.shape == (512, 512, 3)
         assert list(fits_tile.data[510][:12]) == data_precomp
 
-        jpg_tile.write('Npix30889.jpg', tmpdir)
-        fits_tile.write('Npix30889.fits', tmpdir)
+        jpg_tile.write('Npix30889.jpg', str(tmpdir / 'Npix30889.jpg'))
+        fits_tile.write('Npix30889.fits', str(tmpdir / 'Npix30889.fits'))
 
-        jpg_tile = HipsTile.read(self.hips_tile_meta_jpg, tmpdir)
-        fits_tile = HipsTile.read(self.hips_tile_meta_fits, tmpdir)
+        jpg_tile = HipsTile.read(self.hips_tile_meta_jpg, str(tmpdir / 'Npix30889.jpg'))
+        fits_tile = HipsTile.read(self.hips_tile_meta_fits, str(tmpdir / 'Npix30889.fits'))
 
         data_precomp = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
         assert fits_tile.data.shape == (512, 512)

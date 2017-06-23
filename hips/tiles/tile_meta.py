@@ -30,11 +30,11 @@ class HipsTileMeta:
         self.tile_width = tile_width
 
     @property
-    def path(self) -> str:
-        """Return the default path for tile storage (`str`)."""
+    def path(self) -> Path:  # pragma: no cover
+        """Return the default path for tile storage (`Path`)."""
         return Path('hips', 'tiles', 'tests', 'data')
 
     @property
-    def filename(self) -> str:
+    def filename(self) -> str:  # pragma: no cover
         """Return the filename of HiPS tile (`str`)."""
         return ''.join(['Npix', str(self.ipix), '.', self.file_format])
