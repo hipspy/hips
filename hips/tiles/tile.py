@@ -1,12 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from pathlib import Path
 import urllib.request
 from io import BytesIO
-
 import numpy as np
 from PIL import Image
 from astropy.io import fits
 from astropy.io.fits.header import Header
-
 from .tile_meta import HipsTileMeta
 
 __all__ = [
@@ -32,24 +31,33 @@ class HipsTile:
 
     Examples
     --------
-        >>> from hips.tiles import HipsTile
-        >>> from hips.tiles import HipsTileMeta
-        >>> meta = HipsTileMeta(order=6, ipix=30889, format='fits')
-        >>> hips_tile = HipsTile.read(meta)
-        >>> hips_tile.data
-        array([[0, 0, 0, ..., 0, 0, 0],
-               [0, 0, 0, ..., 0, 0, 0],
-               [0, 0, 0, ..., 0, 0, 0],
-               ...,
-               [0, 0, 0, ..., 1, 0, 0],
-               [0, 0, 0, ..., 1, 0, 1],
-               [0, 0, 0, ..., 1, 0, 1]], dtype=int16)
-        """
+    >>> from hips.tiles import HipsTile
+    >>> from hips.tiles import HipsTileMeta
+    >>> meta = HipsTileMeta(order=6, ipix=30889, file_format='fits')
+    >>> url = 'http://alasky.unistra.fr/2MASS/H/Norder6/Dir30000/Npix30889.fits'
+    >>> tile = HipsTile.fetch(meta, url)
+    >>> tile.data
+    array([[0, 0, 0, ..., 0, 0, 0],
+           [0, 0, 0, ..., 0, 0, 0],
+           [0, 0, 0, ..., 0, 0, 0],
+           ...,
+           [0, 0, 0, ..., 1, 0, 0],
+           [0, 0, 0, ..., 1, 0, 1],
+           [0, 0, 0, ..., 1, 0, 1]], dtype=int16)
+    """
 
     def __init__(self, meta: HipsTileMeta, data: np.ndarray = None, header: Header = None) -> None:
         self.meta = meta
         self.data = data
         self.header = header
+
+    def __eq__(self, other: 'HipsTile') -> bool:
+        return (
+            self.meta == other.meta and
+            (self.data == other.data).all()
+            # Note: we're not checking FITS header here,
+            # because it can change a bit on write / read.
+        )
 
     @classmethod
     def fetch(cls, meta: HipsTileMeta, url: str) -> 'HipsTile':
@@ -64,55 +72,50 @@ class HipsTile:
         """
         raw_image = BytesIO(urllib.request.urlopen(url).read())
         if meta.file_format == 'fits':
-            hdulist = fits.open(raw_image)
-            data = np.array(hdulist[0].data)
-            header = hdulist[0].header
+            hdu_list = fits.open(raw_image)
+            data = hdu_list[0].data
+            header = hdu_list[0].header
             return cls(meta, data, header)
         else:
             data = np.array(Image.open(raw_image))
             return cls(meta, data)
 
     @classmethod
-    def read(cls, meta: HipsTileMeta, file_path: str = None) -> 'HipsTile':
+    def read(cls, meta: HipsTileMeta, filename: str = None) -> 'HipsTile':
         """Read HiPS tile data from a directory and load into memory (`HipsTile`).
 
         Parameters
         ----------
         meta : `HipsTileMeta`
             Metadata of HiPS tile
-        file_path : `str`
+        filename : `str`
             File path to store a HiPS tile
         """
-        if file_path is None:
-            path = meta.path / meta.filename  # pragma: no cover
-        else:
-            path = file_path
+        path = Path(filename) if filename else meta.full_path
 
         if meta.file_format == 'fits':
-            hdulist = fits.open(str(path))
-            data = np.array(hdulist[0].data)
-            header = hdulist[0].header
+            hdu_list = fits.open(str(path))
+            data = hdu_list[0].data
+            header = hdu_list[0].header
             return cls(meta, data, header)
         else:
-            data = np.array(Image.open(str(path)))
+            image = Image.open(str(path))
+            data = np.array(image)
             return cls(meta, data)
 
-    def write(self, filename: str, file_path: str = None) -> None:
+    def write(self, filename: str = None) -> None:
         """Write HiPS tile by a given filename.
 
         Parameters
         ----------
         filename : `str`
             Name of the file
-        file_path : `str`
-            File path to store a HiPS tile
         """
-        if file_path is None:
-            path = self.meta.path / self.meta.filename  # pragma: no cover
-        else:
-            path = file_path
+        path = Path(filename) if filename else self.meta.full_path
 
         if self.meta.file_format == 'fits':
-            hdu = fits.PrimaryHDU(self.data, header=self.header).writeto(str(path))
+            hdu = fits.PrimaryHDU(self.data, header=self.header)
+            hdu.writeto(str(path))
         else:
-            Image.fromarray(self.data).save(str(path))
+            image = Image.fromarray(self.data)
+            image.save(str(path))
