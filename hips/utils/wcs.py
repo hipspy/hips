@@ -123,3 +123,8 @@ class WCSGeometry:
         w = WCS(w.to_header())
 
         return cls(w, shape)
+
+    @property
+    def fits_header(self):
+        """FITS header for the given WCS (`~astropy.io.fits.Header`)."""
+        return self.wcs.to_header()
