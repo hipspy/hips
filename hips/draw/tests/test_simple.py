@@ -35,7 +35,7 @@ def test_draw_sky_image():
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
 
-    assert data[100, 200] == 0
+    assert data[100, 200] == 42
 
 
 @pytest.mark.xfail
