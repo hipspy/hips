@@ -6,6 +6,13 @@
 Develop
 *******
 
+To run tests accessing files from `hips-extra <https://github.com/hipspy/hips-extra>`_
+repository, users must have it cloned on their system, otherwise some test cases
+will be skipped. This contains tiles from different HiPS surveys which are used
+by the drawing module. After this, the ``HIPS_EXTRA`` environment variable must
+be set up on their system. On UNIX operating systems, this can be set using
+``export HIPS_EXTRA=path/to/hips-extra``.
+
 Want to contribute to the ``hips`` package?
 
 Great! Talk to us by filing a Github issue any time
