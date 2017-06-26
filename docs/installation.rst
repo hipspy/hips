@@ -80,6 +80,10 @@ To check if there are any issues with your installation, you can run the tests:
 
     python -c 'import hips; hips.test()'
 
+.. note::
+
+    For more information, see the :ref:`develop` page.
+
 Development version
 ===================
 
