@@ -1,11 +1,14 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from pathlib import Path
 import urllib.request
 from io import BytesIO
+from pathlib import Path
+
 import numpy as np
 from PIL import Image
 from astropy.io import fits
 from astropy.io.fits.header import Header
+from astropy.wcs import WCS
+
 from .tile_meta import HipsTileMeta
 
 __all__ = [
@@ -119,3 +122,7 @@ class HipsTile:
         else:
             image = Image.fromarray(self.data)
             image.save(str(path))
+
+    @property
+    def wcs(self):
+        return WCS(self.header)

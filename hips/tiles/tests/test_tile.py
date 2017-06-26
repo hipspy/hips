@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from numpy.testing import assert_equal
 from astropy.tests.helper import remote_data
+from numpy.testing import assert_equal
+
 from ..tile import HipsTile
 from ..tile_meta import HipsTileMeta
 
@@ -22,7 +23,7 @@ class TestHipsTile:
         assert tile == tile2
 
     @remote_data
-    def test_fetch_read_write_fits(self, tmpdir):
+    def test_fetch_read_write_jpg(self, tmpdir):
         meta = HipsTileMeta(order=6, ipix=30889, file_format='jpg')
         url = 'http://alasky.unistra.fr/2MASS/H/Norder6/Dir30000/Npix30889.jpg'
         tile = HipsTile.fetch(meta, url)
@@ -33,6 +34,8 @@ class TestHipsTile:
         filename = str(tmpdir / 'Npix30889.jpg')
         tile.write(filename)
         tile2 = HipsTile.read(meta, filename=filename)
+
+        assert list(tile.wcs.wcs.cdelt) == [1., 1.]
 
         # The following assert fails, because on JPEG write / read
         # the data is different (for unknown reasons).
