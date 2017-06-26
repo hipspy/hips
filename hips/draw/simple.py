@@ -1,9 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
-from typing import List
 import numpy as np
+import healpy as hp
+from typing import List
+from skimage import transform as tf
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
-from ..utils import WCSGeometry, compute_healpix_pixel_indices
+from ..utils import WCSGeometry, compute_healpix_pixel_indices, boundaries
 
 __all__ = [
     'draw_sky_image',
@@ -22,8 +24,14 @@ def draw_sky_image(geometry: WCSGeometry, tiles: List[HipsTile]) -> np.ndarray:
 
     # Probably this function should just loop over tiles and call a `_draw_sky_image_one_tile`
     # helper function, and sum up the results.
+    for tile in HipsTile:
+        nside = hp.order2nside(tile.meta.order)
+        corners = boundaries(nside, tile.meta.ipix)
+        # tile.meta.
 
     return np.zeros(geometry.shape)
+
+def _draw_sky_image_one_tile(corners: tuple, tile: HipsTile) -> np.ndarray:
 
 
 def _fetch_tiles(healpix_pixel_indices, order, hips_survey):
