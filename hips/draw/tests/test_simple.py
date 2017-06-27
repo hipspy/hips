@@ -34,7 +34,7 @@ def test_draw_sky_image():
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
 
-    assert data[0, 0] == 0.060903854985925092
+    assert data[0, 0] == 0.0
 
 
 @remote_data
@@ -47,5 +47,4 @@ def test_make_sky_image():
 
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
-
-    assert data[0, 0] == 0.060903854985925092
+    assert data[800, 1000] == 1794.7673494847763
