@@ -2,10 +2,12 @@
 
 Not of use for users / outside this package.
 """
-import pytest
 import os
 from pathlib import Path
+
+import pytest
 from astropy.coordinates import SkyCoord
+
 from .wcs import WCSGeometry
 
 
@@ -50,4 +52,4 @@ def make_test_wcs_geometry(case=0):
             projection='AIT', cdelt=0.01, crpix=(1000, 500),
         )
     else:
-        raise ValueError()
+        raise ValueError()  # pragma: no cover
