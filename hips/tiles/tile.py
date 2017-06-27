@@ -95,7 +95,7 @@ class HipsTile:
 
         if meta.file_format == 'fits':
             hdu_list = fits.open(str(path))
-            data = hdu_list[0].data
+            data = hdu_list[0].data.astype('float')
             header = hdu_list[0].header
             return cls(meta, data, header)
         else:
