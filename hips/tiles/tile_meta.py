@@ -1,6 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from pathlib import Path
+
 import healpy as hp
+import numpy as np
 
 __all__ = [
     'HipsTileMeta',
@@ -55,3 +57,8 @@ class HipsTileMeta:
     def nside(self):
         """Return the nside of the HEALPix map"""
         return hp.order2nside(self.order)
+
+    @property
+    def dst(self):
+        return np.array(
+            [[self.tile_width - 1, 0], [self.tile_width - 1, self.tile_width - 1], [0, self.tile_width - 1], [0, 0]])
