@@ -3,10 +3,8 @@
 import os
 from pathlib import Path
 
-import healpy as hp
 import numpy as np
 from astropy.coordinates import SkyCoord
-from astropy.wcs import WCS
 from skimage import transform as tf
 from typing import List
 
@@ -66,19 +64,14 @@ class SimpleTilePainter:
 
     def compute_corners(self) -> None:
         theta, phi = boundaries(self.tile.meta.nside, self.tile.meta.ipix)
-        self.corners = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame='icrs')
-        self.test_corners = []
-        for i in range(len(self.corners.ra.deg)):
-            self.test_corners.append([self.corners.ra.deg[i], self.corners.dec.deg[i]])
+        radec = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame='icrs')
+        self.corners = []
+        for i in range(len(radec.ra.deg)):
+            self.corners.append([radec.ra.deg[i], radec.dec.deg[i]])
 
     def compute_projection(self) -> None:
-        # print(self.corners.to_pixel(self.geometry.wcs))
-        # src = self.geometry.wcs.wcs_world2pix(self.corners.to_pixel(self.geometry.wcs), 0)
-        src = np.array(self.corners.to_pixel(self.geometry.wcs))
-        print('Corners: ', self.test_corners)
-        print('Source: ', src)
-        print(self.geometry.wcs.wcs_world2pix(self.corners.to_pixel(self.geometry.wcs), 0))
-        dst = np.array([[511, 0], [511, 511], [0, 511], [0, 0]])
+        src = self.geometry.wcs.wcs_world2pix(self.corners, 0)
+        dst = self.tile.meta.dst
         self.pt = tf.ProjectiveTransform()
         self.pt.estimate(src, dst)
 
@@ -142,6 +135,7 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     >>> hdu.writeto('my_image.fits')
     """
     healpix_pixel_indices = compute_healpix_pixel_indices(geometry, hips_survey.hips_order)
+    """TODO: Take user input for HiPS survey"""
     path = Path(os.environ['HIPS_EXTRA'])
     tiles_path = path / 'datasets' / 'samples' / 'DSS2Red' / 'Norder3' / 'Dir0'
 

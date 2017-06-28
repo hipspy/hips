@@ -4,10 +4,10 @@
 This module contains wrapper functions around HEALPix utilizing
 the healpy library.
 """
-from typing import Tuple
+import healpy as hp
 import numpy as np
 from astropy.coordinates import SkyCoord
-import healpy as hp
+from typing import Tuple
 
 from .wcs import WCSGeometry
 
