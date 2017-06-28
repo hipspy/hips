@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from pathlib import Path
+import healpy as hp
 
 __all__ = [
     'HipsTileMeta',
@@ -49,3 +50,8 @@ class HipsTileMeta:
     def full_path(self) -> Path:
         """Full path (folder and filename) (`~pathlib.Path`)"""
         return self.path / self.filename
+
+    @property
+    def nside(self):
+        """Return the nside of the HEALPix map"""
+        return hp.order2nside(self.order)

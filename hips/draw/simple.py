@@ -16,6 +16,7 @@ from ..utils import WCSGeometry, compute_healpix_pixel_indices, boundaries
 __all__ = [
     'draw_sky_image',
     'make_sky_image',
+    'SimpleTilePainter'
 ]
 
 
@@ -24,7 +25,7 @@ def draw_sky_image(geometry: WCSGeometry, tiles: List[HipsTile]) -> np.ndarray:
 
     Parameters
     ----------
-    geometry : 'WCSGeometry'
+    geometry : `~hips.utils.WCSGeometry`
         An object of WCSGeometry
     tiles : List[HipsTile]
         A list of HipsTile
@@ -36,23 +37,23 @@ def draw_sky_image(geometry: WCSGeometry, tiles: List[HipsTile]) -> np.ndarray:
     """
     all_sky = np.zeros(geometry.shape)
     for tile in tiles:
-        draw_tile = DrawSkyImageOneTile(geometry, tile, all_sky.shape)
+        draw_tile = SimpleTilePainter(geometry, tile, all_sky.shape)
         draw_tile.compute_corners()
-        draw_tile.apply_projection()
+        draw_tile.compute_projection()
         all_sky += draw_tile.warp_image()
     return all_sky
 
 
-class DrawSkyImageOneTile:
-    """A private function for drawing a tile over a sky image.
+class SimpleTilePainter:
+    """A class which iteratively draws a tile following the naive algorithm steps mentioned `here <https://hips.readthedocs.io/en/latest/drawing_algo.html#naive-algorithm>`_.
 
     Parameters
     ----------
-    geometry : 'WCSGeometry'
+    geometry : `~hips.utils.WCSGeometry`
         An object of WCSGeometry
     tile : HipsTile
        An object of HipsTile
-    shape ; tuple
+    shape : tuple
         Shape of the all-sky image
     """
 
@@ -60,20 +61,23 @@ class DrawSkyImageOneTile:
         self.geometry = geometry
         self.tile = tile
         self.shape = shape
-        self.wcs = WCS(tile.header)
         self.corners = None
         self.pt = None
 
     def compute_corners(self) -> None:
-        nside = hp.order2nside(self.tile.meta.order)
-        theta, phi = boundaries(nside, self.tile.meta.ipix)
-        radec = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame='icrs')
-        self.corners = []
-        for i in range(len(radec.ra.deg)):
-            self.corners.append([radec.ra.deg[i], radec.dec.deg[i]])
+        theta, phi = boundaries(self.tile.meta.nside, self.tile.meta.ipix)
+        self.corners = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame='icrs')
+        self.test_corners = []
+        for i in range(len(self.corners.ra.deg)):
+            self.test_corners.append([self.corners.ra.deg[i], self.corners.dec.deg[i]])
 
-    def apply_projection(self) -> None:
-        src = self.geometry.wcs.wcs_world2pix(self.corners, 0)
+    def compute_projection(self) -> None:
+        # print(self.corners.to_pixel(self.geometry.wcs))
+        # src = self.geometry.wcs.wcs_world2pix(self.corners.to_pixel(self.geometry.wcs), 0)
+        src = np.array(self.corners.to_pixel(self.geometry.wcs))
+        print('Corners: ', self.test_corners)
+        print('Source: ', src)
+        print(self.geometry.wcs.wcs_world2pix(self.corners.to_pixel(self.geometry.wcs), 0))
         dst = np.array([[511, 0], [511, 511], [0, 511], [0, 0]])
         self.pt = tf.ProjectiveTransform()
         self.pt.estimate(src, dst)
