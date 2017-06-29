@@ -49,7 +49,7 @@ class SimpleTilePainter:
     ----------
     geometry : `~hips.utils.WCSGeometry`
         An object of WCSGeometry
-    tile : HipsTile
+    tile : `HipsTile`
        An object of HipsTile
     shape : tuple
         Shape of the all-sky image
@@ -65,12 +65,10 @@ class SimpleTilePainter:
     def compute_corners(self) -> None:
         theta, phi = boundaries(self.tile.meta.nside, self.tile.meta.ipix)
         radec = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame='icrs')
-        self.corners = []
-        for i in range(len(radec.ra.deg)):
-            self.corners.append([radec.ra.deg[i], radec.dec.deg[i]])
+        self.corners = radec.to_pixel(self.geometry.wcs)
 
     def compute_projection(self) -> None:
-        src = self.geometry.wcs.wcs_world2pix(self.corners, 0)
+        src = np.array(self.corners).T.reshape((4, 2))
         dst = self.tile.meta.dst
         self.pt = tf.ProjectiveTransform()
         self.pt.estimate(src, dst)
