@@ -3,6 +3,9 @@ from pathlib import Path
 
 import healpy as hp
 import numpy as np
+from astropy.coordinates import SkyCoord
+
+from ..utils import boundaries
 
 __all__ = [
     'HipsTileMeta',
@@ -22,12 +25,22 @@ class HipsTileMeta:
         File format
     tile_width : `int`
         Tile width (in pixels)
+
+    Examples
+    --------
+    >>> from hips.tiles import HipsTileMeta
+    >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='galactic', tile_width=512)
+    >>> tile_meta.skycoord_corners
+    <SkyCoord (Galactic): (l, b) in deg
+    [( 264.375, -24.62431835), ( 258.75 , -30.        ),
+     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
 
-    def __init__(self, order: int, ipix: int, file_format: str, tile_width: int = 512) -> None:
+    def __init__(self, order: int, ipix: int, file_format: str, frame='galactic', tile_width: int = 512) -> None:
         self.order = order
         self.ipix = ipix
         self.file_format = file_format
+        self.frame = frame
         self.tile_width = tile_width
 
     def __eq__(self, other: 'HipsTileMeta') -> bool:
@@ -60,5 +73,18 @@ class HipsTileMeta:
 
     @property
     def dst(self):
+        """Return destination array for projective transform"""
         return np.array(
-            [[self.tile_width - 1, 0], [self.tile_width - 1, self.tile_width - 1], [0, self.tile_width - 1], [0, 0]])
+            [[self.tile_width - 1, 0],
+             [self.tile_width - 1, self.tile_width - 1],
+             [0, self.tile_width - 1],
+             [0, 0]])
+
+    @property
+    def skycoord_corners(self):
+        """Return corner values for a HiPS tile"""
+        theta, phi = boundaries(self.nside, self.ipix)
+        if self.frame == 'galactic':
+            return SkyCoord(l=phi, b=np.pi / 2 - theta, unit='radian', frame=self.frame)
+        else:
+            return SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame=self.frame)
