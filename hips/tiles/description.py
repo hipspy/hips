@@ -108,3 +108,8 @@ class HipsSurveyProperties:
     def tile_format(self) -> str:
         """HiPS tile format (`str`)."""
         return self.data['hips_tile_format']
+
+    @property
+    def access_url(self):
+        """HiPS access url"""
+        return self.data['moc_access_url'].rsplit('/', 1)[0]
