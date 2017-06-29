@@ -26,3 +26,6 @@ class TestHipsSurveyProperties:
 
     def test_tile_format(self):
         assert self.hips_survey_property.tile_format == 'jpeg'
+
+    def test_access_url(self):
+        assert self.hips_survey_property.access_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
