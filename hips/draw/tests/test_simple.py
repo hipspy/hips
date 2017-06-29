@@ -1,6 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-import pytest
 import numpy as np
+import pytest
 from astropy.utils.data import get_pkg_data_filename
 from numpy.testing import assert_allclose
 
@@ -63,7 +63,9 @@ class TestSimpleTilePainter:
         )
         cls.simple_tile_painter = SimpleTilePainter(geometry, tile)
 
-    def test_compute_corners(self):
-        self.simple_tile_painter.compute_corners()
-        assert_allclose(self.simple_tile_painter.corners[0], [728.54880122, 1453.32078085, 1662.33429379, 931.69072155])
-        assert_allclose(self.simple_tile_painter.corners[1], [880.33972146, 997.1604671, 288.00518917, 175.4190427])
+    def test_warp_image(self):
+        self.simple_tile_painter.warp_image()
+        assert_allclose(self.simple_tile_painter.tile.meta.skycoord_corners.ra.deg,
+                        [264.375, 258.75, 264.375, 270.])
+        assert_allclose(self.simple_tile_painter.tile.meta.skycoord_corners.dec.deg,
+                        [-24.624318, -30., -35.685335, -30.])

@@ -34,8 +34,6 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) 
     all_sky = np.zeros(geometry.shape)
     for tile in tiles:
         draw_tile = SimpleTilePainter(geometry, tile)
-        draw_tile.compute_corners()
-        draw_tile.compute_projection()
         all_sky += draw_tile.warp_image()
     return all_sky
 
@@ -56,20 +54,11 @@ class SimpleTilePainter:
     def __init__(self, geometry: WCSGeometry, tile: HipsTile) -> None:
         self.geometry = geometry
         self.tile = tile
-        self.corners = None
-        self.pt = None
-
-    def compute_corners(self):
-        self.corners = self.tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
-
-    def compute_projection(self) -> None:
-        src = np.array(self.corners).T.reshape((4, 2))
-        dst = self.tile.meta.dst
-        self.pt = tf.ProjectiveTransform()
-        self.pt.estimate(src, dst)
 
     def warp_image(self) -> np.ndarray:
-        return tf.warp(self.tile.data.astype('float'), self.pt, output_shape=self.geometry.shape)
+        """Warp a HiPS tile and a sky image"""
+        pt = self.tile.meta.apply_projection(self.geometry.wcs)
+        return tf.warp(self.tile.data.astype('float'), pt, output_shape=self.geometry.shape)
 
 
 def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
@@ -89,7 +78,7 @@ def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hip
     'HipsTile'
         Returns an object of  HipsTile
     """
-    base_url = hips_survey.data['moc_access_url'].rsplit('/', 1)[0] + '/Norder' + str(hips_survey.hips_order) + '/Dir0/'
+    base_url = hips_survey.access_url + '/Norder' + str(hips_survey.hips_order) + '/Dir0/'
     for healpix_pixel_index in healpix_pixel_indices:
         tile_meta = HipsTileMeta(order=order, ipix=healpix_pixel_index, file_format='fits')
         tile = HipsTile.fetch(tile_meta, base_url + tile_meta.filename)
@@ -98,6 +87,8 @@ def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hip
 
 def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> np.ndarray:
     """Make sky image: fetch tiles and draw.
+
+    The example for this can be found on the :ref:`gs` page.
 
     Parameters
     ----------
@@ -110,23 +101,6 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     -------
     data : `~numpy.ndarray`
         Output image pixels
-
-    Examples
-    --------
-    >>> from astropy.io import fits
-    >>> from hips.utils import WCSGeometry
-    >>> from hips.draw import make_sky_image
-    >>> from hips.tiles import HipsSurveyProperties
-    >>> geometry = WCSGeometry.create(
-    ...     skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
-    ...     shape=(1000, 2000), coordsys='GAL',
-    ...     projection='AIT', cdelt=0.01, crpix=(1000, 500),
-    ... )
-    >>> url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/DSS2Red/properties'
-    >>> hips_survey = HipsSurveyProperties.fetch(url)
-    >>> data = make_sky_image(geometry, hips_survey)
-    >>> hdu = fits.PrimaryHDU(data=data)
-    >>> hdu.writeto('my_image.fits')
     """
     healpix_pixel_indices = compute_healpix_pixel_indices(geometry, hips_survey.hips_order)
     # TODO: this isn't a good API. Will become better when we have a cache.
