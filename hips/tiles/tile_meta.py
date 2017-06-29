@@ -4,6 +4,8 @@ from pathlib import Path
 import healpy as hp
 import numpy as np
 from astropy.coordinates import SkyCoord
+from astropy.wcs import WCS
+from skimage import transform as tf
 
 from ..utils import boundaries
 
@@ -53,12 +55,12 @@ class HipsTileMeta:
 
     @property
     def path(self) -> Path:
-        """Return the default path for tile storage (`~pathlib.Path`)."""
+        """Default path for tile storage (`~pathlib.Path`)."""
         return Path('hips', 'tiles', 'tests', 'data')
 
     @property
     def filename(self) -> str:
-        """Return the filename of HiPS tile (`str`)."""
+        """Filename for HiPS tile (`str`)."""
         return ''.join(['Npix', str(self.ipix), '.', self.file_format])
 
     @property
@@ -67,13 +69,13 @@ class HipsTileMeta:
         return self.path / self.filename
 
     @property
-    def nside(self):
-        """Return the nside of the HEALPix map"""
+    def nside(self) -> int:
+        """nside of the HEALPix map"""
         return hp.order2nside(self.order)
 
     @property
-    def dst(self):
-        """Return destination array for projective transform"""
+    def dst(self) -> np.ndarray:
+        """Destination array for projective transform"""
         return np.array(
             [[self.tile_width - 1, 0],
              [self.tile_width - 1, self.tile_width - 1],
@@ -81,10 +83,19 @@ class HipsTileMeta:
              [0, 0]])
 
     @property
-    def skycoord_corners(self):
-        """Return corner values for a HiPS tile"""
+    def skycoord_corners(self) -> SkyCoord:
+        """Corner values for a HiPS tile"""
         theta, phi = boundaries(self.nside, self.ipix)
         if self.frame == 'galactic':
             return SkyCoord(l=phi, b=np.pi / 2 - theta, unit='radian', frame=self.frame)
         else:
             return SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame=self.frame)
+
+    def apply_projection(self, wcs: WCS) -> tf.ProjectiveTransform:
+        """Apply projective transformation on a HiPS tile"""
+        corners = self.skycoord_corners.to_pixel(wcs)
+        src = np.array(corners).T.reshape((4, 2))
+        dst = self.dst
+        pt = tf.ProjectiveTransform()
+        pt.estimate(src, dst)
+        return pt
