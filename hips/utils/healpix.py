@@ -77,7 +77,7 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int) -> np.n
 
     Parameters
     ----------
-    wcs_geometry : WCSGeometry
+    wcs_geometry : `WCSGeometry`
         Container for WCS object and image shape
     order : int
         The order of the HEALPix
