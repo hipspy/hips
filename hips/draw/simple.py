@@ -1,15 +1,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
-import os
-from pathlib import Path
 
 import numpy as np
 from astropy.coordinates import SkyCoord
 from skimage import transform as tf
-from typing import List
+from typing import List, Generator, Any
 
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
-from ..utils import WCSGeometry, compute_healpix_pixel_indices, boundaries
+from ..utils import WCSGeometry, compute_healpix_pixel_indices
 
 __all__ = [
     'draw_sky_image',
@@ -18,7 +16,7 @@ __all__ = [
 ]
 
 
-def draw_sky_image(geometry: WCSGeometry, tiles: List[HipsTile]) -> np.ndarray:
+def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) -> np.ndarray:
     """Draw sky image using the simple and quick method.
 
     Parameters
@@ -35,7 +33,7 @@ def draw_sky_image(geometry: WCSGeometry, tiles: List[HipsTile]) -> np.ndarray:
     """
     all_sky = np.zeros(geometry.shape)
     for tile in tiles:
-        draw_tile = SimpleTilePainter(geometry, tile, all_sky.shape)
+        draw_tile = SimpleTilePainter(geometry, tile)
         draw_tile.compute_corners()
         draw_tile.compute_projection()
         all_sky += draw_tile.warp_image()
@@ -43,7 +41,9 @@ def draw_sky_image(geometry: WCSGeometry, tiles: List[HipsTile]) -> np.ndarray:
 
 
 class SimpleTilePainter:
-    """A class which iteratively draws a tile following the naive algorithm steps mentioned `here <https://hips.readthedocs.io/en/latest/drawing_algo.html#naive-algorithm>`_.
+    """Paint a single tile using a simple projective transformation method.
+
+    The algorithm implemented is described here: :ref:`drawing_algo`.
 
     Parameters
     ----------
@@ -51,21 +51,16 @@ class SimpleTilePainter:
         An object of WCSGeometry
     tile : `HipsTile`
        An object of HipsTile
-    shape : tuple
-        Shape of the all-sky image
     """
 
-    def __init__(self, geometry: WCSGeometry, tile: HipsTile, shape: tuple) -> None:
+    def __init__(self, geometry: WCSGeometry, tile: HipsTile) -> None:
         self.geometry = geometry
         self.tile = tile
-        self.shape = shape
         self.corners = None
         self.pt = None
 
-    def compute_corners(self) -> None:
-        theta, phi = boundaries(self.tile.meta.nside, self.tile.meta.ipix)
-        radec = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame='icrs')
-        self.corners = radec.to_pixel(self.geometry.wcs)
+    def compute_corners(self):
+        self.corners = self.tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
 
     def compute_projection(self) -> None:
         src = np.array(self.corners).T.reshape((4, 2))
@@ -74,7 +69,7 @@ class SimpleTilePainter:
         self.pt.estimate(src, dst)
 
     def warp_image(self) -> np.ndarray:
-        return tf.warp(self.tile.data, self.pt, output_shape=self.shape)
+        return tf.warp(self.tile.data.astype('float'), self.pt, output_shape=self.geometry.shape)
 
 
 def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
@@ -94,9 +89,10 @@ def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hip
     'HipsTile'
         Returns an object of  HipsTile
     """
+    base_url = hips_survey.data['moc_access_url'].rsplit('/', 1)[0] + '/Norder3/Dir0/'
     for healpix_pixel_index in healpix_pixel_indices:
         tile_meta = HipsTileMeta(order=order, ipix=healpix_pixel_index, file_format='fits')
-        tile = HipsTile.fetch(tile_meta, hips_survey.base_url)
+        tile = HipsTile.fetch(tile_meta, base_url + tile_meta.filename)
         yield tile
 
 
@@ -129,23 +125,12 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     >>> url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/DSS2Red/properties'
     >>> hips_survey = HipsSurveyProperties.fetch(url)
     >>> data = make_sky_image(geometry, hips_survey)
-    >>> hdu = fits.PrimaryHDU(data=data, header=geometry.header)
+    >>> hdu = fits.PrimaryHDU(data=data)
     >>> hdu.writeto('my_image.fits')
     """
     healpix_pixel_indices = compute_healpix_pixel_indices(geometry, hips_survey.hips_order)
-    """TODO: Take user input for HiPS survey"""
-    path = Path(os.environ['HIPS_EXTRA'])
-    tiles_path = path / 'datasets' / 'samples' / 'DSS2Red' / 'Norder3' / 'Dir0'
-
-    tiles = []
-    for pixel_index in healpix_pixel_indices:
-        meta = HipsTileMeta(hips_survey.hips_order, pixel_index, 'fits')
-        filepath = str(tiles_path / meta.filename)
-        tiles.append(HipsTile.read(meta, filepath))
-
-    # Fetch the tiles
     # TODO: this isn't a good API. Will become better when we have a cache.
-    # tiles = _fetch_tiles(healpix_pixel_indices, order, hips_survey)
+    tiles = _fetch_tiles(healpix_pixel_indices, hips_survey.hips_order, hips_survey)
 
     image_data = draw_sky_image(geometry, tiles)
 

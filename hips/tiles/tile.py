@@ -95,7 +95,8 @@ class HipsTile:
 
         if meta.file_format == 'fits':
             hdu_list = fits.open(str(path))
-            data = hdu_list[0].data.astype('float')
+            # This converts a big-endian byte integer to a float
+            data = hdu_list[0].data
             header = hdu_list[0].header
             return cls(meta, data, header)
         else:
