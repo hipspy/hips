@@ -102,13 +102,13 @@ class WCSGeometry:
         w = WCS(naxis=2)
 
         if coordsys == 'CEL':
-            w.wcs.ctype[0] = 'RA---{}'.format(projection)
-            w.wcs.ctype[1] = 'DEC--{}'.format(projection)
+            w.wcs.ctype[0] = f'RA---{projection}'
+            w.wcs.ctype[1] = f'DEC--{projection}'
             w.wcs.crval[0] = skydir.icrs.ra.deg
             w.wcs.crval[1] = skydir.icrs.dec.deg
         elif coordsys == 'GAL':
-            w.wcs.ctype[0] = 'GLON-{}'.format(projection)
-            w.wcs.ctype[1] = 'GLAT-{}'.format(projection)
+            w.wcs.ctype[0] = f'GLON-{projection}'
+            w.wcs.ctype[1] = f'GLAT-{projection}'
             w.wcs.crval[0] = skydir.galactic.l.deg
             w.wcs.crval[1] = skydir.galactic.b.deg
         else:
