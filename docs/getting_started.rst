@@ -11,6 +11,7 @@ It fetches a HiPS tile from a remote URL and draws it on a sky image.
 Then it saves it on local disk in FITS file format.
 
 >>> from astropy.io import fits
+>>> from astropy.coordinates import SkyCoord
 >>> from astropy.tests.helper import remote_data
 >>> from hips.utils import WCSGeometry
 >>> from hips.draw import make_sky_image
