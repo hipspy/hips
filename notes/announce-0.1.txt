@@ -1,0 +1,85 @@
+Title: A new Python astronomy package for HiPS : Hierarchical Progressive Surveys
+
+
+Hi everyone,
+
+it is our pleasure to announce the release of version 0.1 of a new package:
+
+    hips - A Python astronomy package for HiPS : Hierarchical Progressive Surveys
+
+* Docs: http://hips.readthedocs.io
+* Code: https://github.com/hipspy/hips
+
+If you don't know what HiPS is, have a look at the HiPS page at CDS or the HiPS paper:
+
+* http://aladin.u-strasbg.fr/hips/
+* https://www.aanda.org/articles/aa/pdf/2015/06/aa26075-15.pdf
+
+At the moment, the Python hips package supports fetching and drawing HiPS image tiles
+into a sky image of a geometry (a WCS projection and shape) of your choosing.
+
+There are (at least) already two existing HiPS clients:
+Aladin Desktop (Java) and Aladin Lite (JavaScript).
+Those are great, so why build this Python package?
+
+The Python HiPS package can be useful if you want to continue to analyse or store the pixel data,
+and not just display it, or if you want to script the generation of many sky images from Python.
+
+---
+
+Install this package as usual:
+
+    pip install hips
+
+This should work on Linux and Mac, with the latest Python 3.6.
+
+Windows is not supported at the moment
+(because we use healpy as a dependency, and healpy isn't supported on Windows)
+
+As a new package, we decided to take the leap and make this Python 3 only,
+and use the latest features in Python 3.6. If you would like to use this package,
+but can't upgrade to Python 3.6, we could add support for Python 3.5.
+
+---
+
+This package is being developed as part of Google Summer of Code 2017 program
+by Adeel Ahmad, with Thomas Boch (CDS, Strasbourg) and Christoph Deil (MPIK, Heidelberg) as mentors.
+We would like to thank Google, CDS, MPIK for their support!
+
+If you're interested, you should follow Adeel's blog: https://adl1995.github.io/
+
+Also: thanks to the Astropy team for developing and maintaining the
+affiliated package-template and the ci-helpers! The recently introduced cookie-cutter
+makes it even quicker to set up a new package like this one in a good, maintainable way.
+
+This version 0.1 release is following the "release early and often" philosophy.
+The hips package is in a very early stage of development, it is not feature complete or API stable!
+The plan is to produce a better version (in terms of functionality, API, performance, docs)
+by the end end of GSoC in August. There's also a plan to start a separate repo developing
+a Jupyter widget for Aladin Lite (complementary, separate from GSoC and this project).
+
+We're looking for feedback, please try it out and let us know what you think!
+
+Specifically, we're interested to hear at https://github.com/hipspy/hips/issues from you if:
+* something doesn't work,
+* there's a missing feature that you want,
+* you have suggestions how to improve the API.
+
+We're also looking for contributors!
+
+Specifically, help on the following tasks would be highly welcome:
+* Make and maybe even maintain a conda package for us, preferably at conda-forge.
+* Replace the use of healpy with code (e.g. continuing https://github.com/cdeil/healpix
+  or starting something new), which we have isolated in a small wrapper layer at hips.utils.healpix already.
+  This is mainly so that this package becomes available on Windows.
+  We think this package could be useful for hobby astronomers or education, to have a ton
+  of astronomy survey data ready for fetching and analysis with astronomy Python packages
+  at your fingertips, so Windows support would be nice.
+* Extend the functionalities of the package beyond a HiPS image client:
+  work with HiPS catalogs, HiPS cubes or go the other way: generate HiPS data from WCS or HEALPix data.
+* Things you'd like to do with HiPS, but we haven't even thought of yet!
+
+If you're interested or have feedback for us, please get in touch via a Github issue or pull request.
+
+Cheers,
+Adeel, Thomas and Christoph
