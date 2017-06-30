@@ -113,3 +113,7 @@ class HipsSurveyProperties:
     def access_url(self):
         """HiPS access url"""
         return self.data['moc_access_url'].rsplit('/', 1)[0]
+
+    @property
+    def tile_access_url(self):
+        return self.access_url + '/Norder' + str(self.hips_order) + '/Dir0/'

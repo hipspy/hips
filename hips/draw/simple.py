@@ -87,11 +87,10 @@ def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hip
     'HipsTile'
         Returns an object of  HipsTile
     """
-    base_url = hips_survey.access_url + '/Norder' + str(hips_survey.hips_order) + '/Dir0/'
     for healpix_pixel_index in healpix_pixel_indices:
         tile_meta = HipsTileMeta(order=order, ipix=healpix_pixel_index,
                                  frame=frames()[hips_survey.hips_frame], file_format='fits')
-        tile = HipsTile.fetch(tile_meta, base_url + tile_meta.filename)
+        tile = HipsTile.fetch(tile_meta, hips_survey.tile_access_url + tile_meta.filename)
         yield tile
 
 
