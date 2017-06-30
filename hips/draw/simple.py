@@ -33,8 +33,8 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) 
     # TODO: Fix type annotation issue
     sky_sky = np.zeros(geometry.shape)
     for tile in tiles:
-        draw_tile = SimpleTilePainter(geometry, tile)
-        sky_sky += draw_tile.warp_image()
+        painter = SimpleTilePainter(geometry, tile)
+        sky_sky += painter.warp_image()
     return sky_sky
 
 
