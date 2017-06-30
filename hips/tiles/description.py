@@ -24,6 +24,12 @@ class HipsSurveyProperties:
     >>> hips_survey_property.base_url
     'http://alasky.u-strasbg.fr/DSS/DSSColor'
     """
+    hips_to_astropy_frame_mapping = OrderedDict([
+        ('equatorial', 'icrs'),
+        ('galactic', 'galactic'),
+        ('ecliptic', 'ecliptic'),
+    ])
+    """HIPS to Astropy SkyCoord frame string mapping."""
 
     def __init__(self, data: OrderedDict) -> None:
         self.data = data
@@ -100,6 +106,11 @@ class HipsSurveyProperties:
         return self.data['hips_frame']
 
     @property
+    def astropy_frame(self) -> str:
+        """Astropy coordinate frame (`str`)."""
+        return self.hips_to_astropy_frame_mapping[self.hips_frame]
+
+    @property
     def hips_order(self) -> int:
         """HiPS order (`int`)."""
         return int(self.data['hips_order'])
@@ -108,3 +119,13 @@ class HipsSurveyProperties:
     def tile_format(self) -> str:
         """HiPS tile format (`str`)."""
         return self.data['hips_tile_format']
+
+    @property
+    def access_url(self):
+        """HiPS access url"""
+        return self.data['moc_access_url'].rsplit('/', 1)[0]
+
+    @property
+    def tile_access_url(self):
+        """Tile access URL for a HiPS surveys"""
+        return self.access_url + '/Norder' + str(self.hips_order) + '/Dir0/'

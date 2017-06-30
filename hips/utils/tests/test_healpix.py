@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 from astropy.coordinates import SkyCoord
@@ -21,8 +22,14 @@ def test_boundaries():
     assert_allclose(radec.dec.deg, [-24.624318, -30., -35.685335, -30.])
 
 
-def test_compute_healpix_pixel_indices():
-    wcs_geometry = make_test_wcs_geometry(case=1)
-    nside = hp.order2nside(order=3)
-    pixels = compute_healpix_pixel_indices(wcs_geometry, nside)
-    assert_allclose(pixels, [176, 207, 208, 239, 240, 271, 272])
+compute_healpix_pixel_indices_pars = [
+    dict(frame=None, ipix=[269, 270, 271, 282, 293, 304, 305, 306]),
+    dict(frame='icrs', ipix=[448, 449, 450, 451, 456, 457, 663]),
+]
+
+
+@pytest.mark.parametrize('pars', compute_healpix_pixel_indices_pars)
+def test_wcs_healpix_pixel_indices(pars):
+    geometry = make_test_wcs_geometry(case=2)
+    healpix_pixel_indices = compute_healpix_pixel_indices(geometry, order=3, healpix_frame=pars['frame'])
+    assert list(healpix_pixel_indices) == pars['ipix']

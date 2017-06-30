@@ -1,8 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from numpy.testing import assert_equal
+import numpy as np
 from astropy.tests.helper import remote_data
-from ..tile import HipsTile
-from ..tile_meta import HipsTileMeta
+from numpy.testing import assert_allclose
+from numpy.testing import assert_equal
+
+from ..tile import HipsTile, HipsTileMeta
 
 
 class TestHipsTile:
@@ -41,3 +43,35 @@ class TestHipsTile:
         # print(tile2.data.sum())
         # print((tile == tile2).all())
         # assert tile == tile2
+
+
+class TestHipsTileMeta:
+    @classmethod
+    def setup_class(cls):
+        cls.meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs', tile_width=512)
+
+    def test_path(self):
+        assert str(self.meta.path) == 'hips/tiles/tests/data'
+
+    def test_filename(self):
+        assert self.meta.filename == 'Npix450.fits'
+
+    def test_full_path(self):
+        assert str(self.meta.full_path) == 'hips/tiles/tests/data/Npix450.fits'
+
+    def test_nside(self):
+        assert self.meta.nside == 8
+
+    def test_dst(self):
+        dst = np.array([[511, 0], [511, 511], [0, 511], [0, 0]])
+        assert_allclose(self.meta.dst, dst)
+
+    def test_skycoord_corners(self):
+        assert_allclose(self.meta.skycoord_corners.data.lat.deg, [-24.624318, -30., -35.685335, -30.])
+        assert_allclose(self.meta.skycoord_corners.data.lon.deg, [264.375, 258.75, 264.375, 270.])
+        assert self.meta.skycoord_corners.frame.name == 'icrs'
+
+        meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='galactic', tile_width=512)
+        assert_allclose(meta.skycoord_corners.data.lat.deg, [-24.624318, -30., -35.685335, -30.])
+        assert_allclose(meta.skycoord_corners.data.lon.deg, [264.375, 258.75, 264.375, 270.])
+        assert meta.skycoord_corners.frame.name == 'galactic'

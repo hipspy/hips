@@ -21,8 +21,17 @@ class TestHipsSurveyProperties:
     def test_hips_frame(self):
         assert self.hips_survey_property.hips_frame == 'equatorial'
 
+    def test_astropy_frame(self):
+        assert self.hips_survey_property.astropy_frame == 'icrs'
+
     def test_hips_order(self):
         assert self.hips_survey_property.hips_order == 9
 
     def test_tile_format(self):
         assert self.hips_survey_property.tile_format == 'jpeg'
+
+    def test_access_url(self):
+        assert self.hips_survey_property.access_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
+
+    def test_tile_access_url(self):
+        assert self.hips_survey_property.tile_access_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir0/'

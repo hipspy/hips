@@ -33,6 +33,7 @@ env:
         - SETUP_XVFB=True
         - DEBUG=True
         - ASTROPY_USE_SYSTEM_PYTEST=1
+        - FETCH_HIPS_EXTRA=true
 
     matrix:
         # Make sure that egg_info works without dependencies
@@ -79,6 +80,12 @@ matrix:
 install:
     - git clone git://github.com/astropy/ci-helpers.git
     - source ci-helpers/travis/setup_conda.sh
+
+    - if $FETCH_HIPS_EXTRA; then
+          git clone https://github.com/hipspy/hips-extra.git $HOME/hips-extra;
+          export HIPS_EXTRA=${HOME}/hips-extra;
+      fi
+
 
 script:
    - $MAIN_CMD $SETUP_CMD
