@@ -69,3 +69,7 @@ class TestHipsTileMeta:
     def test_skycoord_corners(self):
         assert_allclose(self.meta.skycoord_corners.ra.deg, [264.375, 258.75, 264.375, 270.])
         assert_allclose(self.meta.skycoord_corners.dec.deg, [-24.624318, -30., -35.685335, -30.])
+
+        meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='galactic', tile_width=512)
+        assert_allclose(meta.skycoord_corners.l.deg, [264.375, 258.75, 264.375, 270.])
+        assert_allclose(meta.skycoord_corners.b.deg, [-24.624318, -30., -35.685335, -30.])
