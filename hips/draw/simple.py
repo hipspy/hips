@@ -34,7 +34,6 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) 
     all_sky = np.zeros(geometry.shape)
     for tile in tiles:
         draw_tile = SimpleTilePainter(geometry, tile)
-        draw_tile.apply_projection()
         all_sky += draw_tile.warp_image()
     return all_sky
 
@@ -57,19 +56,19 @@ class SimpleTilePainter:
         self.tile = tile
         self.pt = None
 
-    def apply_projection(self) -> None:
-        """Apply projective transformation on a HiPS tile"""
+    @property
+    def projection(self) -> tf.ProjectiveTransform:
+        """Estimate projective transformation on a HiPS tile"""
         corners = self.tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
         src = np.array(corners).T.reshape((4, 2))
         dst = self.tile.meta.dst
         self.pt = tf.ProjectiveTransform()
         self.pt.estimate(src, dst)
+        return self.pt
 
     def warp_image(self) -> np.ndarray:
         """Warp a HiPS tile and a sky image"""
-        # This converts a big-endian byte integer to a float
-        data = self.tile.data.astype('float')
-        return tf.warp(data, self.pt, output_shape=self.geometry.shape)
+        return tf.warp(self.tile.data, self.projection, output_shape=self.geometry.shape, preserve_range=True)
 
 
 def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
@@ -90,8 +89,10 @@ def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hip
         Returns an object of  HipsTile
     """
     base_url = hips_survey.access_url + '/Norder' + str(hips_survey.hips_order) + '/Dir0/'
+    frames = dict({'equatorial': 'icrs', 'galactic': 'galactic', 'ecliptic': 'ecliptic'})
     for healpix_pixel_index in healpix_pixel_indices:
-        tile_meta = HipsTileMeta(order=order, ipix=healpix_pixel_index, file_format='fits')
+        tile_meta = HipsTileMeta(order=order, ipix=healpix_pixel_index,
+                                 frame=frames[hips_survey.hips_frame], file_format='fits')
         tile = HipsTile.fetch(tile_meta, base_url + tile_meta.filename)
         yield tile
 
