@@ -4,8 +4,6 @@ from pathlib import Path
 import healpy as hp
 import numpy as np
 from astropy.coordinates import SkyCoord
-from astropy.wcs import WCS
-from skimage import transform as tf
 
 from ..utils import boundaries
 
@@ -92,12 +90,3 @@ class HipsTileMeta:
             return SkyCoord(l=phi, b=np.pi / 2 - theta, unit='radian', frame=self.frame)
         else:
             return SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame=self.frame)
-
-    def apply_projection(self, wcs: WCS) -> tf.ProjectiveTransform:
-        """Apply projective transformation on a HiPS tile"""
-        corners = self.skycoord_corners.to_pixel(wcs)
-        src = np.array(corners).T.reshape((4, 2))
-        dst = self.dst
-        pt = tf.ProjectiveTransform()
-        pt.estimate(src, dst)
-        return pt
