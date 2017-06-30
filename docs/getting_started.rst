@@ -24,5 +24,5 @@ Then it saves it on local disk in FITS file format.
 >>> url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/DSS2Red/properties'
 >>> hips_survey = HipsSurveyProperties.fetch(url)  # doctest: +REMOTE_DATA
 >>> data = make_sky_image(geometry, hips_survey)
->>> hdu = fits.PrimaryHDU(data=data)
+>>> hdu = fits.PrimaryHDU(data=data, header=geometry.fits_header)
 >>> hdu.writeto('my_image.fits')
