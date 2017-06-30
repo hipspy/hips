@@ -31,11 +31,11 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) 
         Returns a numpy array containing all HiPS tiles projected onto it
     """
     # TODO: Fix type annotation issue
-    all_sky = np.zeros(geometry.shape)
+    sky_sky = np.zeros(geometry.shape)
     for tile in tiles:
         draw_tile = SimpleTilePainter(geometry, tile)
-        all_sky += draw_tile.warp_image()
-    return all_sky
+        sky_sky += draw_tile.warp_image()
+    return sky_sky
 
 
 class SimpleTilePainter:
