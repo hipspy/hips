@@ -6,21 +6,23 @@ from numpy.testing import assert_allclose
 
 from ..simple import make_sky_image, draw_sky_image
 from ...tiles import HipsSurveyProperties, HipsTileMeta, HipsTile
+from ...utils import frames
 from ...utils.testing import get_hips_extra_file, make_test_wcs_geometry, requires_hips_extra
 
 
 def get_test_tiles():
-    frames = dict({'equatorial': 'icrs', 'galactic': 'galactic', 'ecliptic': 'ecliptic'})
     filename = get_pkg_data_filename('../../tiles/tests/data/properties.txt')
     hips_survey = HipsSurveyProperties.read(filename)
 
     tile1 = HipsTile.read(
-        meta=HipsTileMeta(order=3, ipix=450, file_format='fits', frame=frames[hips_survey.hips_frame], tile_width=512),
+        meta=HipsTileMeta(order=3, ipix=450, file_format='fits', frame=frames()[hips_survey.hips_frame],
+                          tile_width=512),
         filename=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix450.fits'),
     )
 
     tile2 = HipsTile.read(
-        meta=HipsTileMeta(order=3, ipix=451, file_format='fits', frame=frames[hips_survey.hips_frame], tile_width=512),
+        meta=HipsTileMeta(order=3, ipix=451, file_format='fits', frame=frames()[hips_survey.hips_frame],
+                          tile_width=512),
         filename=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix451.fits'),
     )
 

@@ -6,7 +6,7 @@ from skimage import transform as tf
 from typing import List, Generator, Any
 
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
-from ..utils import WCSGeometry, compute_healpix_pixel_indices
+from ..utils import WCSGeometry, compute_healpix_pixel_indices, frames
 
 __all__ = [
     'draw_sky_image',
@@ -89,10 +89,9 @@ def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hip
         Returns an object of  HipsTile
     """
     base_url = hips_survey.access_url + '/Norder' + str(hips_survey.hips_order) + '/Dir0/'
-    frames = dict({'equatorial': 'icrs', 'galactic': 'galactic', 'ecliptic': 'ecliptic'})
     for healpix_pixel_index in healpix_pixel_indices:
         tile_meta = HipsTileMeta(order=order, ipix=healpix_pixel_index,
-                                 frame=frames[hips_survey.hips_frame], file_format='fits')
+                                 frame=frames()[hips_survey.hips_frame], file_format='fits')
         tile = HipsTile.fetch(tile_meta, base_url + tile_meta.filename)
         yield tile
 

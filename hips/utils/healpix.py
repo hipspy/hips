@@ -14,6 +14,7 @@ from .wcs import WCSGeometry
 __all__ = [
     'boundaries',
     'compute_healpix_pixel_indices',
+    'frames'
 ]
 
 __doctest_skip__ = ['boundaries', 'compute_healpix_pixel_indices']
@@ -109,3 +110,7 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int) -> np.n
     vec = _skycoord_to_vec(center_coord)
     nside = hp.order2nside(order)
     return hp.query_disc(nside, vec, radius)
+
+def frames() -> dict:
+    """A dictionary mapping commonly used frames"""
+    return dict({'equatorial': 'icrs', 'galactic': 'galactic', 'ecliptic': 'ecliptic'})
