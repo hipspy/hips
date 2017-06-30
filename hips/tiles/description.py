@@ -27,6 +27,7 @@ class HipsSurveyProperties:
 
     def __init__(self, data: OrderedDict) -> None:
         self.data = data
+        self.frames = dict({'equatorial': 'icrs', 'galactic': 'galactic', 'ecliptic': 'ecliptic'})
 
     @classmethod
     def read(cls, filename: str) -> 'HipsSurveyProperties':
@@ -116,4 +117,5 @@ class HipsSurveyProperties:
 
     @property
     def tile_access_url(self):
+        """Tile access URL for a HiPS surveys"""
         return self.access_url + '/Norder' + str(self.hips_order) + '/Dir0/'
