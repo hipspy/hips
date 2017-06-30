@@ -96,6 +96,7 @@ class HipsTileMeta:
         theta, phi = boundaries(self.nside, self.ipix)
         return SkyCoord(phi, np.pi / 2 - theta, unit='radian', frame=self.frame)
 
+
 class HipsTile:
     """HiPS tile container.
 
@@ -174,9 +175,9 @@ class HipsTile:
         path = Path(filename) if filename else meta.full_path
 
         if meta.file_format == 'fits':
-            hdu_list = fits.open(str(path))
-            data = hdu_list[0].data
-            header = hdu_list[0].header
+            with fits.open(str(path)) as hdu_list:
+                data = hdu_list[0].data
+                header = hdu_list[0].header
             return cls(meta, data, header)
         else:
             image = Image.open(str(path))
