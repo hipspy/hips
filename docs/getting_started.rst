@@ -1,7 +1,7 @@
 .. include:: references.txt
 
-.. _gs:
 .. doctest-skip-all
+.. _gs:
 
 ***************
 Getting started
@@ -25,7 +25,7 @@ Then it saves it on local disk in FITS file format.
          projection='AIT', cdelt=0.01, crpix=(1000, 500),
     )
     url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/DSS2Red/properties'
-    hips_survey = HipsSurveyProperties.fetch(url)  # doctest: +REMOTE_DATA
+    hips_survey = HipsSurveyProperties.fetch(url)
     data = make_sky_image(geometry, hips_survey)
     hdu = fits.PrimaryHDU(data=data, header=geometry.fits_header)
     hdu.writeto('my_image.fits')
