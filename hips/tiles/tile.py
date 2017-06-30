@@ -41,9 +41,9 @@ class HipsTileMeta:
     >>> from hips.tiles import HipsTileMeta
     >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs', tile_width=512)
     >>> tile_meta.skycoord_corners
-    <SkyCoord (Galactic): (l, b) in deg
+    <SkyCoord (ICRS): (ra, dec) in deg
     [( 264.375, -24.62431835), ( 258.75 , -30.        ),
-     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
+    ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
 
     def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'galactic', tile_width: int = 512) -> None:
