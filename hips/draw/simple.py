@@ -118,7 +118,11 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     data : `~numpy.ndarray`
         Output image pixels
     """
-    healpix_pixel_indices = compute_healpix_pixel_indices(geometry, hips_survey.hips_order)
+    healpix_pixel_indices = compute_healpix_pixel_indices(
+        wcs_geometry=geometry,
+        order=hips_survey.hips_order,
+        healpix_frame=hips_survey.astropy_frame,
+    )
     # TODO: this isn't a good API. Will become better when we have a cache.
     tiles = fetch_tiles(healpix_pixel_indices, hips_survey.hips_order, hips_survey)
 
