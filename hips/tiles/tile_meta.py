@@ -25,6 +25,8 @@ class HipsTileMeta:
         HEALPix pixel number
     file_format : {'fits', 'jpg', 'png'}
         File format
+    frame : {'icrs', 'galactic', 'ecliptic'}
+        Sky coordinate frame
     tile_width : `int`
         Tile width (in pixels)
 
@@ -38,7 +40,7 @@ class HipsTileMeta:
      ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
 
-    def __init__(self, order: int, ipix: int, file_format: str, frame='galactic', tile_width: int = 512) -> None:
+    def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'galactic', tile_width: int = 512) -> None:
         self.order = order
         self.ipix = ipix
         self.file_format = file_format
