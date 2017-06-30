@@ -24,10 +24,15 @@ class HipsSurveyProperties:
     >>> hips_survey_property.base_url
     'http://alasky.u-strasbg.fr/DSS/DSSColor'
     """
+    hips_to_astropy_frame_mapping = OrderedDict([
+        ('equatorial', 'icrs'),
+        ('galactic', 'galactic'),
+        ('ecliptic', 'ecliptic'),
+    ])
+    """HIPS to Astropy SkyCoord frame string mapping."""
 
     def __init__(self, data: OrderedDict) -> None:
         self.data = data
-        self.frames = dict({'equatorial': 'icrs', 'galactic': 'galactic', 'ecliptic': 'ecliptic'})
 
     @classmethod
     def read(cls, filename: str) -> 'HipsSurveyProperties':
@@ -99,6 +104,11 @@ class HipsSurveyProperties:
     def hips_frame(self) -> str:
         """HiPS coordinate frame (`str`)."""
         return self.data['hips_frame']
+
+    @property
+    def astropy_frame(self) -> str:
+        """Astropy coordinate frame (`str`)."""
+        return self.hips_to_astropy_frame_mapping[self.hips_frame]
 
     @property
     def hips_order(self) -> int:

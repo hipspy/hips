@@ -1,10 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
-
+from typing import Generator, Any
 import numpy as np
 from skimage import transform as tf
-from typing import List, Generator, Any
-
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
 from ..utils import WCSGeometry, compute_healpix_pixel_indices
 
@@ -67,11 +65,15 @@ class SimpleTilePainter:
 
     def warp_image(self) -> np.ndarray:
         """Warp a HiPS tile and a sky image"""
-        return tf.warp(self.tile.data, self.projection,
-                       output_shape=self.geometry.shape, preserve_range=True)
+        return tf.warp(
+            self.tile.data,
+            self.projection,
+            output_shape=self.geometry.shape,
+            preserve_range=True,
+        )
 
 
-def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
+def fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
     """Fetch HiPS tiles from a remote URL.
 
     Parameters
@@ -89,8 +91,12 @@ def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hip
         Returns an object of  HipsTile
     """
     for healpix_pixel_index in healpix_pixel_indices:
-        tile_meta = HipsTileMeta(order=order, ipix=healpix_pixel_index,
-                                 frame=hips_survey.frames[hips_survey.hips_frame], file_format='fits')
+        tile_meta = HipsTileMeta(
+            order=order,
+            ipix=healpix_pixel_index,
+            frame=hips_survey.astropy_frame,
+            file_format='fits',
+        )
         tile = HipsTile.fetch(tile_meta, hips_survey.tile_access_url + tile_meta.filename)
         yield tile
 
@@ -114,7 +120,7 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     """
     healpix_pixel_indices = compute_healpix_pixel_indices(geometry, hips_survey.hips_order)
     # TODO: this isn't a good API. Will become better when we have a cache.
-    tiles = _fetch_tiles(healpix_pixel_indices, hips_survey.hips_order, hips_survey)
+    tiles = fetch_tiles(healpix_pixel_indices, hips_survey.hips_order, hips_survey)
 
     image_data = draw_sky_image(geometry, tiles)
 

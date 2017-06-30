@@ -69,7 +69,7 @@ def boundaries(nside: int, pix: int, nest: bool = True) -> tuple:
     return theta, phi
 
 
-def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int) -> np.ndarray:
+def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix_frame: str = None) -> np.ndarray:
     """Compute HEALPix pixels within a minimal disk covering a given WCSGeometry.
 
     This function calls `healpy.pixelfunc.ang2vec` and `healpy.query_disc`
@@ -81,6 +81,9 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int) -> np.n
         Container for WCS object and image shape
     order : int
         The order of the HEALPix
+    healpix_frame : {'icrs', 'galactic', 'ecliptic'}
+        Coordinate system frame in which to compute the HEALPix pixel indices.
+        The default ``None`` means: take the frame from ``geometry``.
 
     Returns
     -------
@@ -101,11 +104,16 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int) -> np.n
     >>> compute_healpix_pixel_indices(wcs_geometry, order=3)
     array([176, 207, 208, 239, 240, 271, 272])
     """
-    center_coord = wcs_geometry.center_skycoord
+    healpix_frame = healpix_frame or wcs_geometry.celestial_frame
+
+    center_coord = wcs_geometry.center_skycoord.transform_to(healpix_frame)
+
     pixel_coords = wcs_geometry.pixel_skycoords
     separation = center_coord.separation(pixel_coords)
     radius = np.nanmax(separation.rad)
 
     vec = _skycoord_to_vec(center_coord)
     nside = hp.order2nside(order)
-    return hp.query_disc(nside, vec, radius)
+    ipix = hp.query_disc(nside, vec, radius, nest=True)
+
+    return ipix

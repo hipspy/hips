@@ -2,14 +2,12 @@
 import urllib.request
 from io import BytesIO
 from pathlib import Path
-
 import healpy as hp
 import numpy as np
 from PIL import Image
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.io.fits.header import Header
-
 from ..utils import boundaries
 
 __all__ = [
@@ -88,7 +86,8 @@ class HipsTileMeta:
             [[self.tile_width - 1, 0],
              [self.tile_width - 1, self.tile_width - 1],
              [0, self.tile_width - 1],
-             [0, 0]])
+             [0, 0]],
+        )
 
     @property
     def skycoord_corners(self) -> SkyCoord:

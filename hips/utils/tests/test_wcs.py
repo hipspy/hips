@@ -12,3 +12,7 @@ class TestWCSGeometry:
         assert c.frame.name == 'galactic'
         assert_allclose(c.l.deg, 2, atol=1e-2)
         assert_allclose(c.b.deg, 4.5, atol=1e-2)
+
+    def test_celestial_frame(self):
+        pass
+        # TODO (Adeel): add a test

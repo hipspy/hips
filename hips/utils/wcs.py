@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.wcs import WCS
-from astropy.wcs.utils import pixel_to_skycoord
+from astropy.wcs.utils import pixel_to_skycoord, wcs_to_celestial_frame
 
 __all__ = [
     'WCSGeometry',
@@ -125,6 +125,14 @@ class WCSGeometry:
         return cls(w, shape)
 
     @property
-    def fits_header(self):
+    def celestial_frame(self) -> str:
+        """Celestial frame for the given WCS (str).
+
+        Calls `~astropy.wcs.utils.wcs_to_celestial_frame`.
+        """
+        return wcs_to_celestial_frame(self.wcs)
+
+    @property
+    def fits_header(self) -> 'astropy.io.fits.Header':
         """FITS header for the given WCS (`~astropy.io.fits.Header`)."""
         return self.wcs.to_header()

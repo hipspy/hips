@@ -21,6 +21,9 @@ class TestHipsSurveyProperties:
     def test_hips_frame(self):
         assert self.hips_survey_property.hips_frame == 'equatorial'
 
+    def test_astropy_frame(self):
+        assert self.hips_survey_property.astropy_frame == 'icrs'
+
     def test_hips_order(self):
         assert self.hips_survey_property.hips_order == 9
 
