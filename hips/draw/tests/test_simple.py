@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose
 from ..simple import make_sky_image, draw_sky_image
 from ...tiles import HipsSurveyProperties, HipsTileMeta, HipsTile
 from ...utils.testing import get_hips_extra_file, make_test_wcs_geometry, requires_hips_extra
-
+from ...utils import compute_healpix_pixel_indices
 
 def get_test_tiles():
     filename = get_pkg_data_filename('../../tiles/tests/data/properties.txt')
@@ -51,3 +51,11 @@ def test_make_sky_image():
     assert data.dtype == np.float64
     assert_allclose(data[200, 994], 3717.10091363)
     assert_allclose(data[200, 995], 3402.55292158)
+
+def test_wcs_healpix_pixel_indices():
+    url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/DSS2Red/properties'
+    hips_survey = HipsSurveyProperties.fetch(url)
+
+    geometry = make_test_wcs_geometry(case=2)
+    healpix_pixel_indices = compute_healpix_pixel_indices(geometry, hips_survey.hips_order)
+    assert list(healpix_pixel_indices) == [450, 451]
