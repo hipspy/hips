@@ -32,7 +32,6 @@ def requires_hips_extra():
 
 
 def make_test_wcs_geometry(case=0):
-    """An example Galactic CAR WCS that """
     if case == 0:
         return WCSGeometry.create(
             skydir=SkyCoord(3, 4, unit='deg', frame='galactic'),
