@@ -2,7 +2,6 @@
 """HiPS tile drawing -- simple method."""
 
 import numpy as np
-from astropy.coordinates import SkyCoord
 from skimage import transform as tf
 from typing import List, Generator, Any
 
@@ -31,9 +30,11 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) 
     np.ndarray
         Returns a numpy array containing all HiPS tiles projected onto it
     """
+    # TODO: Fix type annotation issue
     all_sky = np.zeros(geometry.shape)
     for tile in tiles:
         draw_tile = SimpleTilePainter(geometry, tile)
+        draw_tile.apply_projection()
         all_sky += draw_tile.warp_image()
     return all_sky
 
@@ -54,11 +55,19 @@ class SimpleTilePainter:
     def __init__(self, geometry: WCSGeometry, tile: HipsTile) -> None:
         self.geometry = geometry
         self.tile = tile
+        self.pt = None
+
+    def apply_projection(self) -> None:
+        """Apply projective transformation on a HiPS tile"""
+        corners = self.tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
+        src = np.array(corners).T.reshape((4, 2))
+        dst = self.tile.meta.dst
+        self.pt = tf.ProjectiveTransform()
+        self.pt.estimate(src, dst)
 
     def warp_image(self) -> np.ndarray:
         """Warp a HiPS tile and a sky image"""
-        pt = self.tile.meta.apply_projection(self.geometry.wcs)
-        return tf.warp(self.tile.data.astype('float'), pt, output_shape=self.geometry.shape)
+        return tf.warp(self.tile.data.astype('float'), self.pt, output_shape=self.geometry.shape)
 
 
 def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
