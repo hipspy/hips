@@ -1,6 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from numpy.testing import assert_equal
 from astropy.tests.helper import remote_data
+from numpy.testing import assert_allclose
+from numpy.testing import assert_equal
+
 from ..tile import HipsTile
 from ..tile_meta import HipsTileMeta
 
@@ -41,3 +43,10 @@ class TestHipsTile:
         # print(tile2.data.sum())
         # print((tile == tile2).all())
         # assert tile == tile2
+
+
+class TestHipsTileMeta:
+    def test_skycoord_corners(self):
+        meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs', tile_width=512)
+        assert_allclose(meta.skycoord_corners.ra.deg, [264.375, 258.75, 264.375, 270.])
+        assert_allclose(meta.skycoord_corners.dec.deg, [-24.624318, -30., -35.685335, -30.])
