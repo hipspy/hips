@@ -36,9 +36,9 @@ def test_draw_sky_image():
 
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
-    assert np.sum(data) == 4575235421.5126467
-    assert data[400, 500] == 2866.0101409848185
-    assert data[400, 501] == 2563.6916727348043
+    assert_allclose(np.sum(data), 4575235421.5126467)
+    assert_allclose(data[400, 500], 2866.0101409848185)
+    assert_allclose(data[400, 501], 2563.6916727348043)
 
 
 @pytest.mark.xfail
@@ -49,8 +49,8 @@ def test_make_sky_image():
     data = make_sky_image(geometry, hips_survey)
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
-    assert data[200, 994] == 3717.10091363
-    assert data[200, 995] == 3402.55292158
+    assert_allclose(data[200, 994], 3717.10091363)
+    assert_allclose(data[200, 995], 3402.55292158)
 
 
 class TestSimpleTilePainter:
