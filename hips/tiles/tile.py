@@ -94,11 +94,7 @@ class HipsTileMeta:
     def skycoord_corners(self) -> SkyCoord:
         """Corner values for a HiPS tile"""
         theta, phi = boundaries(self.nside, self.ipix)
-        if self.frame == 'galactic':
-            return SkyCoord(l=phi, b=np.pi / 2 - theta, unit='radian', frame=self.frame)
-        else:
-            return SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian', frame=self.frame)
-
+        return SkyCoord(phi, np.pi / 2 - theta, unit='radian', frame=self.frame)
 
 class HipsTile:
     """HiPS tile container.
