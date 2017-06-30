@@ -1,11 +1,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from pathlib import Path
 import urllib.request
 from io import BytesIO
+from pathlib import Path
+
 import numpy as np
 from PIL import Image
 from astropy.io import fits
 from astropy.io.fits.header import Header
+
 from .tile_meta import HipsTileMeta
 
 __all__ = [
@@ -24,7 +26,7 @@ class HipsTile:
     ----------
     meta : `HipsTileMeta`
         Metadata of HiPS tile
-    data : `~numpy.ndarray`
+    raw_data : `~numpy.ndarray`
         Data containing HiPS tile
     header : `~astropy.io.fits.Header`
         Header of HiPS tile
@@ -46,15 +48,15 @@ class HipsTile:
            [0, 0, 0, ..., 1, 0, 1]], dtype=int16)
     """
 
-    def __init__(self, meta: HipsTileMeta, data: np.ndarray = None, header: Header = None) -> None:
+    def __init__(self, meta: HipsTileMeta, raw_data: np.ndarray = None, header: Header = None) -> None:
         self.meta = meta
-        self.data = data
+        self.raw_data = raw_data
         self.header = header
 
     def __eq__(self, other: 'HipsTile') -> bool:
         return (
             self.meta == other.meta and
-            (self.data == other.data).all()
+            (self.raw_data == other.raw_data).all()
             # Note: we're not checking FITS header here,
             # because it can change a bit on write / read.
         )
@@ -73,12 +75,12 @@ class HipsTile:
         raw_image = BytesIO(urllib.request.urlopen(url).read())
         if meta.file_format == 'fits':
             hdu_list = fits.open(raw_image)
-            data = hdu_list[0].data
+            raw_data = hdu_list[0].data
             header = hdu_list[0].header
-            return cls(meta, data, header)
+            return cls(meta, raw_data, header)
         else:
-            data = np.array(Image.open(raw_image))
-            return cls(meta, data)
+            raw_data = np.array(Image.open(raw_image))
+            return cls(meta, raw_data)
 
     @classmethod
     def read(cls, meta: HipsTileMeta, filename: str = None) -> 'HipsTile':
@@ -95,13 +97,13 @@ class HipsTile:
 
         if meta.file_format == 'fits':
             hdu_list = fits.open(str(path))
-            data = hdu_list[0].data
+            raw_data = hdu_list[0].data
             header = hdu_list[0].header
-            return cls(meta, data, header)
+            return cls(meta, raw_data, header)
         else:
             image = Image.open(str(path))
-            data = np.array(image)
-            return cls(meta, data)
+            raw_data = np.array(image)
+            return cls(meta, raw_data)
 
     def write(self, filename: str = None) -> None:
         """Write HiPS tile by a given filename.
@@ -114,8 +116,12 @@ class HipsTile:
         path = Path(filename) if filename else self.meta.full_path
 
         if self.meta.file_format == 'fits':
-            hdu = fits.PrimaryHDU(self.data, header=self.header)
+            hdu = fits.PrimaryHDU(self.raw_data, header=self.header)
             hdu.writeto(str(path))
         else:
-            image = Image.fromarray(self.data)
+            image = Image.fromarray(self.raw_data)
             image.save(str(path))
+
+    @property
+    def data(self):
+        return self.raw_data
