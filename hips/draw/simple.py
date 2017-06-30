@@ -67,7 +67,9 @@ class SimpleTilePainter:
 
     def warp_image(self) -> np.ndarray:
         """Warp a HiPS tile and a sky image"""
-        return tf.warp(self.tile.data.astype('float'), self.pt, output_shape=self.geometry.shape)
+        # This converts a big-endian byte integer to a float
+        data = self.tile.data.astype('float')
+        return tf.warp(data, self.pt, output_shape=self.geometry.shape)
 
 
 def _fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
