@@ -54,7 +54,6 @@ class SimpleTilePainter:
     def __init__(self, geometry: WCSGeometry, tile: HipsTile) -> None:
         self.geometry = geometry
         self.tile = tile
-        self.pt = None
 
     @property
     def projection(self) -> tf.ProjectiveTransform:
@@ -62,9 +61,9 @@ class SimpleTilePainter:
         corners = self.tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
         src = np.array(corners).T.reshape((4, 2))
         dst = self.tile.meta.dst
-        self.pt = tf.ProjectiveTransform()
-        self.pt.estimate(src, dst)
-        return self.pt
+        pt = tf.ProjectiveTransform()
+        pt.estimate(src, dst)
+        return pt
 
     def warp_image(self) -> np.ndarray:
         """Warp a HiPS tile and a sky image"""
