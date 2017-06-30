@@ -22,11 +22,19 @@ def get_hips_extra_file(filename):
     return path / filename
 
 
+def has_hips_extra():
+    """Is hips-extra available? (bool)"""
+    if 'HIPS_EXTRA' in os.environ:
+        path = Path(os.environ['HIPS_EXTRA']) / 'datasets/samples/DSS2Red/properties'
+        if path.is_file():
+            return True
+
+    return False
+
+
 def requires_hips_extra():
-    """Decorator to mark tests requiring ``hips-extra`` data.
-    """
-    has_hips_extra = get_hips_extra_file('datasets/samples/DSS2Red/properties').is_file()
-    skip_it = not has_hips_extra
+    """Decorator to mark tests requiring ``hips-extra`` data."""
+    skip_it = not has_hips_extra()
     reason = 'No hips-extra data available.'
     return pytest.mark.skipif(skip_it, reason=reason)
 
