@@ -25,10 +25,11 @@ class HipsSurveyProperties:
 
     Examples
     --------
-    >>> url = 'https://raw.githubusercontent.com/hipspy/hips/master/hips/tiles/tests/data/properties.txt'
+    >>> from hips import HipsSurveyProperties
+    >>> url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
     >>> hips_survey_property = HipsSurveyProperties.fetch(url)
     >>> hips_survey_property.base_url
-    'http://alasky.u-strasbg.fr/DSS/DSSColor'
+    'http://alasky.u-strasbg.fr/DSS/DSS2Merged'
     """
     hips_to_astropy_frame_mapping = OrderedDict([
         ('equatorial', 'icrs'),
@@ -92,11 +93,6 @@ class HipsSurveyProperties:
         return cls(data)
 
     @property
-    def base_url(self) -> str:
-        """HiPS service base URL (`str`)."""
-        return self.data['hips_service_url']
-
-    @property
     def title(self) -> str:
         """HiPS title (`str`)."""
         return self.data['obs_title']
@@ -127,14 +123,19 @@ class HipsSurveyProperties:
         return self.data['hips_tile_format']
 
     @property
-    def access_url(self):
+    def base_url(self):
         """HiPS access url"""
         return self.data['moc_access_url'].rsplit('/', 1)[0]
 
     @property
     def tile_access_url(self):
         """Tile access URL for a HiPS surveys"""
-        return self.access_url + '/Norder' + str(self.hips_order) + '/Dir0/'
+        return self.base_url + '/Norder' + str(self.hips_order) + '/Dir0/'
+
+    @property
+    def hips_service_url(self) -> str:
+        """HiPS service base URL (`str`)."""
+        return self.data['hips_service_url']
 
 
 class HipsSurveyPropertiesList:

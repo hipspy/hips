@@ -10,9 +10,6 @@ class TestHipsSurveyProperties:
         filename = get_pkg_data_filename('data/properties.txt')
         cls.hips_survey_property = HipsSurveyProperties.read(filename)
 
-    def test_base_url(self):
-        assert self.hips_survey_property.base_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
-
     def test_title(self):
         assert self.hips_survey_property.title == 'DSS colored'
 
@@ -31,8 +28,8 @@ class TestHipsSurveyProperties:
     def test_tile_format(self):
         assert self.hips_survey_property.tile_format == 'jpeg'
 
-    def test_access_url(self):
-        assert self.hips_survey_property.access_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
+    def test_base_url(self):
+        assert self.hips_survey_property.base_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
 
     def test_tile_access_url(self):
         assert self.hips_survey_property.tile_access_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir0/'
