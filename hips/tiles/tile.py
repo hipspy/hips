@@ -150,15 +150,10 @@ class HipsTile:
         url : `str`
             URL containing HiPS tile
         """
-        raw_image = BytesIO(urllib.request.urlopen(url).read())
-        if meta.file_format == 'fits':
-            hdu_list = fits.open(raw_image)
-            data = hdu_list[0].data
-            header = hdu_list[0].header
-            return cls(meta, data, header)
-        else:
-            data = np.array(Image.open(raw_image))
-            return cls(meta, data)
+        with urllib.request.urlopen(url) as response:
+            raw_data = BytesIO(response.read())
+
+        return cls._from_raw_data(meta, raw_data)
 
     @classmethod
     def read(cls, meta: HipsTileMeta, filename: str = None) -> 'HipsTile':
@@ -172,16 +167,27 @@ class HipsTile:
             File path to store a HiPS tile
         """
         path = Path(filename) if filename else meta.full_path
+        with path.open(mode='rb') as fh:
+            raw_data = BytesIO(fh.read())
 
+        return cls._from_raw_data(meta, raw_data)
+
+    @classmethod
+    def _from_raw_data(cls, meta: HipsTileMeta, raw_data: BytesIO) -> 'HipsTile':
         if meta.file_format == 'fits':
-            with fits.open(str(path)) as hdu_list:
+            with fits.open(raw_data) as hdu_list:
                 data = hdu_list[0].data
                 header = hdu_list[0].header
             return cls(meta, data, header)
-        else:
-            image = Image.open(str(path))
-            data = np.array(image)
+        elif meta.file_format == 'jpg':
+            with Image.open(raw_data) as image:
+                data = np.array(image)
             return cls(meta, data)
+        elif meta.file_format == 'png':
+            raise NotImplementedError()
+        else:
+            raise ValueError(f'Tile file format not supported: {meta.file_format}. '
+                             'Supported formats: fits, jpg, png')
 
     def write(self, filename: str = None) -> None:
         """Write HiPS tile by a given filename.
@@ -192,10 +198,16 @@ class HipsTile:
             Name of the file
         """
         path = Path(filename) if filename else self.meta.full_path
+        file_format = self.meta.file_format
 
-        if self.meta.file_format == 'fits':
+        if file_format == 'fits':
             hdu = fits.PrimaryHDU(self.data, header=self.header)
             hdu.writeto(str(path))
-        else:
+        elif file_format == 'jpg':
             image = Image.fromarray(self.data)
             image.save(str(path))
+        elif file_format == 'png':
+            raise NotImplementedError()
+        else:
+            raise ValueError(f'Tile file format not supported: {meta.file_format}. '
+                             'Supported formats: fits, jpg, png')

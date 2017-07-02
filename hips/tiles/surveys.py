@@ -65,8 +65,8 @@ class HipsSurveyProperties:
             URL containing HiPS properties
         """
 
-        response = urllib.request.urlopen(url).read()
-        text = response.decode('utf-8')
+        with urllib.request.urlopen(url) as response:
+            text = response.read().decode('utf-8')
         return cls.parse(text)
 
     @classmethod
@@ -194,8 +194,8 @@ class HipsSurveyPropertiesList:
             HiPS list URL
         """
         url = url or cls.DEFAULT_URL
-        response = urllib.request.urlopen(url).read()
-        text = response.decode('utf-8', errors='ignore')
+        with urllib.request.urlopen(url) as response:
+            text = response.read().decode('utf-8', errors='ignore')
         return cls.parse(text)
 
     @classmethod
