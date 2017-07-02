@@ -3,7 +3,6 @@ import numpy as np
 from astropy.tests.helper import remote_data
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
-
 from ..tile import HipsTile, HipsTileMeta
 
 
@@ -24,7 +23,7 @@ class TestHipsTile:
         assert tile == tile2
 
     @remote_data
-    def test_fetch_read_write_fits(self, tmpdir):
+    def test_fetch_read_write_jpg(self, tmpdir):
         meta = HipsTileMeta(order=6, ipix=30889, file_format='jpg')
         url = 'http://alasky.unistra.fr/2MASS/H/Norder6/Dir30000/Npix30889.jpg'
         tile = HipsTile.fetch(meta, url)
