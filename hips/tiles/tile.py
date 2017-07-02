@@ -1,10 +1,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import warnings
 import urllib.request
 from io import BytesIO
 from pathlib import Path
 import healpy as hp
 import numpy as np
 from PIL import Image
+from astropy.utils.exceptions import AstropyWarning
+from astropy.io.fits.verify import VerifyWarning
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.io.fits.header import Header
@@ -175,9 +178,16 @@ class HipsTile:
     @classmethod
     def _from_raw_data(cls, meta: HipsTileMeta, raw_data: BytesIO) -> 'HipsTile':
         if meta.file_format == 'fits':
-            with fits.open(raw_data) as hdu_list:
-                data = hdu_list[0].data
-                header = hdu_list[0].header
+            # At the moment CDS is serving FITS tiles in non-standard FITS files
+            # https://github.com/hipspy/hips/issues/42
+            # The following warnings handling is supposed to suppress these warnings
+            # (but hopefully still surface other issues in a useful way).
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', AstropyWarning)
+                warnings.simplefilter('ignore', VerifyWarning)
+                with fits.open(raw_data) as hdu_list:
+                    data = hdu_list[0].data
+                    header = hdu_list[0].header
             return cls(meta, data, header)
         elif meta.file_format == 'jpg':
             with Image.open(raw_data) as image:
@@ -201,8 +211,11 @@ class HipsTile:
         file_format = self.meta.file_format
 
         if file_format == 'fits':
-            hdu = fits.PrimaryHDU(self.data, header=self.header)
-            hdu.writeto(str(path))
+            # See comment above when reading FITS on why we catch warnings here
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', VerifyWarning)
+                hdu = fits.PrimaryHDU(self.data, header=self.header)
+                hdu.writeto(str(path))
         elif file_format == 'jpg':
             image = Image.fromarray(self.data)
             image.save(str(path))
