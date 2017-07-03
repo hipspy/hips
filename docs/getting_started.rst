@@ -79,5 +79,5 @@ What next?
 That's it, now you've seen the main features of the `hips` package.
 Note that there is API documentation explaining all available functions, classes and parameters.
 
-If you have any questions, or find something now working or a missing feature,
+If you have any questions, or find something not working or a missing feature,
 please get in touch by posting on our Github issue tracker.
