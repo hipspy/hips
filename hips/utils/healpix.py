@@ -69,11 +69,12 @@ def boundaries(nside: int, pix: int, nest: bool = True) -> tuple:
     return theta, phi
 
 
-def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix_frame: str = None) -> np.ndarray:
+def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
     """Compute HEALPix pixels within a minimal disk covering a given WCSGeometry.
 
-    This function calls `healpy.pixelfunc.ang2vec` and `healpy.query_disc`
-    to compute the HEALPix pixel indices, which will be used in tile drawing.
+    This function computes pixel coordinates for the given WCS object and
+    then calls `healpy.pixelfunc.ang2pix` and `numpy.unique` to compute
+    HEALPix pixel indices, which will be used in tile drawing.
 
     Parameters
     ----------
@@ -82,8 +83,7 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix
     order : int
         The order of the HEALPix
     healpix_frame : {'icrs', 'galactic', 'ecliptic'}
-        Coordinate system frame in which to compute the HEALPix pixel indices.
-        The default ``None`` means: take the frame from ``geometry``.
+        Coordinate system frame in which to compute the HEALPix pixel indices
 
     Returns
     -------
@@ -101,19 +101,11 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix
     ...     coordsys='CEL', projection='AIT',
     ...     cdelt=1.0, crpix=(1., 1.),
     ... )
-    >>> compute_healpix_pixel_indices(wcs_geometry, order=3)
-    array([176, 207, 208, 239, 240, 271, 272])
+    >>> compute_healpix_pixel_indices(wcs_geometry, order=3, healpix_frame='galactic')
+    array([321, 611, 614, 615, 617, 618, 619, 620, 621, 622])
     """
-    healpix_frame = healpix_frame or wcs_geometry.celestial_frame
-
-    center_coord = wcs_geometry.center_skycoord.transform_to(healpix_frame)
-
-    pixel_coords = wcs_geometry.pixel_skycoords
-    separation = center_coord.separation(pixel_coords)
-    radius = np.nanmax(separation.rad)
-
-    vec = _skycoord_to_vec(center_coord)
     nside = hp.order2nside(order)
-    ipix = hp.query_disc(nside, vec, radius, nest=True)
-
-    return ipix
+    pixel_coords = wcs_geometry.pixel_skycoords.transform_to(healpix_frame)
+    theta, phi = _skycoord_to_theta_phi(pixel_coords)
+    ipix = hp.ang2pix(nside, theta, phi, nest=True)
+    return np.unique(ipix)
