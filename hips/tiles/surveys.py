@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from collections import OrderedDict
+import numpy as np
 import urllib.request
 from typing import List
 from astropy.table import Table
@@ -123,14 +124,24 @@ class HipsSurveyProperties:
         return self.data['hips_tile_format']
 
     @property
-    def base_url(self):
+    def base_url(self) -> str:
         """HiPS access url"""
         return self.data['moc_access_url'].rsplit('/', 1)[0]
 
-    @property
-    def tile_access_url(self):
-        """Tile access URL for a HiPS surveys"""
-        return self.base_url + '/Norder' + str(self.hips_order) + '/Dir0/'
+    def directory(self, ipix: int) -> int:
+        return (ipix // 10000) * 10000
+
+    def tile_access_url(self, order: int, ipix: int) -> str:
+        """Tile access URL
+
+        Parameters
+        ----------
+        order : int
+            HiPS order
+        ipix : int
+            Index of the HiPS tile
+        """
+        return self.base_url + '/Norder' + str(order) + '/Dir' + str(self.directory(ipix)) + '/'
 
     @property
     def hips_service_url(self) -> str:
