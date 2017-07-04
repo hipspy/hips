@@ -32,7 +32,7 @@ class TestHipsSurveyProperties:
         assert self.hips_survey_property.base_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
 
     def test_tile_access_url(self):
-        assert self.hips_survey_property.tile_access_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir0/'
+        assert self.hips_survey_property.tile_access_url(order=9, ipix=54321) == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/'
 
 
 class TestHipsSurveyPropertiesList:

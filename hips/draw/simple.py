@@ -97,7 +97,7 @@ def fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hips
             frame=hips_survey.astropy_frame,
             file_format='fits',
         )
-        tile = HipsTile.fetch(tile_meta, hips_survey.tile_access_url + tile_meta.filename)
+        tile = HipsTile.fetch(tile_meta, hips_survey.tile_access_url(order=order, ipix=healpix_pixel_index) + tile_meta.filename)
         yield tile
 
 
