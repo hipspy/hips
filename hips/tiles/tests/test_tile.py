@@ -1,62 +1,70 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import pytest
 import numpy as np
 from astropy.tests.helper import remote_data
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 from ..tile import HipsTile, HipsTileMeta
-
+from ...utils.testing import get_hips_extra_file, requires_hips_extra
 
 class TestHipsTile:
-    @remote_data
-    def test_fetch_read_write_fits(self, tmpdir):
-        meta = HipsTileMeta(order=6, ipix=30889, file_format='fits')
-        url = 'http://alasky.unistra.fr/2MASS/H/Norder6/Dir30000/Npix30889.fits'
-        tile = HipsTile.fetch(meta, url)
 
-        assert tile.data.shape == (512, 512)
-        assert_equal(tile.data[510][5:7], [1, 0])
-
-        filename = str(tmpdir / 'Npix30889.fits')
-        tile.write(filename)
-        tile2 = HipsTile.read(meta, filename=filename)
-
-        assert tile == tile2
+    fetch_read_pars = [
+        dict(url='http://alasky.unistra.fr/DSS/DSS2Merged/Norder3/Dir0/Npix463.fits',
+             full_path='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.fits',
+             file_name='Npix463.fits', file_format='fits', order=3, ipix=463),
+        dict(url='http://alasky.unistra.fr/DSS/DSS2Merged/Norder3/Dir0/Npix463.jpg',
+             full_path='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.jpg',
+             file_name='Npix463.jpg', file_format='jpg', order=3, ipix=463),
+        dict(url='http://alasky.unistra.fr/2MASS6X/2MASS6X_H/Norder6/Dir0/Npix6112.png',
+             full_path='datasets/samples/2MASS6XH/Norder6/Dir0/Npix6112.png',
+             file_name='Npix6112.png', file_format='png', order=6, ipix=6112)
+    ]
 
     @remote_data
-    def test_fetch_read_write_jpg(self, tmpdir):
-        meta = HipsTileMeta(order=6, ipix=30889, file_format='jpg')
-        url = 'http://alasky.unistra.fr/2MASS/H/Norder6/Dir30000/Npix30889.jpg'
-        tile = HipsTile.fetch(meta, url)
+    @requires_hips_extra()
+    @pytest.mark.parametrize('pars', fetch_read_pars)
+    def test_fetch_read(self, pars):
+        meta = HipsTileMeta(order=pars['order'], ipix=pars['ipix'], file_format=pars['file_format'])
+        tile_fetched = HipsTile.fetch(meta, url=pars['url'])
 
-        assert tile.data.shape == (512, 512, 3)
-        assert_equal(tile.data[510][5:7], [[0, 0, 0], [1, 1, 1]])
+        full_path = get_hips_extra_file(pars['full_path'])
+        tile_local = HipsTile.read(meta, full_path=full_path)
 
-        filename = str(tmpdir / 'Npix30889.jpg')
+        assert tile_fetched == tile_local
+
+    read_write_pars = [
+        dict(full_path='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.fits', file_name='Npix463.fits',
+             file_format='fits', order=3, ipix=463, shape=(512, 512), tile_data=[3047], index=[[510], [5]]),
+        dict(full_path='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.jpg', file_name='Npix463.jpg',
+             file_format='jpg', order=3, ipix=463, shape=(512, 512, 3), tile_data=[[10, 10, 10]], index=[[510], [5]]),
+        dict(full_path='datasets/samples/2MASS6XH/Norder6/Dir0/Npix6112.png', file_name='Npix6112.png',
+             file_format='png', order=6, ipix=6112, shape=(512, 512, 4), tile_data=[[19, 19, 19, 255]], index=[[253], [5]])
+    ]
+
+    @requires_hips_extra()
+    @pytest.mark.parametrize('pars', read_write_pars)
+    def test_read_write(self, tmpdir, pars):
+        meta = HipsTileMeta(order=pars['order'], ipix=pars['ipix'], file_format=pars['file_format'])
+        full_path = get_hips_extra_file(pars['full_path'])
+        tile = HipsTile.read(meta, full_path)
+
+        assert tile.data.shape == pars['shape']
+        assert_equal(tile.data[pars['index']], pars['tile_data'])
+
+        filename = str(tmpdir / pars['file_name'])
         tile.write(filename)
-        tile2 = HipsTile.read(meta, filename=filename)
+        tile2 = HipsTile.read(meta, full_path=filename)
 
-        # The following assert fails, because on JPEG write / read
-        # the data is different (for unknown reasons).
-        # TODO: Figure out what's wrong here and fix!
-        # print(tile.data.sum())
-        # print(tile2.data.sum())
-        # print((tile == tile2).all())
+        # TODO: Fix JPG write issue
         # assert tile == tile2
 
-    @remote_data
-    def test_fetch_read_write_png(self, tmpdir):
-        meta = HipsTileMeta(order=6, ipix=463, file_format='png')
-        url = 'http://alasky.unistra.fr/2MASS6X/2MASS6X_H/Norder6/Dir0/Npix463.png'
-        tile = HipsTile.fetch(meta, url)
+    def test_value_error(self):
+        with pytest.raises(ValueError):
+            meta = HipsTileMeta(order=3, ipix=463, file_format='jpeg')
+            full_path = get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix463.jpg')
+            HipsTile.read(meta, full_path)
 
-        assert tile.data.shape == (512, 512, 4)
-        assert_equal(tile.data[510][5:7], [[17, 17, 17, 255], [18, 18, 18, 255]])
-
-        filename = str(tmpdir / 'Npix463.png')
-        tile.write(filename)
-        tile2 = HipsTile.read(meta, filename=filename)
-
-        assert tile == tile2
 
 class TestHipsTileMeta:
     @classmethod
