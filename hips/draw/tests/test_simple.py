@@ -15,13 +15,13 @@ def get_test_tiles():
     tile1 = HipsTile.read(
         meta=HipsTileMeta(order=3, ipix=450, file_format='fits', frame=hips_survey.astropy_frame,
                           tile_width=512),
-        filename=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix450.fits'),
+        full_path=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix450.fits'),
     )
 
     tile2 = HipsTile.read(
         meta=HipsTileMeta(order=3, ipix=451, file_format='fits', frame=hips_survey.astropy_frame,
                           tile_width=512),
-        filename=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix451.fits'),
+        full_path=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix451.fits'),
     )
 
     return [tile1, tile2]
