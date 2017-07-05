@@ -14,7 +14,7 @@ __all__ = [
 
 
 # TODO: Fix type annotation issue
-def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) -> np.ndarray:
+def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any], hips_survey: HipsSurveyProperties) -> np.ndarray:
     """Draw sky image using the simple and quick method.
 
     Parameters
@@ -23,6 +23,8 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) 
         An object of WCSGeometry
     tiles : List[HipsTile]
         A list of HipsTile
+    hips_survey : `~hips.HipsSurveyProperties`
+        HiPS survey properties
 
     Returns
     -------
@@ -31,7 +33,7 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any]) 
     """
     image = np.zeros(geometry.shape)
     for tile in tiles:
-        painter = SimpleTilePainter(geometry, tile)
+        painter = SimpleTilePainter(geometry, hips_survey, tile)
         image += painter.warp_image()
     return image
 
@@ -45,20 +47,33 @@ class SimpleTilePainter:
     ----------
     geometry : `~hips.utils.WCSGeometry`
         An object of WCSGeometry
+    hips_survey : `~hips.HipsSurveyProperties`
+        HiPS survey properties
     tile : `HipsTile`
        An object of HipsTile
     """
 
-    def __init__(self, geometry: WCSGeometry, tile: HipsTile) -> None:
+    def __init__(self, geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile: HipsTile) -> None:
         self.geometry = geometry
+        self.hips_survey = hips_survey
         self.tile = tile
 
+    @property
+    def dst(self) -> np.ndarray:
+        """Destination array for projective transform"""
+        width = self.hips_survey.tile_width
+        return np.array(
+            [[width - 1, 0],
+             [width - 1, width - 1],
+             [0, width - 1],
+             [0, 0]],
+        )
     @property
     def projection(self) -> ProjectiveTransform:
         """Estimate projective transformation on a HiPS tile"""
         corners = self.tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
         src = np.array(corners).T.reshape((4, 2))
-        dst = self.tile.meta.dst
+        dst = self.dst
         pt = ProjectiveTransform()
         pt.estimate(src, dst)
         return pt
@@ -126,6 +141,6 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     # TODO: this isn't a good API. Will become better when we have a cache.
     tiles = fetch_tiles(healpix_pixel_indices, hips_survey.hips_order, hips_survey)
 
-    image_data = draw_sky_image(geometry, tiles)
+    image_data = draw_sky_image(geometry, tiles, hips_survey)
 
     return image_data
