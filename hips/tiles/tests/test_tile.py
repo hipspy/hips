@@ -43,6 +43,20 @@ class TestHipsTile:
         # print((tile == tile2).all())
         # assert tile == tile2
 
+    @remote_data
+    def test_fetch_read_write_png(self, tmpdir):
+        meta = HipsTileMeta(order=6, ipix=463, file_format='png')
+        url = 'http://alasky.unistra.fr/2MASS6X/2MASS6X_H/Norder6/Dir0/Npix463.png'
+        tile = HipsTile.fetch(meta, url)
+
+        assert tile.data.shape == (512, 512, 4)
+        assert_equal(tile.data[510][5:7], [[17, 17, 17, 255], [18, 18, 18, 255]])
+
+        filename = str(tmpdir / 'Npix463.png')
+        tile.write(filename)
+        tile2 = HipsTile.read(meta, filename=filename)
+
+        assert tile == tile2
 
 class TestHipsTileMeta:
     @classmethod

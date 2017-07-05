@@ -189,15 +189,13 @@ class HipsTile:
                     data = hdu_list[0].data
                     header = hdu_list[0].header
             return cls(meta, data, header)
-        elif meta.file_format == 'jpg':
+        elif meta.file_format in {'jpg', 'png'}:
             with Image.open(raw_data) as image:
                 data = np.array(image)
             return cls(meta, data)
-        elif meta.file_format == 'png':
-            raise NotImplementedError()
         else:
             raise ValueError(f'Tile file format not supported: {meta.file_format}. '
-                             'Supported formats: fits, jpg, png')
+                              'Supported formats: fits, jpg, png')
 
     def write(self, filename: str = None) -> None:
         """Write HiPS tile by a given filename.
@@ -216,11 +214,9 @@ class HipsTile:
                 warnings.simplefilter('ignore', VerifyWarning)
                 hdu = fits.PrimaryHDU(self.data, header=self.header)
                 hdu.writeto(str(path))
-        elif file_format == 'jpg':
+        elif file_format in {'jpg', 'png'}:
             image = Image.fromarray(self.data)
             image.save(str(path))
-        elif file_format == 'png':
-            raise NotImplementedError()
         else:
             raise ValueError(f'Tile file format not supported: {meta.file_format}. '
-                             'Supported formats: fits, jpg, png')
+                              'Supported formats: fits, jpg, png')
