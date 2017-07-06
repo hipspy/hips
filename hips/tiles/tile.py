@@ -34,32 +34,28 @@ class HipsTileMeta:
         File format
     frame : {'icrs', 'galactic', 'ecliptic'}
         Sky coordinate frame
-    tile_width : `int`
-        Tile width (in pixels)
 
     Examples
     --------
     >>> from hips.tiles import HipsTileMeta
-    >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs', tile_width=512)
+    >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
     >>> tile_meta.skycoord_corners
     <SkyCoord (ICRS): (ra, dec) in deg
     [( 264.375, -24.62431835), ( 258.75 , -30.        ),
     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
 
-    def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'galactic', tile_width: int = 512) -> None:
+    def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'galactic') -> None:
         self.order = order
         self.ipix = ipix
         self.file_format = file_format
         self.frame = frame
-        self.tile_width = tile_width
 
     def __eq__(self, other: 'HipsTileMeta') -> bool:
         return (
             self.order == other.order and
             self.ipix == other.ipix and
-            self.file_format == other.file_format and
-            self.tile_width == other.tile_width
+            self.file_format == other.file_format
         )
 
     @property
@@ -81,16 +77,6 @@ class HipsTileMeta:
     def nside(self) -> int:
         """nside of the HEALPix map"""
         return hp.order2nside(self.order)
-
-    @property
-    def dst(self) -> np.ndarray:
-        """Destination array for projective transform"""
-        return np.array(
-            [[self.tile_width - 1, 0],
-             [self.tile_width - 1, self.tile_width - 1],
-             [0, self.tile_width - 1],
-             [0, 0]],
-        )
 
     @property
     def skycoord_corners(self) -> SkyCoord:

@@ -128,7 +128,13 @@ class HipsSurveyProperties:
         """HiPS access url"""
         return self.data['moc_access_url'].rsplit('/', 1)[0]
 
+    @property
+    def tile_width(self) -> int:
+        """HiPS tile width"""
+        return int(self.data['hips_tile_width']) or 512
+
     def directory(self, ipix: int) -> int:
+        """Directory index containing HiPS tile(s)"""
         return (ipix // 10000) * 10000
 
     def tile_access_url(self, order: int, ipix: int) -> str:

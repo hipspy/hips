@@ -2,7 +2,7 @@
 from astropy.utils.data import get_pkg_data_filename
 from astropy.tests.helper import remote_data
 from ..surveys import HipsSurveyProperties, HipsSurveyPropertiesList
-
+from ...utils.testing import get_hips_extra_file, requires_hips_extra
 
 class TestHipsSurveyProperties:
     @classmethod
@@ -33,6 +33,13 @@ class TestHipsSurveyProperties:
 
     def test_tile_access_url(self):
         assert self.hips_survey_property.tile_access_url(order=9, ipix=54321) == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/'
+
+
+    @requires_hips_extra()
+    def test_tile_width(self):
+        filename = get_hips_extra_file('datasets/samples/Planck-HFI143/properties')
+        survey = HipsSurveyProperties.read(filename)
+        assert survey.tile_width == 256
 
 
 class TestHipsSurveyPropertiesList:

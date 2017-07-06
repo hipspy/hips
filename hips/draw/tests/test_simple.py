@@ -13,25 +13,27 @@ def get_test_tiles():
     hips_survey = HipsSurveyProperties.read(filename)
 
     tile1 = HipsTile.read(
-        meta=HipsTileMeta(order=3, ipix=450, file_format='fits', frame=hips_survey.astropy_frame,
-                          tile_width=512),
+        meta=HipsTileMeta(order=3, ipix=450, file_format='fits', frame=hips_survey.astropy_frame),
         full_path=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix450.fits'),
     )
 
     tile2 = HipsTile.read(
-        meta=HipsTileMeta(order=3, ipix=451, file_format='fits', frame=hips_survey.astropy_frame,
-                          tile_width=512),
+        meta=HipsTileMeta(order=3, ipix=451, file_format='fits', frame=hips_survey.astropy_frame),
         full_path=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix451.fits'),
     )
 
     return [tile1, tile2]
 
 
+@remote_data
 @requires_hips_extra()
 def test_draw_sky_image():
     geometry = make_test_wcs_geometry(case=2)
     tiles = get_test_tiles()
-    data = draw_sky_image(geometry, tiles)
+    url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/DSS2Red/properties'
+    hips_survey = HipsSurveyProperties.fetch(url)
+
+    data = draw_sky_image(geometry, tiles, hips_survey)
 
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
