@@ -2,6 +2,7 @@
 """HiPS tile drawing -- simple method."""
 from typing import Generator, Any
 import numpy as np
+from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
 from ..utils import WCSGeometry, compute_healpix_pixel_indices
@@ -116,6 +117,22 @@ def fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hips
         yield tile
 
 
+def get_order(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> int:
+    """Compute the tile order suited for the given geometry and hips_survey"""
+
+    resolution = np.min(proj_plane_pixel_scales(geometry.wcs))
+
+    tile_order = np.log2(hips_survey.tile_width)
+    full_sphere_area = 4 * np.pi * np.square(180 / np.pi)
+    for candidate_tile_order in range(3, 29 + 1):
+        tile_resolution = np.sqrt(full_sphere_area / 12 / 4**(candidate_tile_order + tile_order))
+
+        if tile_resolution <= resolution:
+            break
+
+    return np.min([candidate_tile_order, hips_survey.hips_order])
+
+
 def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> np.ndarray:
     """Make sky image: fetch tiles and draw.
 
@@ -133,13 +150,14 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     data : `~numpy.ndarray`
         Output image pixels
     """
+    order = get_order(geometry, hips_survey)
     healpix_pixel_indices = compute_healpix_pixel_indices(
         wcs_geometry=geometry,
-        order=hips_survey.hips_order,
+        order=order,
         healpix_frame=hips_survey.astropy_frame,
     )
     # TODO: this isn't a good API. Will become better when we have a cache.
-    tiles = fetch_tiles(healpix_pixel_indices, hips_survey.hips_order, hips_survey)
+    tiles = fetch_tiles(healpix_pixel_indices, order, hips_survey)
 
     image_data = draw_sky_image(geometry, tiles, hips_survey)
 
