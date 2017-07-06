@@ -46,7 +46,7 @@ matrix:
     include:
         # Main build -- used for coverage
         - os: linux
-          env: SETUP_CMD='test --coverage'
+          env: SETUP_CMD='test --coverage --remote-data -V'
 
         # Docs build
         - os: linux
@@ -55,7 +55,7 @@ matrix:
 
         # Check that install / tests work with minimal required dependencies
         - os: linux
-          env: SETUP_CMD='test'
+          env: SETUP_CMD='test -V'
                CONDA_DEPENDENCIES='healpy scikit-image Pillow'
 
         # Try MacOS X
