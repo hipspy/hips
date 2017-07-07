@@ -1,14 +1,13 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import pytest
-import numpy as np
 from astropy.tests.helper import remote_data
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 from ..tile import HipsTile, HipsTileMeta
 from ...utils.testing import get_hips_extra_file, requires_hips_extra
 
-class TestHipsTile:
 
+class TestHipsTile:
     fetch_read_pars = [
         dict(url='http://alasky.unistra.fr/DSS/DSS2Merged/Norder3/Dir0/Npix463.fits',
              full_path='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.fits',
@@ -39,7 +38,7 @@ class TestHipsTile:
         dict(full_path='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.jpg', file_name='Npix463.jpg',
              file_format='jpg', order=3, ipix=463, shape=(512, 512, 3), tile_data=[[10, 10, 10]], index=[[510], [5]]),
         dict(full_path='datasets/samples/2MASS6XH/Norder6/Dir0/Npix6112.png', file_name='Npix6112.png',
-             file_format='png', order=6, ipix=6112, shape=(512, 512, 4), tile_data=[[19, 19, 19, 255]], index=[[253], [5]])
+             file_format='png', order=6, ipix=6112, shape=(512, 512, 4), tile_data=[[19, 19, 19, 255]], index=[[253], [5]]),
     ]
 
     @requires_hips_extra()
@@ -59,10 +58,12 @@ class TestHipsTile:
         # TODO: Fix JPG write issue
         # assert tile == tile2
 
+    @requires_hips_extra()
     def test_value_error(self):
+        # `file_format` of "jpeg" is invalid. Should be "jpg"
+        meta = HipsTileMeta(order=3, ipix=463, file_format='jpeg')
+        full_path = get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix463.jpg')
         with pytest.raises(ValueError):
-            meta = HipsTileMeta(order=3, ipix=463, file_format='jpeg')
-            full_path = get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix463.jpg')
             HipsTile.read(meta, full_path)
 
 

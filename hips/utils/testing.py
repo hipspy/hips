@@ -28,7 +28,6 @@ def has_hips_extra():
         path = Path(os.environ['HIPS_EXTRA']) / 'datasets/samples/DSS2Red/properties'
         if path.is_file():
             return True
-
     return False
 
 
@@ -43,19 +42,19 @@ def make_test_wcs_geometry(case=0):
     if case == 0:
         return WCSGeometry.create(
             skydir=SkyCoord(3, 4, unit='deg', frame='galactic'),
-            shape=(2, 3), coordsys='GAL',
+            width=2, height=3, coordsys='galactic',
             projection='CAR', cdelt=1.0, crpix=(1, 1),
         )
     elif case == 1:
         return WCSGeometry.create(
             skydir=SkyCoord(10, 20, unit='deg', frame='galactic'),
-            shape=(10, 20), coordsys='GAL',
+            width=20, height=10, coordsys='galactic',
             projection='CAR', cdelt=1.0, crpix=(1, 1),
         )
     elif case == 2:
         return WCSGeometry.create(
             skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
-            shape=(1000, 2000), coordsys='GAL',
+            width=2000, height=1000, coordsys='galactic',
             projection='AIT', cdelt=0.01, crpix=(1000, 500),
         )
     else:

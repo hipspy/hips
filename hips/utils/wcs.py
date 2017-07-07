@@ -4,16 +4,19 @@ from typing import Tuple
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.wcs import WCS
+from astropy.coordinates import Angle
 from astropy.wcs.utils import pixel_to_skycoord, wcs_to_celestial_frame
 
 __all__ = [
     'WCSGeometry',
 ]
 
-__doctest_skip__ = ['WCSGeometry']
+__doctest_skip__ = [
+    '*',
+]
 
-Shape = namedtuple('Shape', ['ny', 'nx'])
-"""Helper for 2-dim image shape, to make it clearer what value is x and y."""
+Shape = namedtuple('Shape', ['width', 'height'])
+"""Helper for 2-dim image shape, to make it clearer what value is width and height."""
 
 
 class WCSGeometry:
@@ -23,8 +26,10 @@ class WCSGeometry:
     ----------
     wcs : `~astropy.wcs.WCS`
         WCS projection object
-    shape : tuple
-        Shape of the image
+    width : int
+        Width of the image in pixels
+    height : int
+        Height of the image in pixels
 
     Examples
     --------
@@ -32,7 +37,7 @@ class WCSGeometry:
     >>> from hips.utils import WCSGeometry
     >>> skycoord = SkyCoord(10, 20, unit='deg')
     >>> wcs_geometry = WCSGeometry.create(
-    ...     skydir=skycoord, shape=(10, 20),
+    ...     skydir=skycoord, width=20, height=10,
     ...     coordsys='CEL', projection='AIT',
     ...     cdelt=1.0, crpix=(1., 1.),
     ... )
@@ -46,20 +51,20 @@ class WCSGeometry:
     CDELT : -1.0  1.0
     NAXIS : 0  0
     >>> wcs_geometry.shape
-    Shape(ny=10, nx=20)
+    Shape(width=20, height=10)
     """
     WCS_ORIGIN_DEFAULT = 0
     """Default WCS transform origin, to be used in all WCS pix <-> world calls."""
 
-    def __init__(self, wcs: WCS, shape: tuple) -> None:
+    def __init__(self, wcs: WCS, width: int, height: int) -> None:
         self.wcs = wcs
-        self.shape = Shape(*shape)
+        self.shape = Shape(width=width, height=height)
 
     @property
     def center_pix(self) -> Tuple[float, float]:
         """Image center in pixel coordinates (tuple of x, y)."""
-        x = float(self.shape.nx - 1) / 2
-        y = float(self.shape.ny - 1) / 2
+        x = float(self.shape.width - 1) / 2
+        y = float(self.shape.height - 1) / 2
         return x, y
 
     @property
@@ -78,7 +83,7 @@ class WCSGeometry:
         return pixel_to_skycoord(x, y, self.wcs, self.WCS_ORIGIN_DEFAULT)
 
     @classmethod
-    def create(cls, skydir: SkyCoord, shape: tuple, coordsys: str = 'CEL',
+    def create(cls, skydir: SkyCoord, width: int, height: int, coordsys: str = 'icrs',
                projection: str = 'AIT', cdelt: float = 1.0, crpix: tuple = (1., 1.)) -> 'WCSGeometry':
         """Create WCS object programmatically (`WCSGeometry`).
 
@@ -86,27 +91,30 @@ class WCSGeometry:
         ----------
         skydir : `~astropy.coordinates.SkyCoord`
             Sky coordinate of the WCS reference point
-        shape : `tuple`
-            Shape of the image (Numpy axis order: y, x)
-        coordsys : `str`
+        width : `int`
+            Width of the image in pixels
+        height : `int`
+            Height of the image in pixels
+        coordsys : {'icrs', 'galactic'}
             Coordinate system
         projection : `str`
-            Projection of the WCS object
+            Projection of the WCS object.
+            To see list of supported projections
+            visit: http://docs.astropy.org/en/stable/wcs/#supported-projections
         cdelt : `float`
             Coordinate increment at reference point
         crpix : `tuple`
             Pixel coordinates of reference point
             (WCS axis order: x, y and FITS convention origin=1)
         """
-
         w = WCS(naxis=2)
 
-        if coordsys == 'CEL':
+        if coordsys == 'icrs':
             w.wcs.ctype[0] = f'RA---{projection}'
             w.wcs.ctype[1] = f'DEC--{projection}'
             w.wcs.crval[0] = skydir.icrs.ra.deg
             w.wcs.crval[1] = skydir.icrs.dec.deg
-        elif coordsys == 'GAL':
+        elif coordsys == 'galactic':
             w.wcs.ctype[0] = f'GLON-{projection}'
             w.wcs.ctype[1] = f'GLAT-{projection}'
             w.wcs.crval[0] = skydir.galactic.l.deg
@@ -122,7 +130,57 @@ class WCSGeometry:
 
         w = WCS(w.to_header())
 
-        return cls(w, shape)
+        return cls(w, width, height)
+
+    @classmethod
+    def create_simple(cls, skydir: SkyCoord, width: int, height: int, fov: {str, Angle},
+                      coordsys: str = 'icrs', projection: str = 'AIT') -> 'WCSGeometry':
+        """Create WCS object programmatically using field of view (`WCSGeometry`).
+
+        Parameters
+        ----------
+        skydir : `~astropy.coordinates.SkyCoord`
+            Sky coordinate of the WCS reference point
+        width : `int`
+            Width of the image in pixels
+        height : `int`
+            Height of the image in pixels
+        fov: `str` or Angle
+            Field of view
+        coordsys : {'icrs', 'galactic'}
+            Coordinate system
+        projection : `str`
+            Projection of the WCS object.
+            To see list of supported projections
+            visit: http://docs.astropy.org/en/stable/wcs/#supported-projections
+
+        Examples
+        --------
+        >>> from astropy.coordinates import SkyCoord
+        >>> from hips.utils import WCSGeometry
+        >>> skycoord = SkyCoord(10, 20, unit='deg')
+        >>> wcs_geometry = WCSGeometry.create_simple(
+        ...     skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
+        ...     width=2000, height=1000, fov="3 deg",
+        ...     coordsys='galactic', projection='AIT'
+        ... )
+        >>> wcs_geometry.wcs
+        Number of WCS axes: 2
+        CTYPE : 'GLON-AIT'  'GLAT-AIT'
+        CRVAL : 0.0  0.0
+        CRPIX : 500.0  1000.0
+        PC1_1 PC1_2  : 1.0  0.0
+        PC2_1 PC2_2  : 0.0  1.0
+        CDELT : -0.0015  0.0015
+        NAXIS : 0  0
+        >>> wcs_geometry.shape
+        Shape(width=2000, height=1000)
+        """
+        fov = Angle(fov)
+        crpix = float(width / 2), float(height / 2)
+        cdelt = float(fov.degree) / float(max(width, height))
+
+        return cls.create(skydir, width, height, coordsys, projection, cdelt, crpix)
 
     @property
     def celestial_frame(self) -> str:
