@@ -3,6 +3,7 @@ from numpy.testing import assert_allclose
 from astropy.coordinates import SkyCoord
 from ..wcs import WCSGeometry
 
+
 class TestWCSGeometry:
     def setup(self):
         self.wcs_geometry = WCSGeometry.create_simple(
@@ -33,7 +34,3 @@ class TestWCSGeometry:
         assert_allclose(c.dec.deg, 0.00075, atol=1e-2)
         assert_allclose(self.wcs_geometry.wcs.wcs.crpix, [1000., 500.])
         assert_allclose(self.wcs_geometry.wcs.wcs.cdelt, [-0.0015, 0.0015])
-
-    def skycoord_separation(self):
-        skydir=SkyCoord(0, 0, unit='deg', frame='icrs')
-        skydir.separation(skydir).degree == 2

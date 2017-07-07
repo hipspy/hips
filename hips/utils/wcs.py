@@ -58,7 +58,7 @@ class WCSGeometry:
 
     def __init__(self, wcs: WCS, width: int, height: int) -> None:
         self.wcs = wcs
-        self.shape = Shape(*(width, height))
+        self.shape = Shape(width=width, height=height)
 
     @property
     def center_pix(self) -> Tuple[float, float]:
@@ -177,7 +177,7 @@ class WCSGeometry:
         Shape(width=2000, height=1000)
         """
         fov = Angle(fov)
-        crpix = (float(width / 2), float(height / 2))
+        crpix = float(width / 2), float(height / 2)
         cdelt = float(fov.degree) / float(max(width, height))
 
         return cls.create(skydir, width, height, coordsys, projection, cdelt, crpix)
