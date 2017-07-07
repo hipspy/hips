@@ -37,7 +37,7 @@ def test_draw_sky_image():
 
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
-    assert_allclose(np.sum(data), 4575235421.5126467)
+    assert_allclose(np.sum(data), 2992643842.729775)
     assert_allclose(data[400, 500], 2866.0101409848185)
     assert_allclose(data[400, 501], 2563.6916727348043)
 
