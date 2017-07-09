@@ -2,6 +2,7 @@
 """HiPS tile drawing -- simple method."""
 from typing import Generator, Any
 import numpy as np
+from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
 from ..utils import WCSGeometry, compute_healpix_pixel_indices
@@ -9,9 +10,13 @@ from ..utils import WCSGeometry, compute_healpix_pixel_indices
 __all__ = [
     'draw_sky_image',
     'make_sky_image',
-    'SimpleTilePainter'
+    'SimpleTilePainter',
+    'compute_matching_hips_order'
 ]
 
+__doctest_skip__ = [
+    'compute_matching_hips_order',
+]
 
 # TODO: Fix type annotation issue
 def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any], hips_survey: HipsSurveyProperties) -> np.ndarray:
@@ -116,6 +121,59 @@ def fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hips
         yield tile
 
 
+def compute_matching_hips_order(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> int:
+    """Compute HiPS tile order matching a given image pixel size.
+
+    Parameters
+    ----------
+    geometry : WCSGeometry
+        Geometry of the output image
+    hips_survey : HipsSurveyProperties
+        An object of HipsSurveyProperties
+
+    Returns
+    -------
+    'int'
+        Returns HiPS order
+
+    Examples
+    --------
+    >>> from hips.draw import compute_matching_hips_order
+    >>> from astropy.coordinates import SkyCoord
+    >>> url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
+    >>> hips_survey = HipsSurveyProperties.fetch(url)
+    >>> geometry = WCSGeometry.create_simple(
+    ...     skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
+    ...     width=2000, height=1000, fov="3 deg",
+    ...     coordsys='icrs', projection='AIT'
+    ... )
+    >>> compute_matching_hips_order(geometry, hips_survey)
+    7
+    """
+
+    # Sky image angular resolution (pixel size in degree)
+    resolution = np.min(proj_plane_pixel_scales(geometry.wcs))
+    desired_order = _get_hips_order_for_resolution(hips_survey.tile_width, resolution)
+    # Return the desired order, or the highest resolution available.
+    # Note that HiPS never has resolution less than 3,
+    # and that limit is handled in _get_hips_order_for_resolution
+    return np.min([desired_order, hips_survey.hips_order])
+
+
+def _get_hips_order_for_resolution(tile_width, resolution):
+    """Finding the best HiPS order by looping through all possible options."""
+    tile_order = np.log2(tile_width)
+    full_sphere_area = 4 * np.pi * np.square(180 / np.pi)
+    # 29 is the maximum order supported by healpy and 3 is the minimum order
+    for candidate_tile_order in range(3, 29 + 1):
+        tile_resolution = np.sqrt(full_sphere_area / 12 / 4 ** (candidate_tile_order + tile_order))
+        # Finding the smaller tile order with a resolution equal or better than geometric resolution
+        if tile_resolution <= resolution:
+            break
+
+    return candidate_tile_order
+
+
 def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> np.ndarray:
     """Make sky image: fetch tiles and draw.
 
@@ -133,13 +191,14 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
     data : `~numpy.ndarray`
         Output image pixels
     """
+    order = compute_matching_hips_order(geometry, hips_survey)
     healpix_pixel_indices = compute_healpix_pixel_indices(
         wcs_geometry=geometry,
-        order=hips_survey.hips_order,
+        order=order,
         healpix_frame=hips_survey.astropy_frame,
     )
     # TODO: this isn't a good API. Will become better when we have a cache.
-    tiles = fetch_tiles(healpix_pixel_indices, hips_survey.hips_order, hips_survey)
+    tiles = fetch_tiles(healpix_pixel_indices, order, hips_survey)
 
     image_data = draw_sky_image(geometry, tiles, hips_survey)
 
