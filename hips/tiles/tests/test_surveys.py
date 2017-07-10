@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from numpy.testing import assert_allclose
 from astropy.utils.data import get_pkg_data_filename
 from astropy.tests.helper import remote_data
 from ..surveys import HipsSurveyProperties, HipsSurveyPropertiesList
@@ -56,8 +57,16 @@ class TestHipsSurveyPropertiesList:
         assert survey.data['obs_collection'] == 'MUSE-M42'
         assert survey.data['hips_tile_format'] == 'png fits'
 
+    def test_table(self):
         table = self.surveys.table
-        assert table['surveys'][0]['hips_tile_format'] == 'png fits'
+        assert len(table) == 4
+
+        row = table[0]
+        assert row['creator_did'] == 'ivo://CDS/C/MUSE-M42'
+        assert row['obs_collection'] == 'MUSE-M42'
+        assert row['hips_tile_format'] == 'png fits'
+        assert row['moc_order'] == 12
+        assert_allclose(row['moc_sky_fraction'], 2.98e-07, rtol=0.01)
 
     @remote_data
     def test_fetch(self):
