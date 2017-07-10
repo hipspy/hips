@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from collections import OrderedDict
-import numpy as np
+from io import StringIO
+from csv import DictWriter
 import urllib.request
 from typing import List
 from astropy.table import Table
@@ -179,6 +180,18 @@ class HipsSurveyPropertiesList:
     '2MASS H (1.66 microns)'
     >>> survey.hips_order
     9
+
+    You can make a `astropy.table.Table` of available HiPS surveys:
+
+    >>> table = surveys.table
+
+    and then do all the operations that Astropy table supports, e.g.
+
+    >>> table[['ID', 'hips_order', 'hips_service_url']][[1, 30, 42]]
+    >>> table.show_in_browser(jsviewer=True)
+    >>> table.show_in_notebook()
+    >>> table.to_pandas()
+
     """
     DEFAULT_URL = ('http://alasky.unistra.fr/MocServer/query?'
                    'hips_service_url=*&dataproduct_type=!catalog&dataproduct_type=!cube&get=record')
@@ -233,11 +246,17 @@ class HipsSurveyPropertiesList:
 
     @property
     def table(self) -> Table:
-        """Astropy Table containing HiPS surveys (`HipsSurveyPropertiesList`)."""
+        """Table with HiPS survey infos (`~astropy.table.Table`)."""
+        # There are two aspects that make creating a `Table` from the data difficult:
+        # 1. Not all fields are present for the different surveys
+        # 2. All data is stored as strings, numbers haven't been converted yet
+        #
+        # It might not be the best solution, but the following code does the conversion
+        # by going via an intermediate CVS string, which Table can parse directly
         rows = [properties.data for properties in self.data]
-        # This way (one column) to fill the table is not useful!
-        # Instead, there should be one row per survey and one column per property
-        # TODO: implement this properly!
-        table = Table()
-        table['surveys'] = rows
-        return table
+        fieldnames = sorted({key for row in rows for key in row})
+        buffer = StringIO()
+        writer = DictWriter(buffer, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+        return Table.read(buffer.getvalue(), format='ascii.csv', guess=False)
