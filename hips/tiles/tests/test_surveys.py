@@ -36,6 +36,13 @@ class TestHipsSurveyProperties:
         assert self.hips_survey_property.tile_access_url(order=9, ipix=54321) == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/'
 
 
+@remote_data
+def test_base_url():
+    url = 'http://alasky.u-strasbg.fr/DSS/DSS2-NIR/properties'
+    survey = HipsSurveyProperties.fetch(url)
+
+    assert survey.base_url == 'http://alasky.u-strasbg.fr/DSS/DSS2-NIR'
+
     @requires_hips_extra()
     def test_tile_width(self):
         filename = get_hips_extra_file('datasets/samples/Planck-HFI143/properties')

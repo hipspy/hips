@@ -69,16 +69,18 @@ class HipsSurveyProperties:
 
         with urllib.request.urlopen(url) as response:
             text = response.read().decode('utf-8')
-        return cls.parse(text)
+        return cls.parse(text, url)
 
     @classmethod
-    def parse(cls, text: str) -> 'HipsSurveyProperties':
+    def parse(cls, text: str, url: str = None) -> 'HipsSurveyProperties':
         """Parse HiPS survey description text (`HipsSurveyProperties`).
 
         Parameters
         ----------
         text : str
             Text containing HiPS survey properties
+        url : str
+            Properties URL of HiPS
         """
         data = OrderedDict()
         for line in text.split('\n'):
@@ -91,6 +93,9 @@ class HipsSurveyProperties:
             except ValueError:
                 # Skip bad lines (silently, might not be a good idea to do this)
                 continue
+
+        if url is not None:
+            data['properties_url'] = url.rsplit('/', 1)[0]
 
         return cls(data)
 
@@ -127,7 +132,16 @@ class HipsSurveyProperties:
     @property
     def base_url(self) -> str:
         """HiPS access url"""
-        return self.data['moc_access_url'].rsplit('/', 1)[0]
+        try:
+            return self.data['hips_service_url']
+        except KeyError:
+            try:
+                return self.data['moc_access_url'].rsplit('/', 1)[0]
+            except KeyError:
+                try:
+                    return self.data['properties_url']
+                except:
+                    return ValueError('URL does not exist!')
 
     @property
     def tile_width(self) -> int:
