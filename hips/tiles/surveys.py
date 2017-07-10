@@ -150,6 +150,20 @@ class HipsSurveyProperties:
         """
         return self.base_url + '/Norder' + str(order) + '/Dir' + str(self.directory(ipix)) + '/'
 
+    def tile_path(self, order: int, ipix: int, tile_format: str) -> str:
+        """Tile access URL
+
+        Parameters
+        ----------
+        order : int
+            HiPS order
+        ipix : int
+            Index of the HiPS tile
+        tile_format : str
+            HiPS tile URL
+        """
+        return '/Norder' + str(order) + '/Dir' + str(self.directory(ipix)) + '/Npix' + str(ipix) + '.' + tile_format
+
     @property
     def hips_service_url(self) -> str:
         """HiPS service base URL (`str`)."""
