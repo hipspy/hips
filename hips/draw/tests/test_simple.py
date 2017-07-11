@@ -4,45 +4,53 @@ import numpy as np
 import healpy as hp
 from astropy.coordinates import SkyCoord
 from numpy.testing import assert_allclose
-from astropy.utils.data import get_pkg_data_filename
 from astropy.tests.helper import remote_data
 from ..simple import make_sky_image, draw_sky_image, compute_matching_hips_order, _get_hips_order_for_resolution
 from ...tiles import HipsSurveyProperties, HipsTileMeta, HipsTile
 from ...utils import WCSGeometry
 from ...utils.testing import get_hips_extra_file, make_test_wcs_geometry, requires_hips_extra
 
-def get_test_tiles():
-    filename = get_pkg_data_filename('../../tiles/tests/data/properties.txt')
+
+def get_test_tiles(file_format, survey, order, ipix_list):
+    filename = get_hips_extra_file('datasets/samples/' + survey + '/properties')
     hips_survey = HipsSurveyProperties.read(filename)
 
-    tile1 = HipsTile.read(
-        meta=HipsTileMeta(order=3, ipix=450, file_format='fits', frame=hips_survey.astropy_frame),
-        full_path=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix450.fits'),
-    )
+    tiles = []
+    for ipix in ipix_list:
+        tiles.append(HipsTile.read(
+            meta=HipsTileMeta(order=order, ipix=ipix, file_format=file_format, frame=hips_survey.astropy_frame),
+            full_path=get_hips_extra_file('datasets/samples/' + survey + hips_survey.tile_path(order=order, ipix=ipix, tile_format=file_format)),
+        ))
 
-    tile2 = HipsTile.read(
-        meta=HipsTileMeta(order=3, ipix=451, file_format='fits', frame=hips_survey.astropy_frame),
-        full_path=get_hips_extra_file('datasets/samples/DSS2Red/Norder3/Dir0/Npix451.fits'),
-    )
+    return tiles
 
-    return [tile1, tile2]
+
+draw_sky_image_pars = [
+    dict(file_format='fits', shape=(2000, 1000), survey='DSS2Red', data_1=2866.0101409848185,
+         data_2=2563.6916727348043, data_sum=2992643842.729775, order=3, ipix_list=[450, 451]),
+    dict(file_format='jpg', shape=(2000, 1000, 3), survey='DSS2Red', data_1=[13.040878, 13.040878, 13.040878],
+         data_2=[17.235874, 17.235874, 17.235874], data_sum=155233709.20236143, order=3, ipix_list=[450, 451]),
+    dict(file_format='png', shape=(2000, 1000, 4), survey='AKARI-FIS', data_1=[254., 254., 254., 255.],
+         data_2=[254., 254., 254., 255.], data_sum=586208559.2450126, order=3, ipix_list=[450, 451])
+]
 
 
 @remote_data
 @requires_hips_extra()
-def test_draw_sky_image():
+@pytest.mark.parametrize('pars', draw_sky_image_pars)
+def test_draw_sky_image(pars):
     geometry = make_test_wcs_geometry(case=2)
-    tiles = get_test_tiles()
-    url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/DSS2Red/properties'
+    tiles = get_test_tiles(file_format=pars['file_format'], survey=pars['survey'], order=pars['order'], ipix_list=pars['ipix_list'])
+    url = 'https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/' + pars['survey'] + '/properties'
     hips_survey = HipsSurveyProperties.fetch(url)
 
-    data = draw_sky_image(geometry, tiles, hips_survey)
+    data = draw_sky_image(geometry=geometry, tiles=tiles, hips_survey=hips_survey, tile_format=pars['file_format'])
 
-    assert data.shape == geometry.shape
+    assert data.shape == pars['shape']
     assert data.dtype == np.float64
-    assert_allclose(np.sum(data), 2992643842.729775)
-    assert_allclose(data[400, 500], 2866.0101409848185)
-    assert_allclose(data[400, 501], 2563.6916727348043)
+    assert_allclose(np.sum(data), pars['data_sum'])
+    assert_allclose(data[400, 500], pars['data_1'])
+    assert_allclose(data[400, 501], pars['data_2'])
 
 
 @remote_data
@@ -51,9 +59,10 @@ def test_make_sky_image():
     url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
     hips_survey = HipsSurveyProperties.fetch(url)
     geometry = make_test_wcs_geometry(case=2)
-    data = make_sky_image(geometry, hips_survey)
+    data = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format='fits')
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
+    assert_allclose(np.sum(data), 7615817463.1612253)
     assert_allclose(data[200, 994], 2213.30874796)
     assert_allclose(data[200, 995], 2296.93885940)
 

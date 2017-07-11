@@ -18,8 +18,10 @@ __doctest_skip__ = [
     'compute_matching_hips_order',
 ]
 
+
 # TODO: Fix type annotation issue
-def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any], hips_survey: HipsSurveyProperties) -> np.ndarray:
+def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any],
+                   hips_survey: HipsSurveyProperties, tile_format: str) -> np.ndarray:
     """Draw sky image using the simple and quick method.
 
     Parameters
@@ -30,13 +32,21 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any], 
         A list of HipsTile
     hips_survey : `~hips.HipsSurveyProperties`
         HiPS survey properties
+    tile_format : `str`
+        Format of HiPS tile
 
     Returns
     -------
     np.ndarray
         Returns a numpy array containing all HiPS tiles projected onto it
     """
-    image = np.zeros(geometry.shape)
+    if tile_format == 'jpg':
+        shape = (geometry.shape.width, geometry.shape.height, 3)
+    elif tile_format == 'png':
+        shape = (geometry.shape.width, geometry.shape.height, 4)
+    else:
+        shape = (geometry.shape.width, geometry.shape.height)
+    image = np.zeros(shape)
     for tile in tiles:
         painter = SimpleTilePainter(geometry, hips_survey, tile)
         image += painter.warp_image()
@@ -45,7 +55,6 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any], 
 
 class SimpleTilePainter:
     """Paint a single tile using a simple projective transformation method.
-
     The algorithm implemented is described here: :ref:`drawing_algo`.
 
     Parameters
@@ -73,6 +82,7 @@ class SimpleTilePainter:
              [0, width - 1],
              [0, 0]],
         )
+
     @property
     def projection(self) -> ProjectiveTransform:
         """Estimate projective transformation on a HiPS tile"""
@@ -93,7 +103,8 @@ class SimpleTilePainter:
         )
 
 
-def fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: HipsSurveyProperties) -> 'HipsTile':
+def fetch_tiles(healpix_pixel_indices: np.ndarray, order: int,
+                hips_survey: HipsSurveyProperties, tile_format: str) -> 'HipsTile':
     """Fetch HiPS tiles from a remote URL.
 
     Parameters
@@ -104,18 +115,20 @@ def fetch_tiles(healpix_pixel_indices: np.ndarray, order: int, hips_survey: Hips
         Order of the HEALPix map
     hips_survey : HipsSurveyProperties
         An object of HipsSurveyProperties
+    tile_format : `str`
+        Format of HiPS tile
 
     Returns
     -------
     'HipsTile'
-        Returns an object of  HipsTile
+        Returns an object of HipsTile
     """
     for healpix_pixel_index in healpix_pixel_indices:
         tile_meta = HipsTileMeta(
             order=order,
             ipix=healpix_pixel_index,
             frame=hips_survey.astropy_frame,
-            file_format='fits',
+            file_format=tile_format,
         )
         tile = HipsTile.fetch(tile_meta, hips_survey.tile_access_url(order=order, ipix=healpix_pixel_index) + tile_meta.filename)
         yield tile
@@ -174,9 +187,8 @@ def _get_hips_order_for_resolution(tile_width, resolution):
     return candidate_tile_order
 
 
-def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> np.ndarray:
+def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> np.ndarray:
     """Make sky image: fetch tiles and draw.
-
     The example for this can be found on the :ref:`gs` page.
 
     Parameters
@@ -185,6 +197,8 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
         Geometry of the output image
     hips_survey : `~hips.HipsSurveyProperties`
         HiPS survey properties
+    tile_format : `str`
+        Format of HiPS tile
 
     Returns
     -------
@@ -198,8 +212,8 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties) -> 
         healpix_frame=hips_survey.astropy_frame,
     )
     # TODO: this isn't a good API. Will become better when we have a cache.
-    tiles = fetch_tiles(healpix_pixel_indices, order, hips_survey)
+    tiles = fetch_tiles(healpix_pixel_indices, order, hips_survey, tile_format)
 
-    image_data = draw_sky_image(geometry, tiles, hips_survey)
+    image_data = draw_sky_image(geometry, tiles, hips_survey, tile_format)
 
     return image_data
