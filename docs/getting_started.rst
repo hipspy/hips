@@ -54,7 +54,9 @@ Now you can then save the sky image to local disk e.g. FITS file format::
 
 or plot and analyse the sky image however you like.
 
-TODO: show how to plot the image with `astropy.visualization.wcsaxes`.
+If you execute the example above, you will get this sky image which was plotted using `astropy.visualization.wcsaxes`
+
+.. plot:: plot_fits.py
 
 HiPS data
 ---------
