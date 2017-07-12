@@ -23,8 +23,8 @@ def test_boundaries():
 
 
 compute_healpix_pixel_indices_pars = [
-    dict(frame='galactic', ipix=[269, 271, 280, 282, 283, 304, 305, 307, 308, 310]),
-    dict(frame='icrs', ipix=[448, 449, 450, 451, 454, 456, 457, 458, 459, 460]),
+    dict(frame='galactic', ipix=[269, 270, 271, 280, 282, 283, 292, 293, 295, 304, 305, 306]),
+    dict(frame='icrs', ipix=[448, 449, 450, 451, 454, 456, 457, 460, 661, 663, 669]),
 ]
 
 

@@ -5,6 +5,7 @@ from astropy.tests.helper import remote_data
 from ..surveys import HipsSurveyProperties, HipsSurveyPropertiesList
 from ...utils.testing import get_hips_extra_file, requires_hips_extra
 
+
 class TestHipsSurveyProperties:
     @classmethod
     def setup_class(cls):

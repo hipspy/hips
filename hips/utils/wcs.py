@@ -15,7 +15,7 @@ __doctest_skip__ = [
     '*',
 ]
 
-Shape = namedtuple('Shape', ['width', 'height'])
+Shape = namedtuple('Shape', ['height', 'width'])
 """Helper for 2-dim image shape, to make it clearer what value is width and height."""
 
 
