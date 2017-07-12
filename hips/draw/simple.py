@@ -41,11 +41,11 @@ def draw_sky_image(geometry: WCSGeometry, tiles: Generator[HipsTile, Any, Any],
         Returns a numpy array containing all HiPS tiles projected onto it
     """
     if tile_format == 'jpg':
-        shape = (geometry.shape.width, geometry.shape.height, 3)
+        shape = (geometry.shape.height, geometry.shape.width, 3)
     elif tile_format == 'png':
-        shape = (geometry.shape.width, geometry.shape.height, 4)
+        shape = (geometry.shape.height, geometry.shape.width, 4)
     else:
-        shape = (geometry.shape.width, geometry.shape.height)
+        shape = (geometry.shape.height, geometry.shape.width)
     image = np.zeros(shape)
     for tile in tiles:
         painter = SimpleTilePainter(geometry, hips_survey, tile)

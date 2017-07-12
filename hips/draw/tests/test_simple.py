@@ -26,12 +26,12 @@ def get_test_tiles(file_format, survey, order, ipix_list):
 
 
 draw_sky_image_pars = [
-    dict(file_format='fits', shape=(2000, 1000), survey='DSS2Red', data_1=2866.0101409848185,
-         data_2=2563.6916727348043, data_sum=2992643842.729775, order=3, ipix_list=[450, 451]),
-    dict(file_format='jpg', shape=(2000, 1000, 3), survey='DSS2Red', data_1=[13.040878, 13.040878, 13.040878],
-         data_2=[17.235874, 17.235874, 17.235874], data_sum=155233709.20236143, order=3, ipix_list=[450, 451]),
-    dict(file_format='png', shape=(2000, 1000, 4), survey='AKARI-FIS', data_1=[254., 254., 254., 255.],
-         data_2=[254., 254., 254., 255.], data_sum=586208559.2450126, order=3, ipix_list=[450, 451])
+    dict(file_format='fits', shape=(1000, 2000), survey='DSS2Red', data_1=2866.0101409848185,
+         data_2=2563.6916727348043, data_sum=4575235421.512643, order=3, ipix_list=[450, 451]),
+    dict(file_format='jpg', shape=(1000, 2000, 3), survey='DSS2Red', data_1=[13.040878, 13.040878, 13.040878],
+         data_2=[17.235874, 17.235874, 17.235874], data_sum=243177268.56158745, order=3, ipix_list=[450, 451]),
+    dict(file_format='png', shape=(1000, 2000, 4), survey='AKARI-FIS', data_1=[254., 254., 254., 255.],
+         data_2=[254., 254., 254., 255.], data_sum=946809963.7487414, order=3, ipix_list=[450, 451])
 ]
 
 
@@ -62,7 +62,8 @@ def test_make_sky_image():
     data = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format='fits')
     assert data.shape == geometry.shape
     assert data.dtype == np.float64
-    assert_allclose(np.sum(data), 7615817463.1612253)
+
+    assert_allclose(np.sum(data), 8757489268.044867)
     assert_allclose(data[200, 994], 2213.30874796)
     assert_allclose(data[200, 995], 2296.93885940)
 

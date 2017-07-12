@@ -41,7 +41,7 @@ To make a sky image with the `hips` package, follow the following three steps:
 
     from hips.draw import make_sky_image
 
-    data = make_sky_image(geometry, hips_survey)
+    data = make_sky_image(geometry, hips_survey, 'fits')
 
 
 That's it. Go ahead and try it out for your favourite sky region and survey.
