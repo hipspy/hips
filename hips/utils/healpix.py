@@ -13,7 +13,8 @@ from .wcs import WCSGeometry
 
 __all__ = [
     'boundaries',
-    'compute_healpix_pixel_indices'
+    'compute_healpix_pixel_indices',
+    'get_hips_order_for_resolution'
 ]
 
 __doctest_skip__ = ['boundaries', 'compute_healpix_pixel_indices']
@@ -109,3 +110,30 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix
     theta, phi = _skycoord_to_theta_phi(pixel_coords)
     ipix = hp.ang2pix(nside, theta, phi, nest=True)
     return np.unique(ipix)
+
+
+def get_hips_order_for_resolution(tile_width: int, resolution: int) -> int:
+    """Find the best HiPS order by looping through all possible options.
+
+    Parameters
+    ----------
+    tile_width : int
+        HiPS tile width
+    resolution : int
+        Sky image angular resolution (pixel size in degrees)
+
+    Returns
+    -------
+    candidate_tile_order : int
+        Best HiPS tile order
+    """
+    tile_order = np.log2(tile_width)
+    full_sphere_area = 4 * np.pi * np.square(180 / np.pi)
+    # 29 is the maximum order supported by healpy and 3 is the minimum order
+    for candidate_tile_order in range(3, 29 + 1):
+        tile_resolution = np.sqrt(full_sphere_area / 12 / 4 ** (candidate_tile_order + tile_order))
+        # Finding the smaller tile order with a resolution equal to or better than geometric resolution
+        if tile_resolution <= resolution:
+            break
+
+    return candidate_tile_order
