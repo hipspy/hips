@@ -11,7 +11,7 @@ Getting started
 This is a quick getting started guide for the Python `hips` package.
 
 Make a sky image
-----------------
+================
 
 To make a sky image with the `hips` package, follow the following three steps:
 
@@ -59,7 +59,7 @@ If you execute the example above, you will get this sky image which was plotted 
 .. plot:: plot_fits.py
 
 HiPS data
----------
+=========
 
 TODO: write me
 
@@ -69,14 +69,14 @@ TODO: write me
 
 
 More advanced examples
-----------------------
+======================
 
 TODO: write me
 
 * Show examples for the more low-level, but more configurable classes.
 
 What next?
-----------
+==========
 
 That's it, now you've seen the main features of the `hips` package.
 Note that there is API documentation explaining all available functions, classes and parameters.
