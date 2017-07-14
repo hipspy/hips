@@ -58,22 +58,36 @@ If you execute the example above, you will get this sky image which was plotted 
 
 .. plot:: plot_fits.py
 
+
+Make a color sky image
+======================
+
+HiPS supports color images in ``jpg`` and ``png`` format.
+Making a color sky image works the same as the grayscale image example above,
+except that you get back a 3-dim Numpy array with ``(R, G, B)`` channels for ``jpg``
+or ``(R, G, B, A)`` channels (``A`` is transparency) for ``png``.
+
+Here's an example using ``jpg`` and http://alasky.u-strasbg.fr/Fermi/Color/ :
+
+.. plot:: plot_jpg.py
+
+
 HiPS data
 =========
 
-TODO: write me
-
-* Explain about tiles
-* File formats
-* Where the HiPS package stores data (in memory and on disk)
-
+We plan to implement functionality to manage HiPS data, i.e. download it and cache it on a local disk.
+This isn't available yet, at the moment we simply use Python lists of `~hips.HipsTile` objects,
+which have a ``read`` method for a given filename and a ``fetch`` method for a given URL.
 
 More advanced examples
 ======================
 
-TODO: write me
+This package is under heavy development, it's changing quickly.
 
-* Show examples for the more low-level, but more configurable classes.
+We'll add ddvance examples and detailed documentation once things have stabilised a bit.
+
+For now, if you know Python, you can look at the code and tests to see what's available:
+https://github.com/hipspy/hips
 
 What next?
 ==========

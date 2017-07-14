@@ -41,10 +41,10 @@ To check if you have ``hips`` installed, where it was installed and which versio
 .. code-block:: bash
 
     $ python
-    >>> import hips
-    >>> hips.__version__
+    >>> import hips  # doctest: +SKIP
+    >>> hips.__version__  # doctest: +SKIP
     # -> prints which version you have
-    >>> hips
+    >>> hips  # doctest: +SKIP
     # -> prints where hips is installed
 
 To see if you have the latest stable, released version of ``hips``, you can find that version here:
