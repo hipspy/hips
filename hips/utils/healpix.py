@@ -27,11 +27,6 @@ def _skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
     return theta, phi
 
 
-def _skycoord_to_vec(skycoord: SkyCoord) -> np.ndarray:
-    """Convert SkyCoord to vec as used in healpy."""
-    return hp.ang2vec(*_skycoord_to_theta_phi(skycoord))
-
-
 def boundaries(nside: int, pix: int, nest: bool = True) -> tuple:
     """Returns an array containing the angle (theta and phi) in radians.
 
