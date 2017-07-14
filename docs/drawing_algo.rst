@@ -5,46 +5,58 @@
 =================
 HiPS tile drawing
 =================
- 
-This is a summary of drawing algorithms that can be used by a HiPS client
-willing to create a cutout/display a given HiPS for a given WCS.
+
+This section describes the HiPS tile drawing algorithm implemented in this package,
+to create a sky image for a given WCS.
+
+The original description was for the algorithm implemented in Aladin Lite,
+written by Thomas Boch. In the meantime, the algorithm implemented in this
+Python package has deviated a bit, they are no longer the same.
+
+The implementation is based on ``numpy``, ``astropy``, ``healpy`` and ``scikit-image``.
 
 Naive algorithm
 ===============
 
 This is a naive (one could also say: simple and fast) algorithm for drawing HiPS
-tiles using affine transformations.
+tiles using affine transformations, implemented in the `~hips.SimpleTilePainter`
+class and usually executed by users via the high-level `~hips.make_sky_image` function.
 
+First we compute and fetch the tiles that are needed for the given sky image:
+
+#. The user specifies a `~hips.WCSGeometry`, which is a `astropy.wcs.WCS`
+   as well as a width and height of the sky image to compute.
 #. Compute HiPS order corresponding to the requested image size/resolution. The
    attributes of HiPS properties needed for this are ``hips_order`` (order at
    the tile level) and ``hips_tile_width`` (number of pixels for tile width and
    height). If hips_tile_width is missing, a default value of 512 is assumed.
-#. Compute the list of tiles corresponding to the image FoV: in Python, we can
-   use healpy ``query_disc`` with a center corresponding to the center of the
-   image and a radius equal to the maximum separation on the sky between the
-   image center and all pixels in the image.
-#. For each tile, compute the world coordinates (ra, dec) of the tile corner
+#. Compute the list of tiles corresponding to the image FoV.
+   This is done by computing the HiPS tile HEALPix pixel index for every pixel
+   in the sky image and then computing the unique set.
+#. Fetch (HTTP calls or from a local cache) all tiles in the list.
+
+Then we draw the tiles one by one using these steps:
+
+#. For each tile, compute the world coordinates of the tile corner
    vertices, using healpy ``boundaries`` function.
 #. For each tile, project vertices in image coordinates according to the 
-   requested WCS.
-#. Tiles whose vertices image coordinates are outside of the view, ie all above
-   or all below or all on the right or all on the left can be filtered out.
+   requested WCS (performing ICRS to Galactic frame transformation if
+   the HiPS and sky image aren't in the same frame already).
 #. We extend the tile by 1 pixel in all directions in order to hide "stitches"
-   with other tiles drawing.
-#. Fetch (HTTP calls or from cache) all remaining needed tiles.
-#. Actual drawing:
+   with other tiles drawing (TODO: not done yet. needed?)
+#. The four corners uniquely define a projective transform between pixel coordinates
+   on the tile and the output sky image. We use scikit-image to compute
+   and apply that transform, which uses cubic spline interpolation under the hood.
+   Thus the output is always float data, even if the input was integer RGB image data.
 
-  a. We ‘split’ the image tile diagonally into 2 triangles.
-  b. Consider the first triangle
-  c. Compute the affine transformation to map this triangle image vertices with
-     computed image coordinates.
-  d. Draw the tile according to the affine transformation, applying a mask in
-     order to draw only the first triangle.
-  e. Repeat step c and d for the second triangle.
+At the moment, we simply initialise the output sky image with pixel values of zero,
+and then sum the sky images we get from each projected tile. This is inefficient,
+and can result in incorrect pixel values at the lines corresponding to tile borders.
+We plan to implement a better (more efficient and more correct) way to handle that soon.
 
-If the HiPS one wants to use has a ``hips_frame`` property different from
-‘equatorial’ (for instance ‘galactic’), additional coordinate frame conversions
-are required at steps #2 and #3.
+Note that any algorithm using interpolation is not fully conserving flux or counts.
+This might be a concern if you use the resulting sky images for data analysis.
+It's your responsibility to decide if using this method is appropriate for your application or not!
 
 Tile distortion issue
 =====================
@@ -76,6 +88,10 @@ order (maximum order set arbitrarily at 19 in Aladin Desktop).
 
 Precise algorithm
 =================
+
+.. note::
+
+    The precise algorithm isn't implemented yet.
 
 Contrary the previous algorithm which used affine transformations, the idea here
 for the drawing step is to scan the result image pixels, and for each of them
@@ -117,3 +133,9 @@ WCS header like this one (example for HiPS in equatorial frame, Norder 3, Npix
 
 HPX projection is supported by WCSLib. It is understood by DS9. Support in other
 tools (reproject, Montage, etc) is unclear and has to be tested.
+
+.. note::
+
+    It seems that we can define a WCS for each tile.
+    If so, this would allow us to simply use the ``reproject`` package
+    to draw the tiles, which would be an alternative "precise" algorithm.
