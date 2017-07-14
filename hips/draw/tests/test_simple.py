@@ -10,12 +10,30 @@ from ...utils.wcs import WCSGeometry
 from ...utils.testing import make_test_wcs_geometry, requires_hips_extra
 
 make_sky_image_pars = [
-    dict(file_format='fits', shape=(1000, 2000), url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',
-         data_1=2213.30874796, data_2=2296.93885940, data_sum=8757489268.044867),
-    dict(file_format='jpg', shape=(1000, 2000, 3), url='https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/FermiColor/properties',
-         data_1=[145.388459, 98.579295, 49.792577], data_2=[146.197811, 99.531895, 56.889927], data_sum=813159920.0305891),
-    dict(file_format='png', shape=(1000, 2000, 4), url='https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/AKARI-FIS/properties',
-         data_1=[249.064796, 237.805612, 190.408181, 255.], data_2=[249.013527, 238.79403, 195.793398, 255.], data_sum=1645783166.1630714)
+    dict(
+        file_format='fits',
+        shape=(1000, 2000),
+        url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',
+        data_1=2213.30874796,
+        data_2=2296.93885940,
+        data_sum=8757489268.044867,
+    ),
+    dict(
+        file_format='jpg',
+        shape=(1000, 2000, 3),
+        url='https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/FermiColor/properties',
+        data_1=[145.388459, 98.579295, 49.792577],
+        data_2=[146.197811, 99.531895, 56.889927],
+        data_sum=813159920.0305891,
+    ),
+    dict(
+        file_format='png',
+        shape=(1000, 2000, 4),
+        url='https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/AKARI-FIS/properties',
+        data_1=[249.064796, 237.805612, 190.408181, 255.],
+        data_2=[249.013527, 238.79403, 195.793398, 255.],
+        data_sum=1645783166.1630714
+    ),
 ]
 
 

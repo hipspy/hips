@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
+from typing import Tuple, List
 import numpy as np
-from typing import Tuple
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
@@ -32,7 +32,7 @@ class SimpleTilePainter:
         An object of WCSGeometry
     hips_survey : `~hips.HipsSurveyProperties`
         HiPS survey properties
-    tile_format : `str`
+    tile_format : {'fits', 'jpg', 'png'}
         Format of HiPS tile
 
     Examples
@@ -102,7 +102,7 @@ class SimpleTilePainter:
         pt.estimate(src, dst)
         return pt
 
-    def _fetch_tiles(self) -> 'HipsTile':
+    def _fetch_tiles(self) -> HipsTile:
         """Generator function to fetch HiPS tiles from a remote URL."""
         for healpix_pixel_index in self.tile_indices:
             tile_meta = HipsTileMeta(
@@ -116,26 +116,35 @@ class SimpleTilePainter:
             yield tile
 
     @property
-    def tiles(self):
+    def tiles(self) -> List[HipsTile]:
+        """List of `~hips.HipsTile` (cached on multiple access)."""
         if self._tiles is None:
             self._tiles = list(self._fetch_tiles())
+
         return self._tiles
 
     @property
     def shape(self) -> Tuple[int]:
         """Shape of the output image.
 
-        The shape will be two dimensional in case of FITS file format,
-        three dimensions (RGB) in case of JPG, and four channels (RGBA)
-        in case of PNG tile. We follow the same axis order and coordinate
-        conventions that are used by others for grayscale and RGB images.
+        The output image shape is 2-dim for grayscale, and 3-dim for color images:
+
+        * ``shape = (height, width)`` for FITS images with one grayscale channel
+        * ``shape = (height, width, 3)`` for JPG images with three RGB channels
+        * ``shape = (height, width, 4)`` for PNG images with four RGBA channels
         """
-        if self.tile_format == 'jpg':
-            return self.geometry.shape.height, self.geometry.shape.width, 3
-        elif self.tile_format == 'png':
-            return self.geometry.shape.height, self.geometry.shape.width, 4
+        height = self.geometry.shape.height
+        width = self.geometry.shape.width
+        tile_format = self.tile_format
+
+        if tile_format == 'fits':
+            return height, width
+        elif tile_format == 'jpg':
+            return height, width, 3
+        elif tile_format == 'png':
+            return height, width, 4
         else:
-            return self.geometry.shape.height, self.geometry.shape.width
+            return ValueError(f'Invalid tile format: {tile_format}')
 
     def warp_image(self, tile: HipsTile) -> np.ndarray:
         """Warp a HiPS tile and a sky image."""
@@ -146,11 +155,17 @@ class SimpleTilePainter:
             preserve_range=True,
         )
 
-    def draw_tiles(self):
+    def draw_tiles(self) -> np.ndarray:
         """Draw HiPS tiles onto an empty image."""
+        tiles = self.tiles
+
         image = np.zeros(self.shape)
-        for tile in self.tiles:
-            image += self.warp_image(tile)
+        for tile in tiles:
+            tile_image = self.warp_image(tile)
+            # TODO: put better algorithm here instead of summing pixels
+            # this can lead to pixels that are painted twice and become to bright
+            image += tile_image
+
         return image
 
     def run(self) -> None:
@@ -169,15 +184,15 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, til
         Geometry of the output image
     hips_survey : `~hips.HipsSurveyProperties`
         HiPS survey properties
-    tile_format : `str`
-        Format of HiPS tile
+    tile_format : {'fits', 'jpg', 'png'}
+        Format of HiPS tile to use
+        (some surveys are available in several formats, so this extra argument is needed)
 
     Returns
     -------
     image : `~numpy.ndarray`
         Output image pixels
     """
-
     painter = SimpleTilePainter(geometry, hips_survey, tile_format)
     painter.run()
 
