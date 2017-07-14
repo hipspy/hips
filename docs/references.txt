@@ -3,3 +3,5 @@
 .. _Healpy: https://healpy.readthedocs.io
 .. _scikit-image: http://scikit-image.org
 .. _Pillow: https://python-pillow.org/
+.. _HiPS paper: https://www.aanda.org/articles/aa/pdf/2015/06/aa26075-15.pdf
+.. _HiPS at CDS: http://aladin.u-strasbg.fr/hips/

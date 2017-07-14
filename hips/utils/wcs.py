@@ -26,10 +26,8 @@ class WCSGeometry:
     ----------
     wcs : `~astropy.wcs.WCS`
         WCS projection object
-    width : int
-        Width of the image in pixels
-    height : int
-        Height of the image in pixels
+    width, height : int
+        Width and height of the image in pixels
 
     Examples
     --------
@@ -91,13 +89,11 @@ class WCSGeometry:
         ----------
         skydir : `~astropy.coordinates.SkyCoord`
             Sky coordinate of the WCS reference point
-        width : `int`
-            Width of the image in pixels
-        height : `int`
-            Height of the image in pixels
+        width, height : int
+            Width and height of the image in pixels
         coordsys : {'icrs', 'galactic'}
             Coordinate system
-        projection : `str`
+        projection : str
             Projection of the WCS object.
             To see list of supported projections
             visit: http://docs.astropy.org/en/stable/wcs/#supported-projections
@@ -141,10 +137,8 @@ class WCSGeometry:
         ----------
         skydir : `~astropy.coordinates.SkyCoord`
             Sky coordinate of the WCS reference point
-        width : `int`
-            Width of the image in pixels
-        height : `int`
-            Height of the image in pixels
+        width, height : int
+            Width and height of the image in pixels
         fov: `str` or Angle
             Field of view
         coordsys : {'icrs', 'galactic'}

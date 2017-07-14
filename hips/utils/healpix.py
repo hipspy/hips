@@ -4,11 +4,10 @@
 This module contains wrapper functions around HEALPix utilizing
 the healpy library.
 """
+from typing import Tuple
 import healpy as hp
 import numpy as np
 from astropy.coordinates import SkyCoord
-from typing import Tuple
-
 from .wcs import WCSGeometry
 
 __all__ = [
@@ -17,7 +16,10 @@ __all__ = [
     'get_hips_order_for_resolution'
 ]
 
-__doctest_skip__ = ['boundaries', 'compute_healpix_pixel_indices']
+__doctest_skip__ = [
+    'boundaries',
+    'compute_healpix_pixel_indices',
+]
 
 
 def _skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
@@ -25,11 +27,6 @@ def _skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
     theta = np.pi / 2 - skycoord.data.lat.radian
     phi = skycoord.data.lon.radian
     return theta, phi
-
-
-def _skycoord_to_vec(skycoord: SkyCoord) -> np.ndarray:
-    """Convert SkyCoord to vec as used in healpy."""
-    return hp.ang2vec(*_skycoord_to_theta_phi(skycoord))
 
 
 def boundaries(nside: int, pix: int, nest: bool = True) -> tuple:
@@ -112,14 +109,14 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix
     return np.unique(ipix)
 
 
-def get_hips_order_for_resolution(tile_width: int, resolution: int) -> int:
+def get_hips_order_for_resolution(tile_width: int, resolution: float) -> int:
     """Find the best HiPS order by looping through all possible options.
 
     Parameters
     ----------
     tile_width : int
         HiPS tile width
-    resolution : int
+    resolution : float
         Sky image angular resolution (pixel size in degrees)
 
     Returns

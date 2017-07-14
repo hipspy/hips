@@ -8,8 +8,8 @@ class TestWCSGeometry:
     def setup(self):
         self.wcs_geometry = WCSGeometry.create_simple(
             skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
-            width=2000, height=1000, fov="3 deg",
-            coordsys='galactic', projection='AIT'
+            width=2000, height=1000, fov='3 deg',
+            coordsys='galactic', projection='AIT',
         )
 
     def test_galactic_frame_center(self):
@@ -24,7 +24,7 @@ class TestWCSGeometry:
     def test_celestial_frame(self):
         wcs_geometry = WCSGeometry.create_simple(
             skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
-            width=2000, height=1000, fov="3 deg",
+            width=2000, height=1000, fov='3 deg',
             coordsys='icrs', projection='AIT'
         )
         c = wcs_geometry.center_skycoord
