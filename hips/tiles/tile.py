@@ -14,8 +14,8 @@ from astropy.io.fits.header import Header
 from ..utils import boundaries
 
 __all__ = [
+    'HipsTileMeta',
     'HipsTile',
-    'HipsTileMeta'
 ]
 
 __doctest_skip__ = ['HipsTile']

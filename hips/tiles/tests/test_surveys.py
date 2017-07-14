@@ -2,8 +2,8 @@
 from numpy.testing import assert_allclose
 from astropy.utils.data import get_pkg_data_filename
 from astropy.tests.helper import remote_data
-from ..surveys import HipsSurveyProperties, HipsSurveyPropertiesList
 from ...utils.testing import get_hips_extra_file, requires_hips_extra
+from ..surveys import HipsSurveyProperties, HipsSurveyPropertiesList
 
 
 class TestHipsSurveyProperties:
@@ -34,21 +34,23 @@ class TestHipsSurveyProperties:
         assert self.hips_survey_property.base_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
 
     def test_tile_access_url(self):
-        assert self.hips_survey_property.tile_access_url(order=9, ipix=54321) == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/'
+        actual = self.hips_survey_property.tile_access_url(order=9, ipix=54321)
+        expected = 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/'
+        assert actual == expected
 
-
-@remote_data
-def test_base_url():
-    url = 'http://alasky.u-strasbg.fr/DSS/DSS2-NIR/properties'
-    survey = HipsSurveyProperties.fetch(url)
-
-    assert survey.base_url == 'http://alasky.u-strasbg.fr/DSS/DSS2-NIR'
-
+    @staticmethod
     @requires_hips_extra()
-    def test_tile_width(self):
+    def test_tile_width():
         filename = get_hips_extra_file('datasets/samples/Planck-HFI143/properties')
         survey = HipsSurveyProperties.read(filename)
         assert survey.tile_width == 256
+
+    @staticmethod
+    @remote_data
+    def test_fetch():
+        url = 'http://alasky.u-strasbg.fr/DSS/DSS2-NIR/properties'
+        survey = HipsSurveyProperties.fetch(url)
+        assert survey.base_url == 'http://alasky.u-strasbg.fr/DSS/DSS2-NIR'
 
 
 class TestHipsSurveyPropertiesList:
