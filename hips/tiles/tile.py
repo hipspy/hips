@@ -85,8 +85,8 @@ class HipsTile:
     ----------
     meta : `~hips.HipsTileMeta`
         Metadata of HiPS tile
-    data : `~numpy.ndarray`
-        Data containing HiPS tile
+    raw_data : `bytes`
+        Raw data (copy of bytes from file)
 
     Examples
     --------
@@ -108,18 +108,41 @@ class HipsTile:
     int16
     """
 
-    def __init__(self, meta: HipsTileMeta, data: np.ndarray = None, header: Header = None) -> None:
+    def __init__(self, meta: HipsTileMeta, raw_data: BytesIO) -> None:
         self.meta = meta
-        self.data = data
-        self.header = header
+        self.raw_data = raw_data
 
     def __eq__(self, other: 'HipsTile') -> bool:
         return (
             self.meta == other.meta and
-            (self.data == other.data).all()
-            # Note: we're not checking FITS header here,
-            # because it can change a bit on write / read.
+            self.raw_data == other.raw_data
         )
+
+    @property
+    def data(self) -> np.ndarray:
+        """Tile pixel data (`~numpy.ndarray`)."""
+        fmt = self.meta.file_format
+        bio = BytesIO(self.raw_data)
+
+        if fmt == 'fits':
+            # At the moment CDS is serving FITS tiles in non-standard FITS files
+            # https://github.com/hipspy/hips/issues/42
+            # The following warnings handling is supposed to suppress these warnings
+            # (but hopefully still surface other issues in a useful way).
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', AstropyWarning)
+                warnings.simplefilter('ignore', VerifyWarning)
+                with fits.open(bio) as hdu_list:
+                    data = hdu_list[0].data
+                    # header = hdu_list[0].header
+        elif fmt in {'jpg', 'png'}:
+            with Image.open(bio) as image:
+                data = np.array(image)
+        else:
+            raise ValueError(f'Tile file format not supported: {fmt}. '
+                             'Supported formats: fits, jpg, png')
+
+        return data
 
     @classmethod
     def fetch(cls, meta: HipsTileMeta, url: str) -> 'HipsTile':
@@ -133,9 +156,9 @@ class HipsTile:
             URL containing HiPS tile
         """
         with urllib.request.urlopen(url) as response:
-            raw_data = BytesIO(response.read())
+            raw_data = response.read()
 
-        return cls._from_raw_data(meta, raw_data)
+        return cls(meta, raw_data)
 
     @classmethod
     def read(cls, meta: HipsTileMeta, filename: str = None) -> 'HipsTile':
@@ -148,34 +171,8 @@ class HipsTile:
         filename : str
             Filename
         """
-        path = Path(filename)
-
-        with path.open(mode='rb') as fh:
-            raw_data = BytesIO(fh.read())
-
-        return cls._from_raw_data(meta, raw_data)
-
-    @classmethod
-    def _from_raw_data(cls, meta: HipsTileMeta, raw_data: BytesIO) -> 'HipsTile':
-        if meta.file_format == 'fits':
-            # At the moment CDS is serving FITS tiles in non-standard FITS files
-            # https://github.com/hipspy/hips/issues/42
-            # The following warnings handling is supposed to suppress these warnings
-            # (but hopefully still surface other issues in a useful way).
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore', AstropyWarning)
-                warnings.simplefilter('ignore', VerifyWarning)
-                with fits.open(raw_data) as hdu_list:
-                    data = hdu_list[0].data
-                    header = hdu_list[0].header
-            return cls(meta, data, header)
-        elif meta.file_format in {'jpg', 'png'}:
-            with Image.open(raw_data) as image:
-                data = np.array(image)
-            return cls(meta, data)
-        else:
-            raise ValueError(f'Tile file format not supported: {meta.file_format}. '
-                             'Supported formats: fits, jpg, png')
+        raw_data = Path(filename).read_bytes()
+        return cls(meta, raw_data)
 
     def write(self, filename: str) -> None:
         """Write to file.
@@ -185,18 +182,21 @@ class HipsTile:
         filename : str
             Filename
         """
-        path = Path(filename)
-        file_format = self.meta.file_format
+        Path(filename).write_bytes(self.raw_data)
 
-        if file_format == 'fits':
-            # See comment above when reading FITS on why we catch warnings here
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore', VerifyWarning)
-                hdu = fits.PrimaryHDU(self.data, header=self.header)
-                hdu.writeto(str(path))
-        elif file_format in {'jpg', 'png'}:
-            image = Image.fromarray(self.data)
-            image.save(str(path))
-        else:
-            raise ValueError(f'Tile file format not supported: {file_format}. '
-                             'Supported formats: fits, jpg, png')  # pragma: no cover
+    # @classmethod
+    # def from_numpy(cls, meta : HipsTileMeta, data : np.ndarray) -> 'HipsTile':
+    #     fmt = meta.file_format
+    #
+    #     if fmt == 'fits':
+    #         # See comment above when reading FITS on why we catch warnings here
+    #         with warnings.catch_warnings():
+    #             warnings.simplefilter('ignore', VerifyWarning)
+    #             hdu = fits.PrimaryHDU(data, header=self.header)
+    #             hdu.writeto(str(path))
+    #     elif fmt in {'jpg', 'png'}:
+    #         image = Image.fromarray(data)
+    #         image.save(str(path))
+    #     else:
+    #         raise ValueError(f'Tile file format not supported: {fmt}. '
+    #                          'Supported formats: fits, jpg, png')

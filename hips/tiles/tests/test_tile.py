@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from pathlib import Path
 import pytest
 from astropy.tests.helper import remote_data
 from numpy.testing import assert_allclose, assert_equal
@@ -46,13 +47,13 @@ HIPS_TILE_TEST_CASES = [
     ),
     dict(
         meta=dict(order=3, ipix=463, file_format='jpg'),
-        url='http://alasky.unistra.fr/DSS/DSS2Merged/Norder3/Dir0/Npix463.jpg',
-        filename='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.jpg',
+        url='http://alasky.unistra.fr/Fermi/Color/Norder3/Dir0/Npix451.jpg',
+        filename='datasets/samples/FermiColor/Norder3/Dir0/Npix451.jpg',
 
         dtype='uint8',
         shape=(512, 512, 3),
         pix_idx=[[510], [5]],
-        pix_val=[[10, 10, 10]],
+        pix_val=[[116, 81, 61]],
     ),
     dict(
         meta=dict(order=6, ipix=6112, file_format='png'),
@@ -68,32 +69,39 @@ HIPS_TILE_TEST_CASES = [
 
 
 class TestHipsTile:
+    @staticmethod
+    def _read_tile(pars):
+        meta = HipsTileMeta(**pars['meta'])
+        filename = get_hips_extra_file(pars['filename'])
+        return HipsTile.read(meta, filename)
+
     @requires_hips_extra()
     @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
     def test_read(self, pars):
         # Check that reading tiles in various formats works,
         # i.e. that pixel data in numpy array format
         # has correct shape, dtype and values
-        meta = HipsTileMeta(**pars['meta'])
-        filename = get_hips_extra_file(pars['filename'])
-        tile = HipsTile.read(meta, filename)
-        data = tile.data
+        tile = self._read_tile(pars)
 
+        assert tile.meta.order == pars['meta']['order']
+        assert isinstance(tile.raw_data, bytes)
+
+        data = tile.data
         assert data.shape == pars['shape']
         assert data.dtype.name == pars['dtype']
         assert_equal(tile.data[pars['pix_idx']], pars['pix_val'])
 
-    # @requires_hips_extra()
-    # @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
-    # def test_write(self, tmpdir, pars):
-    #
-    #         filename = str(tmpdir / pars['file_name'])
-    #     tile.write(filename)
-    #     tile2 = HipsTile.read(meta, full_path=filename)
-    #
-    #     # TODO: Fix JPG write issue
-    #     # assert tile == tile2
+    @requires_hips_extra()
+    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    def test_write(self, tmpdir, pars):
+        # Check that tile I/O works, i.e. round-trips on write / read
+        tile = self._read_tile(pars)
 
+        filename = tmpdir / Path(pars['filename']).name
+        tile.write(filename)
+        tile2 = HipsTile.read(tile.meta, filename)
+
+        assert tile == tile2
 
     @remote_data
     @requires_hips_extra()
