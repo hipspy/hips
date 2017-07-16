@@ -75,6 +75,10 @@ class TestHipsTile:
         filename = get_hips_extra_file(pars['filename'])
         return HipsTile.read(meta, filename)
 
+    # TODO: implement tests for the `from_numpy` method!
+    def _test_from_numpy(self):
+        pass
+
     @requires_hips_extra()
     @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
     def test_read(self, pars):
@@ -91,18 +95,6 @@ class TestHipsTile:
         assert data.dtype.name == pars['dtype']
         assert_equal(tile.data[pars['pix_idx']], pars['pix_val'])
 
-    @requires_hips_extra()
-    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
-    def test_write(self, tmpdir, pars):
-        # Check that tile I/O works, i.e. round-trips on write / read
-        tile = self._read_tile(pars)
-
-        filename = tmpdir / Path(pars['filename']).name
-        tile.write(filename)
-        tile2 = HipsTile.read(tile.meta, filename)
-
-        assert tile == tile2
-
     @remote_data
     @requires_hips_extra()
     @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
@@ -115,3 +107,15 @@ class TestHipsTile:
         tile_read = HipsTile.read(meta, filename)
 
         assert tile_fetch == tile_read
+
+    @requires_hips_extra()
+    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    def test_write(self, tmpdir, pars):
+        # Check that tile I/O works, i.e. round-trips on write / read
+        tile = self._read_tile(pars)
+
+        filename = tmpdir / Path(pars['filename']).name
+        tile.write(filename)
+        tile2 = HipsTile.read(tile.meta, filename)
+
+        assert tile == tile2
