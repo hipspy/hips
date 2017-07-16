@@ -97,9 +97,9 @@ class WCSGeometry:
             Projection of the WCS object.
             To see list of supported projections
             visit: http://docs.astropy.org/en/stable/wcs/#supported-projections
-        cdelt : `float`
+        cdelt : float
             Coordinate increment at reference point
-        crpix : `tuple`
+        crpix : tuple
             Pixel coordinates of reference point
             (WCS axis order: x, y and FITS convention origin=1)
         """
@@ -139,11 +139,11 @@ class WCSGeometry:
             Sky coordinate of the WCS reference point
         width, height : int
             Width and height of the image in pixels
-        fov: `str` or Angle
+        fov: str or `~astropy.coordinates.Angle`
             Field of view
         coordsys : {'icrs', 'galactic'}
             Coordinate system
-        projection : `str`
+        projection : str
             Projection of the WCS object.
             To see list of supported projections
             visit: http://docs.astropy.org/en/stable/wcs/#supported-projections
@@ -155,8 +155,8 @@ class WCSGeometry:
         >>> skycoord = SkyCoord(10, 20, unit='deg')
         >>> wcs_geometry = WCSGeometry.create_simple(
         ...     skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
-        ...     width=2000, height=1000, fov="3 deg",
-        ...     coordsys='galactic', projection='AIT'
+        ...     width=2000, height=1000, fov='3 deg',
+        ...     coordsys='galactic', projection='AIT',
         ... )
         >>> wcs_geometry.wcs
         Number of WCS axes: 2

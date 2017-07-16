@@ -3,6 +3,7 @@ from numpy.testing import assert_allclose
 from astropy.utils.data import get_pkg_data_filename
 from astropy.tests.helper import remote_data
 from ...utils.testing import get_hips_extra_file, requires_hips_extra
+from ..tile import HipsTileMeta
 from ..surveys import HipsSurveyProperties, HipsSurveyPropertiesList
 
 
@@ -10,33 +11,34 @@ class TestHipsSurveyProperties:
     @classmethod
     def setup_class(cls):
         filename = get_pkg_data_filename('data/properties.txt')
-        cls.hips_survey_property = HipsSurveyProperties.read(filename)
+        cls.hips_survey = HipsSurveyProperties.read(filename)
 
     def test_title(self):
-        assert self.hips_survey_property.title == 'DSS colored'
+        assert self.hips_survey.title == 'DSS colored'
 
     def test_hips_version(self):
-        assert self.hips_survey_property.hips_version == '1.31'
+        assert self.hips_survey.hips_version == '1.31'
 
     def test_hips_frame(self):
-        assert self.hips_survey_property.hips_frame == 'equatorial'
+        assert self.hips_survey.hips_frame == 'equatorial'
 
     def test_astropy_frame(self):
-        assert self.hips_survey_property.astropy_frame == 'icrs'
+        assert self.hips_survey.astropy_frame == 'icrs'
 
     def test_hips_order(self):
-        assert self.hips_survey_property.hips_order == 9
+        assert self.hips_survey.hips_order == 9
 
     def test_tile_format(self):
-        assert self.hips_survey_property.tile_format == 'jpeg'
+        assert self.hips_survey.tile_format == 'jpeg'
 
     def test_base_url(self):
-        assert self.hips_survey_property.base_url == 'http://alasky.u-strasbg.fr/DSS/DSSColor'
+        expected = 'http://alasky.u-strasbg.fr/DSS/DSSColor'
+        assert self.hips_survey.base_url == expected
 
-    def test_tile_access_url(self):
-        actual = self.hips_survey_property.tile_access_url(order=9, ipix=54321)
-        expected = 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/'
-        assert actual == expected
+    def test_tile_default_url(self):
+        tile_meta = HipsTileMeta(order=9, ipix=54321, file_format='fits')
+        url = self.hips_survey.tile_url(tile_meta)
+        assert url == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/Npix54321.fits'
 
     @staticmethod
     @requires_hips_extra()

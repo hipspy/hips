@@ -111,7 +111,7 @@ class SimpleTilePainter:
                 frame=self.hips_survey.astropy_frame,
                 file_format=self.tile_format,
             )
-            url = self.hips_survey.tile_access_url(order=self.draw_hips_order, ipix=healpix_pixel_index) + tile_meta.filename
+            url = self.hips_survey.tile_url(tile_meta)
             tile = HipsTile.fetch(tile_meta, url)
             yield tile
 

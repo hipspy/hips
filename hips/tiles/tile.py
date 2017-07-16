@@ -10,8 +10,8 @@ from astropy.utils.exceptions import AstropyWarning
 from astropy.io.fits.verify import VerifyWarning
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from astropy.io.fits.header import Header
 from ..utils import boundaries
+from .io import tile_default_url
 
 __all__ = [
     'HipsTileMeta',
@@ -26,9 +26,9 @@ class HipsTileMeta:
 
     Parameters
     ----------
-    order : `int`
+    order : int
         HEALPix order
-    ipix : `int`
+    ipix : int
         HEALPix pixel number
     file_format : {'fits', 'jpg', 'png'}
         File format
@@ -45,7 +45,7 @@ class HipsTileMeta:
     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
 
-    def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'galactic') -> None:
+    def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'icrs') -> None:
         self.order = order
         self.ipix = ipix
         self.file_format = file_format
@@ -59,30 +59,20 @@ class HipsTileMeta:
         )
 
     @property
-    def path(self) -> Path:
-        """Default path for tile storage (`~pathlib.Path`)."""
-        return Path('hips', 'tiles', 'tests', 'data')
-
-    @property
-    def filename(self) -> str:
-        """Filename for HiPS tile (`str`)."""
-        return ''.join(['Npix', str(self.ipix), '.', self.file_format])
-
-    @property
-    def full_path(self) -> Path:
-        """Full path (folder and filename) (`~pathlib.Path`)"""
-        return self.path / self.filename
-
-    @property
     def nside(self) -> int:
-        """nside of the HEALPix map"""
+        """HEALPix nside (int)"""
         return hp.order2nside(self.order)
 
     @property
     def skycoord_corners(self) -> SkyCoord:
-        """Corner values for a HiPS tile"""
+        """Corner sky coordinates (`~astropy.coordinates.SkyCoord`)"""
         theta, phi = boundaries(self.nside, self.ipix)
         return SkyCoord(phi, np.pi / 2 - theta, unit='radian', frame=self.frame)
+
+    @property
+    def tile_default_url(self) -> str:
+        """Tile relative URL in the default scheme."""
+        return tile_default_url(self.order, self.ipix, self.file_format)
 
 
 class HipsTile:
@@ -92,78 +82,81 @@ class HipsTile:
 
     Parameters
     ----------
-    meta : `HipsTileMeta`
+    meta : `~hips.HipsTileMeta`
         Metadata of HiPS tile
-    data : `~numpy.ndarray`
-        Data containing HiPS tile
-    header : `~astropy.io.fits.Header`
-        Header of HiPS tile
+    raw_data : `bytes`
+        Raw data (copy of bytes from file)
 
     Examples
     --------
+
+    Fetch a HiPS tile:
+
     >>> from hips.tiles import HipsTile, HipsTileMeta
     >>> meta = HipsTileMeta(order=6, ipix=30889, file_format='fits')
     >>> url = 'http://alasky.unistra.fr/2MASS/H/Norder6/Dir30000/Npix30889.fits'
     >>> tile = HipsTile.fetch(meta, url)
-    >>> tile.data
-    array([[0, 0, 0, ..., 0, 0, 0],
-           [0, 0, 0, ..., 0, 0, 0],
-           [0, 0, 0, ..., 0, 0, 0],
-           ...,
-           [0, 0, 0, ..., 1, 0, 0],
-           [0, 0, 0, ..., 1, 0, 1],
-           [0, 0, 0, ..., 1, 0, 1]], dtype=int16)
+
+    The tile pixel data is available as a Numpy array:
+
+    >>> type(tile.data)
+    numpy.ndarray
+    >>> tile.data.shape
+    (512, 512)
+    >>> tile.data.dtype.name
+    int16
     """
 
-    def __init__(self, meta: HipsTileMeta, data: np.ndarray = None, header: Header = None) -> None:
+    def __init__(self, meta: HipsTileMeta, raw_data: BytesIO) -> None:
         self.meta = meta
-        self.data = data
-        self.header = header
+        self.raw_data = raw_data
 
     def __eq__(self, other: 'HipsTile') -> bool:
         return (
             self.meta == other.meta and
-            (self.data == other.data).all()
-            # Note: we're not checking FITS header here,
-            # because it can change a bit on write / read.
+            self.raw_data == other.raw_data
         )
 
     @classmethod
-    def fetch(cls, meta: HipsTileMeta, url: str) -> 'HipsTile':
-        """Fetch HiPS tile and load into memory (`HipsTile`).
+    def from_numpy(cls, meta: HipsTileMeta, data: np.ndarray) -> 'HipsTile':
+        """Create a tile from given pixel data.
 
         Parameters
         ----------
-        meta : `HipsTileMeta`
+        meta : `~hips.HipsTileMeta`
             Metadata of HiPS tile
-        url : `str`
-            URL containing HiPS tile
+        data : `~numpy.ndarray`
+            Tile pixel data
+
+        Returns
+        -------
+        tile : `~hips.HipsTile`
+            HiPS tile object in the format requested in ``meta``.
         """
-        with urllib.request.urlopen(url) as response:
-            raw_data = BytesIO(response.read())
+        fmt = meta.file_format
+        bio = BytesIO()
 
-        return cls._from_raw_data(meta, raw_data)
+        if fmt == 'fits':
+            hdu = fits.PrimaryHDU(data)
+            hdu.writeto(bio)
+        elif fmt in {'jpg', 'png'}:
+            image = Image.fromarray(data)
+            image.save(bio)
+        else:
+            raise ValueError(f'Tile file format not supported: {fmt}. '
+                             'Supported formats: fits, jpg, png')
 
-    @classmethod
-    def read(cls, meta: HipsTileMeta, full_path: str = None) -> 'HipsTile':
-        """Read HiPS tile data from a directory and load into memory (`HipsTile`).
+        raw_data = bio.read()
 
-        Parameters
-        ----------
-        meta : `HipsTileMeta`
-            Metadata of HiPS tile
-        full_path : `str`
-            File path to store a HiPS tile
-        """
-        path = Path(full_path) or meta.full_path
-        with path.open(mode='rb') as fh:
-            raw_data = BytesIO(fh.read())
+        return cls(meta, raw_data)
 
-        return cls._from_raw_data(meta, raw_data)
+    @property
+    def data(self) -> np.ndarray:
+        """Tile pixel data (`~numpy.ndarray`)."""
+        fmt = self.meta.file_format
+        bio = BytesIO(self.raw_data)
 
-    @classmethod
-    def _from_raw_data(cls, meta: HipsTileMeta, raw_data: BytesIO) -> 'HipsTile':
-        if meta.file_format == 'fits':
+        if fmt == 'fits':
             # At the moment CDS is serving FITS tiles in non-standard FITS files
             # https://github.com/hipspy/hips/issues/42
             # The following warnings handling is supposed to suppress these warnings
@@ -171,38 +164,54 @@ class HipsTile:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', AstropyWarning)
                 warnings.simplefilter('ignore', VerifyWarning)
-                with fits.open(raw_data) as hdu_list:
+                with fits.open(bio) as hdu_list:
                     data = hdu_list[0].data
-                    header = hdu_list[0].header
-            return cls(meta, data, header)
-        elif meta.file_format in {'jpg', 'png'}:
-            with Image.open(raw_data) as image:
+                    # header = hdu_list[0].header
+        elif fmt in {'jpg', 'png'}:
+            with Image.open(bio) as image:
                 data = np.array(image)
-            return cls(meta, data)
         else:
-            raise ValueError(f'Tile file format not supported: {meta.file_format}. '
-                              'Supported formats: fits, jpg, png')
+            raise ValueError(f'Tile file format not supported: {fmt}. '
+                             'Supported formats: fits, jpg, png')
 
-    def write(self, full_path: str = None) -> None:
-        """Write HiPS tile by a given filename.
+        return data
+
+    @classmethod
+    def read(cls, meta: HipsTileMeta, filename: str = None) -> 'HipsTile':
+        """Read HiPS tile data from a directory and load into memory (`~hips.HipsTile`).
 
         Parameters
         ----------
-        full_path : `str`
-            Name of the file
+        meta : `~hips.HipsTileMeta`
+            Metadata of HiPS tile
+        filename : str
+            Filename
         """
-        path = Path(full_path) or meta.full_path
-        file_format = self.meta.file_format
+        raw_data = Path(filename).read_bytes()
+        return cls(meta, raw_data)
 
-        if file_format == 'fits':
-            # See comment above when reading FITS on why we catch warnings here
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore', VerifyWarning)
-                hdu = fits.PrimaryHDU(self.data, header=self.header)
-                hdu.writeto(str(path))
-        elif file_format in {'jpg', 'png'}:
-            image = Image.fromarray(self.data)
-            image.save(str(path))
-        else:
-            raise ValueError(f'Tile file format not supported: {file_format}. '
-                              'Supported formats: fits, jpg, png')  # pragma: no cover
+    @classmethod
+    def fetch(cls, meta: HipsTileMeta, url: str) -> 'HipsTile':
+        """Fetch HiPS tile and load into memory (`~hips.HipsTile`).
+
+        Parameters
+        ----------
+        meta : `~hips.HipsTileMeta`
+            Metadata of HiPS tile
+        url : str
+            URL containing HiPS tile
+        """
+        with urllib.request.urlopen(url) as response:
+            raw_data = response.read()
+
+        return cls(meta, raw_data)
+
+    def write(self, filename: str) -> None:
+        """Write to file.
+
+        Parameters
+        ----------
+        filename : str
+            Filename
+        """
+        Path(filename).write_bytes(self.raw_data)
