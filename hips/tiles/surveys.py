@@ -5,6 +5,7 @@ from csv import DictWriter
 import urllib.request
 from typing import List
 from astropy.table import Table
+from .tile import HipsTileMeta
 
 __all__ = [
     'HipsSurveyProperties',
@@ -101,37 +102,47 @@ class HipsSurveyProperties:
 
     @property
     def title(self) -> str:
-        """HiPS title (`str`)."""
+        """HiPS title (str)."""
         return self.data['obs_title']
 
     @property
     def hips_version(self) -> str:
-        """HiPS version (`str`)."""
+        """HiPS version (str)."""
         return self.data['hips_version']
 
     @property
     def hips_frame(self) -> str:
-        """HiPS coordinate frame (`str`)."""
+        """HiPS coordinate frame (str)."""
         return self.data['hips_frame']
 
     @property
     def astropy_frame(self) -> str:
-        """Astropy coordinate frame (`str`)."""
+        """Astropy coordinate frame (str)."""
         return self.hips_to_astropy_frame_mapping[self.hips_frame]
 
     @property
     def hips_order(self) -> int:
-        """HiPS order (`int`)."""
+        """HiPS order (int)."""
         return int(self.data['hips_order'])
 
     @property
+    def tile_width(self) -> int:
+        """HiPS tile width"""
+        return int(self.data['hips_tile_width']) or 512
+
+    @property
     def tile_format(self) -> str:
-        """HiPS tile format (`str`)."""
+        """HiPS tile format (str)."""
         return self.data['hips_tile_format']
 
     @property
+    def hips_service_url(self) -> str:
+        """HiPS service base URL (str)."""
+        return self.data['hips_service_url']
+
+    @property
     def base_url(self) -> str:
-        """HiPS access url"""
+        """HiPS access URL"""
         try:
             return self.data['hips_service_url']
         except KeyError:
@@ -140,48 +151,12 @@ class HipsSurveyProperties:
             except KeyError:
                 try:
                     return self.data['properties_url']
-                except:
-                    return ValueError('URL does not exist!')
+                except KeyError:
+                    raise ValueError('URL does not exist!')
 
-    @property
-    def tile_width(self) -> int:
-        """HiPS tile width"""
-        return int(self.data['hips_tile_width']) or 512
-
-    def directory(self, ipix: int) -> int:
-        """Directory index containing HiPS tile(s)"""
-        return (ipix // 10000) * 10000
-
-    def tile_access_url(self, order: int, ipix: int) -> str:
-        """Tile access URL
-
-        Parameters
-        ----------
-        order : int
-            HiPS order
-        ipix : int
-            Index of the HiPS tile
-        """
-        return self.base_url + '/Norder' + str(order) + '/Dir' + str(self.directory(ipix)) + '/'
-
-    def tile_path(self, order: int, ipix: int, tile_format: str) -> str:
-        """Tile access URL
-
-        Parameters
-        ----------
-        order : int
-            HiPS order
-        ipix : int
-            Index of the HiPS tile
-        tile_format : str
-            HiPS tile URL
-        """
-        return '/Norder' + str(order) + '/Dir' + str(self.directory(ipix)) + '/Npix' + str(ipix) + '.' + tile_format
-
-    @property
-    def hips_service_url(self) -> str:
-        """HiPS service base URL (`str`)."""
-        return self.data['hips_service_url']
+    def tile_url(self, tile_meta: HipsTileMeta) -> str:
+        """Tile URL on the server (str)."""
+        return self.base_url + '/' + tile_meta.tile_default_url
 
 
 class HipsSurveyPropertiesList:
