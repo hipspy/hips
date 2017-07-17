@@ -18,5 +18,5 @@ image = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format='
 import matplotlib.pyplot as plt
 from astropy.visualization.mpl_normalize import simple_norm
 ax = plt.subplot(projection=geometry.wcs)
-norm = simple_norm(image, 'sqrt')
+norm = simple_norm(image, 'sqrt', min_percent=1, max_percent=99)
 ax.imshow(image, origin='lower', norm=norm, cmap='gray')
