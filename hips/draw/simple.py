@@ -7,7 +7,6 @@ from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
 from ..utils import WCSGeometry, compute_healpix_pixel_indices, get_hips_order_for_resolution
 
-
 __all__ = [
     'make_sky_image',
     'SimpleTilePainter',
@@ -64,7 +63,13 @@ class SimpleTilePainter:
 
     @property
     def image(self) -> np.ndarray:
-        """All sky image converted to HiPS tile format."""
+        """Computed sky image (`~numpy.ndarray`).
+
+        * The ``dtype`` is always chosen to match the tile ``dtype``.
+          This is ``uint8`` for JPG or PNG tiles,
+          and can be e.g. ``int16`` or ``float32`` for FITS tiles.
+        * The output shape is documented here: `~SimpleTilePainter.shape`.
+        """
         return self.float_image.astype(self.tiles[0].data.dtype)
 
     @property
