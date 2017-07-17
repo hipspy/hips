@@ -75,9 +75,16 @@ class TestHipsTile:
         filename = get_hips_extra_file(pars['filename'])
         return HipsTile.read(meta, filename)
 
-    # TODO: implement tests for the `from_numpy` method!
-    def _test_from_numpy(self):
-        pass
+    @requires_hips_extra()
+    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    def test_from_numpy(self, pars):
+        tile = self._read_tile(pars)
+        tile2 = HipsTile.from_numpy(tile.meta, tile.data)
+
+        # JPEG encoding is lossy. So in that case, output pixel value
+        # aren't exactly the same as input pixel values
+        if tile.meta.file_format != 'jpg':
+            assert_equal(tile.data, tile2.data)
 
     @requires_hips_extra()
     @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
@@ -114,7 +121,7 @@ class TestHipsTile:
         # Check that tile I/O works, i.e. round-trips on write / read
         tile = self._read_tile(pars)
 
-        filename = tmpdir / Path(pars['filename']).name
+        filename = str(tmpdir / Path(pars['filename']).name)
         tile.write(filename)
         tile2 = HipsTile.read(tile.meta, filename)
 

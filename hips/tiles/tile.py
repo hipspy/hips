@@ -139,13 +139,17 @@ class HipsTile:
         if fmt == 'fits':
             hdu = fits.PrimaryHDU(data)
             hdu.writeto(bio)
-        elif fmt in {'jpg', 'png'}:
+        elif fmt == 'jpg':
             image = Image.fromarray(data)
-            image.save(bio)
+            image.save(bio, format='jpeg')
+        elif fmt == 'png':
+            image = Image.fromarray(data)
+            image.save(bio, format='png')
         else:
             raise ValueError(f'Tile file format not supported: {fmt}. '
                              'Supported formats: fits, jpg, png')
 
+        bio.seek(0)
         raw_data = bio.read()
 
         return cls(meta, raw_data)
