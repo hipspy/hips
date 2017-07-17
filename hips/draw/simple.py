@@ -63,6 +63,11 @@ class SimpleTilePainter:
         self._tiles = None
 
     @property
+    def image(self) -> np.ndarray:
+        """All sky image converted to HiPS tile format."""
+        return self.float_image.astype(self.tiles[0].data.dtype)
+
+    @property
     def draw_hips_order(self) -> int:
         """Compute HiPS tile order matching a given image pixel size."""
         # Sky image angular resolution (pixel size in degrees)
@@ -159,7 +164,7 @@ class SimpleTilePainter:
         """Draw HiPS tiles onto an empty image."""
         tiles = self.tiles
 
-        image = np.zeros(self.shape)
+        image = np.zeros(self.shape, dtype=np.float32)
         for tile in tiles:
             tile_image = self.warp_image(tile)
             # TODO: put better algorithm here instead of summing pixels
@@ -170,7 +175,7 @@ class SimpleTilePainter:
 
     def run(self) -> None:
         """Run all steps of the naive algorithm."""
-        self.image = self.draw_tiles()
+        self.float_image = self.draw_tiles()
 
 
 def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> np.ndarray:
