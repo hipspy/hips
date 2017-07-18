@@ -128,7 +128,10 @@ class HipsSurveyProperties:
     @property
     def tile_width(self) -> int:
         """HiPS tile width"""
-        return int(self.data['hips_tile_width']) or 512
+        try:
+            return int(self.data['hips_tile_width'])
+        except KeyError:
+            return 512
 
     @property
     def tile_format(self) -> str:
