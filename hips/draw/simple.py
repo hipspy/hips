@@ -177,22 +177,27 @@ class SimpleTilePainter:
 
         return image
 
-    def draw_hips_tile_grid(self) -> None:
-        """Draw lines on the output image (mainly used for debugging)."""
-        import matplotlib.pyplot as plt
-        for tile in self.tiles:
-            corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
-            ax = plt.subplot(projection=self.geometry.wcs)
-            ax.plot(corners.data.lon.deg, corners.data.lat.deg,
-                    'red', lw=1, transform=ax.get_transform('icrs'))
-        ax.imshow(self.image, origin='lower')
-
     def run(self) -> None:
         """Run all steps of the naive algorithm."""
         self.float_image = self.draw_tiles()
 
+    def plot_mpl_hips_tile_grid(self) -> None:
+        """Plot output image and HiPS grid with matplotlib.
 
-def draw_debug_image(geometry: WCSGeometry, tile: HipsTile, image: np.ndarray) -> None:
+        This is mainly useful for debugging the drawing algorithm,
+        not something end-users will call or need to know about.
+        """
+        import matplotlib.pyplot as plt
+        for tile in self.tiles:
+            corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
+            ax = plt.subplot(projection=self.geometry.wcs)
+            opts = dict(color='red', lw=1, )
+            ax.plot(corners.data.lon.deg, corners.data.lat.deg,
+                    transform=ax.get_transform('world'), **opts)
+        ax.imshow(self.image, origin='lower')
+
+
+def plot_mpl_single_tile(geometry: WCSGeometry, tile: HipsTile, image: np.ndarray) -> None:
     """Draw markers on the output image (mainly used for debugging).
 
     The following denotes their correspondence:
@@ -215,8 +220,9 @@ def draw_debug_image(geometry: WCSGeometry, tile: HipsTile, image: np.ndarray) -
     colors = ['red', 'green', 'blue', 'yellow']
     ax = plt.subplot(projection=geometry.wcs)
     for index, corner in enumerate(corners):
+        opts = dict(s=80, color=colors[index])
         ax.scatter(corner.data.lon.deg, corner.data.lat.deg,
-                   s=80, transform=ax.get_transform('icrs'), color=colors[index])
+                   transform=ax.get_transform('world'), **opts)
     ax.imshow(image, origin='lower')
 
 
