@@ -5,66 +5,81 @@ This module contains wrapper functions around HEALPix utilizing
 the healpy library.
 """
 from typing import Tuple
-import healpy as hp
 import numpy as np
+import healpy as hp
 from astropy.coordinates import SkyCoord
 from .wcs import WCSGeometry
 
 __all__ = [
-    'boundaries',
+    'healpix_skycoord_to_theta_phi',
+    'healpix_theta_phi_to_skycoord',
+    'healpix_pixel_corners',
     'compute_healpix_pixel_indices',
     'get_hips_order_for_resolution'
 ]
 
 __doctest_skip__ = [
-    'boundaries',
+    'healpix_pixel_corners',
     'compute_healpix_pixel_indices',
 ]
 
+HIPS_HEALPIX_NEST = True
+"""HiPS always uses the nested HEALPix pixel numbering scheme."""
 
-def _skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
+
+def healpix_skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
     """Convert SkyCoord to theta / phi as used in healpy."""
     theta = np.pi / 2 - skycoord.data.lat.radian
     phi = skycoord.data.lon.radian
     return theta, phi
 
 
-def boundaries(nside: int, pix: int, nest: bool = True) -> tuple:
+def healpix_theta_phi_to_skycoord(theta: float, phi: float, frame: str) -> SkyCoord:
+    """Convert theta/phi as used in healpy to SkyCoord."""
+    return SkyCoord(phi, np.pi / 2 - theta, unit='radian', frame=frame)
+
+
+def healpix_pixel_corners(order: int, ipix: int, frame: str) -> SkyCoord:
     """Returns an array containing the angle (theta and phi) in radians.
 
-    This function calls `healpy.boundaries` and `healpy.pixelfunc.vec2ang`
-    and computes the four corners of a HiPS tile. The order of the returned
-    corners is: N, W, S, E where N (resp. W, S, E) is the corner roughly
-    pointing towards the North (resp. West, South and East).
+    This function calls `healpy.boundaries` to compute the four corners of a HiPS tile.
+
+    It's not documented, but apparently the order of the corners is always as follows:
+
+    1. North (N)
+    2. West (W)
+    3. South (S)
+    4. East (E)
 
     Parameters
     ----------
-    nside : int
-        The nside of the HEALPix map
-    pix : int
-        Pixel identifier
-    nest : bool, optional
-        If True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    order : int
+        HEALPix ``order`` parameter
+    ipix : int
+        HEALPix pixel index
+    frame : {'icrs', 'galactic', 'ecliptic'}
+        Sky coordinate frame
 
     Returns
     -------
-    theta, phi : float, array
-        Returns the angle (theta and phi) in radians
+    corners : `~astropy.coordinates.SkyCoord`
+        Sky coordinates (array of length 4).
 
     Examples
     --------
     >>> import numpy as np
     >>> from astropy.coordinates import SkyCoord
-    >>> from hips.utils import boundaries
-    >>> theta, phi = boundaries(nside=8, pix=450)
+    >>> from hips.utils import healpix_pixel_corners
+    >>> theta, phi = healpix_pixel_corners(nside=8, pix=450)
     >>> SkyCoord(ra=phi, dec=np.pi/2 - theta, unit='radian', frame='icrs')
     <SkyCoord (ICRS): (ra, dec) in deg
     [( 264.375, -24.62431835), ( 258.75 , -30.        ),
      ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
-    boundary_coords = hp.boundaries(nside, pix, nest=nest)
+    nside = hp.order2nside(order)
+    boundary_coords = hp.boundaries(nside, ipix, nest=HIPS_HEALPIX_NEST)
     theta, phi = hp.vec2ang(np.transpose(boundary_coords))
-    return theta, phi
+    return healpix_theta_phi_to_skycoord(theta, phi, frame)
 
 
 def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
@@ -104,8 +119,8 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix
     """
     nside = hp.order2nside(order)
     pixel_coords = wcs_geometry.pixel_skycoords.transform_to(healpix_frame)
-    theta, phi = _skycoord_to_theta_phi(pixel_coords)
-    ipix = hp.ang2pix(nside, theta, phi, nest=True)
+    theta, phi = healpix_skycoord_to_theta_phi(pixel_coords)
+    ipix = hp.ang2pix(nside, theta, phi, nest=HIPS_HEALPIX_NEST)
     return np.unique(ipix)
 
 

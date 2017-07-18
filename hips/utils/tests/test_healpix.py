@@ -1,25 +1,21 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import pytest
-import numpy as np
 from numpy.testing import assert_allclose
-from astropy.coordinates import SkyCoord
 import healpy as hp
-from ..healpix import boundaries, compute_healpix_pixel_indices, get_hips_order_for_resolution
+from ..healpix import healpix_pixel_corners, compute_healpix_pixel_indices, get_hips_order_for_resolution
 from ..testing import make_test_wcs_geometry
 
 
-def test_boundaries():
-    nside = hp.order2nside(order=3)
-    theta, phi = boundaries(nside, pix=450)
-    radec = SkyCoord(ra=phi, dec=np.pi / 2 - theta, unit='radian')
-
+def test_healpix_pixel_corners():
     """
     These HEALPix corner values were verified through Aladin Lite with the "Show
     healpix grid" option turned on. More information can be found on this GitHub
     issue: https://github.com/healpy/healpy/issues/393#issuecomment-305994042
     """
-    assert_allclose(radec.ra.deg, [264.375, 258.75, 264.375, 270.])
-    assert_allclose(radec.dec.deg, [-24.624318, -30., -35.685335, -30.])
+    corners = healpix_pixel_corners(order=3, ipix=450, frame='icrs')
+
+    assert_allclose(corners.ra.deg, [264.375, 258.75, 264.375, 270.])
+    assert_allclose(corners.dec.deg, [-24.624318, -30., -35.685335, -30.])
 
 
 @pytest.mark.parametrize('pars', [

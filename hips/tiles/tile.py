@@ -3,14 +3,13 @@ import warnings
 import urllib.request
 from io import BytesIO
 from pathlib import Path
-import healpy as hp
 import numpy as np
 from PIL import Image
 from astropy.utils.exceptions import AstropyWarning
 from astropy.io.fits.verify import VerifyWarning
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from ..utils import boundaries
+from ..utils import healpix_pixel_corners
 from .io import tile_default_url
 
 __all__ = [
@@ -59,15 +58,9 @@ class HipsTileMeta:
         )
 
     @property
-    def nside(self) -> int:
-        """HEALPix nside (int)"""
-        return hp.order2nside(self.order)
-
-    @property
     def skycoord_corners(self) -> SkyCoord:
         """Corner sky coordinates (`~astropy.coordinates.SkyCoord`)"""
-        theta, phi = boundaries(self.nside, self.ipix)
-        return SkyCoord(phi, np.pi / 2 - theta, unit='radian', frame=self.frame)
+        return healpix_pixel_corners(self.order, self.ipix, self.frame)
 
     @property
     def tile_default_url(self) -> str:
