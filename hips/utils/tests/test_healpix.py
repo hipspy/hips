@@ -2,7 +2,7 @@
 import pytest
 from numpy.testing import assert_allclose
 import healpy as hp
-from ..healpix import healpix_pixel_corners, compute_healpix_pixel_indices, get_hips_order_for_resolution
+from ..healpix import healpix_pixel_corners, healpix_pixels_in_sky_image, get_hips_order_for_resolution
 from ..testing import make_test_wcs_geometry
 
 
@@ -24,7 +24,7 @@ def test_healpix_pixel_corners():
 ])
 def test_wcs_healpix_pixel_indices(pars):
     geometry = make_test_wcs_geometry(case=2)
-    healpix_pixel_indices = compute_healpix_pixel_indices(geometry, order=3, healpix_frame=pars['frame'])
+    healpix_pixel_indices = healpix_pixels_in_sky_image(geometry, order=3, healpix_frame=pars['frame'])
     assert list(healpix_pixel_indices) == pars['ipix']
 
 

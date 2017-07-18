@@ -5,7 +5,7 @@ import numpy as np
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
-from ..utils import WCSGeometry, compute_healpix_pixel_indices, get_hips_order_for_resolution
+from ..utils import WCSGeometry, healpix_pixels_in_sky_image, get_hips_order_for_resolution
 
 __all__ = [
     'make_sky_image',
@@ -86,7 +86,7 @@ class SimpleTilePainter:
     @property
     def tile_indices(self):
         """Get list of index values for HiPS tiles."""
-        return compute_healpix_pixel_indices(
+        return healpix_pixels_in_sky_image(
             wcs_geometry=self.geometry,
             order=self.draw_hips_order,
             healpix_frame=self.hips_survey.astropy_frame,

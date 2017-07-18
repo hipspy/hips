@@ -14,13 +14,12 @@ __all__ = [
     'healpix_skycoord_to_theta_phi',
     'healpix_theta_phi_to_skycoord',
     'healpix_pixel_corners',
-    'compute_healpix_pixel_indices',
-    'get_hips_order_for_resolution'
+    'healpix_pixels_in_sky_image',
+    'get_hips_order_for_resolution',
 ]
 
 __doctest_skip__ = [
     'healpix_pixel_corners',
-    'compute_healpix_pixel_indices',
 ]
 
 HIPS_HEALPIX_NEST = True
@@ -82,12 +81,14 @@ def healpix_pixel_corners(order: int, ipix: int, frame: str) -> SkyCoord:
     return healpix_theta_phi_to_skycoord(theta, phi, frame)
 
 
-def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
-    """Compute HEALPix pixels within a minimal disk covering a given WCSGeometry.
+def healpix_pixels_in_sky_image(wcs_geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
+    """Compute HEALPix pixels within a given sky image.
 
-    This function computes pixel coordinates for the given WCS object and
-    then calls `healpy.pixelfunc.ang2pix` and `numpy.unique` to compute
-    HEALPix pixel indices, which will be used in tile drawing.
+    The algorithm used is as follows:
+
+    * compute the sky position of every pixel in the image using the given ``geometry``
+    * compute the HEALPix pixel index for every pixel using `healpy.pixelfunc.ang2pix`
+    * compute the unique set of HEALPix pixel values that occur via `numpy.unique`
 
     Parameters
     ----------
@@ -107,14 +108,14 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix
     --------
     >>> from astropy.coordinates import SkyCoord
     >>> from hips.utils import WCSGeometry
-    >>> from hips.utils import compute_healpix_pixel_indices
+    >>> from hips.utils import healpix_pixels_in_sky_image
     >>> skycoord = SkyCoord(10, 20, unit="deg")
     >>> wcs_geometry = WCSGeometry.create(
     ...     skydir=skycoord, shape=(10, 20),
     ...     coordsys='CEL', projection='AIT',
     ...     cdelt=1.0, crpix=(1., 1.),
     ... )
-    >>> compute_healpix_pixel_indices(wcs_geometry, order=3, healpix_frame='galactic')
+    >>> healpix_pixels_in_sky_image(wcs_geometry, order=3, healpix_frame='galactic')
     array([321, 611, 614, 615, 617, 618, 619, 620, 621, 622])
     """
     nside = hp.order2nside(order)
