@@ -5,7 +5,7 @@ import numpy as np
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
-from ..utils import WCSGeometry, compute_healpix_pixel_indices, get_hips_order_for_resolution
+from ..utils import WCSGeometry, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 
 __all__ = [
     'make_sky_image',
@@ -42,10 +42,10 @@ class SimpleTilePainter:
     >>> from astropy.coordinates import SkyCoord
     >>> url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
     >>> hips_survey = HipsSurveyProperties.fetch(url)
-    >>> geometry = WCSGeometry.create_simple(
+    >>> geometry = WCSGeometry.create(
     ...     skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
-    ...     width=2000, height=1000, fov="3 deg",
-    ...     coordsys='icrs', projection='AIT'
+    ...     width=2000, height=1000, fov='3 deg',
+    ...     coordsys='icrs', projection='AIT',
     ... )
     >>> painter = SimpleTilePainter(geometry, hips_survey, 'fits')
     >>> painter.draw_hips_order
@@ -77,7 +77,7 @@ class SimpleTilePainter:
         """Compute HiPS tile order matching a given image pixel size."""
         # Sky image angular resolution (pixel size in degrees)
         resolution = np.min(proj_plane_pixel_scales(self.geometry.wcs))
-        desired_order = get_hips_order_for_resolution(self.hips_survey.tile_width, resolution)
+        desired_order = hips_order_for_pixel_resolution(self.hips_survey.tile_width, resolution)
         # Return the desired order, or the highest resolution available.
         # Note that HiPS never has resolution less than 3,
         # and that limit is handled in _get_hips_order_for_resolution
@@ -86,8 +86,8 @@ class SimpleTilePainter:
     @property
     def tile_indices(self):
         """Get list of index values for HiPS tiles."""
-        return compute_healpix_pixel_indices(
-            wcs_geometry=self.geometry,
+        return healpix_pixels_in_sky_image(
+            geometry=self.geometry,
             order=self.draw_hips_order,
             healpix_frame=self.hips_survey.astropy_frame,
         )

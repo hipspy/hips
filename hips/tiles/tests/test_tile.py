@@ -12,8 +12,21 @@ class TestHipsTileMeta:
     def setup_class(cls):
         cls.meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
 
-    def test_nside(self):
-        assert self.meta.nside == 8
+    def test_order(self):
+        assert self.meta.order == 3
+
+    def test_ipix(self):
+        assert self.meta.ipix == 450
+
+    def test_file_format(self):
+        assert self.meta.file_format == 'fits'
+
+    def test_frame(self):
+        assert self.meta.frame == 'icrs'
+
+    def test_repr(self):
+        expected = "HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')"
+        assert repr(self.meta) == expected
 
     def test_skycoord_corners(self):
         coord = self.meta.skycoord_corners
@@ -32,6 +45,10 @@ class TestHipsTileMeta:
     def test_tile_url(self):
         url = self.meta.tile_default_url
         assert url == 'Norder3/Dir0/Npix450.fits'
+
+    def test_tile_path(self):
+        path = self.meta.tile_default_path
+        assert path == Path('Norder3/Dir0/Npix450.fits')
 
 
 HIPS_TILE_TEST_CASES = [

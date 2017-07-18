@@ -1,87 +1,100 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""HEALpy wrapper functions.
+"""HEALPix and HiPS utility functions.
 
-This module contains wrapper functions around HEALPix utilizing
-the healpy library.
+At the moment we use the following functions from ``healpy``:
+
+* compute HEALPix pixel indices in nested scheme: ``hp.ang2pix`` and ``hp.order2nside``
+* compute HEALPix pixel corners: ``hp.boundaries`` and ``hp.vec2ang``
+
+We would like to get rid of the dependency on ``healpy``
+and re-implement those functions here or in Astropy core.
+
+Contributions welcome!
 """
 from typing import Tuple
-import healpy as hp
 import numpy as np
+import healpy as hp
 from astropy.coordinates import SkyCoord
 from .wcs import WCSGeometry
 
 __all__ = [
-    'boundaries',
-    'compute_healpix_pixel_indices',
-    'get_hips_order_for_resolution'
+    'healpix_skycoord_to_theta_phi',
+    'healpix_theta_phi_to_skycoord',
+    'healpix_pixel_corners',
+    'healpix_pixels_in_sky_image',
+    'hips_order_for_pixel_resolution',
 ]
 
 __doctest_skip__ = [
-    'boundaries',
-    'compute_healpix_pixel_indices',
+    'healpix_pixel_corners',
+    'healpix_pixels_in_sky_image',
 ]
 
+HIPS_HEALPIX_NEST = True
+"""HiPS always uses the nested HEALPix pixel numbering scheme."""
 
-def _skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
+
+def healpix_skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
     """Convert SkyCoord to theta / phi as used in healpy."""
     theta = np.pi / 2 - skycoord.data.lat.radian
     phi = skycoord.data.lon.radian
     return theta, phi
 
 
-def boundaries(nside: int, pix: int, nest: bool = True) -> tuple:
+def healpix_theta_phi_to_skycoord(theta: float, phi: float, frame: str) -> SkyCoord:
+    """Convert theta/phi as used in healpy to SkyCoord."""
+    return SkyCoord(phi, np.pi / 2 - theta, unit='radian', frame=frame)
+
+
+def healpix_pixel_corners(order: int, ipix: int, frame: str) -> SkyCoord:
     """Returns an array containing the angle (theta and phi) in radians.
 
-    This function calls `healpy.boundaries` and `healpy.pixelfunc.vec2ang`
-    and computes the four corners of a HiPS tile. The order of the returned
-    corners is: N, W, S, E where N (resp. W, S, E) is the corner roughly
-    pointing towards the North (resp. West, South and East).
+    This function calls `healpy.boundaries` to compute the four corners of a HiPS tile.
+
+    It's not documented, but apparently the order of the corners is always as follows:
+
+    1. North (N)
+    2. West (W)
+    3. South (S)
+    4. East (E)
 
     Parameters
     ----------
-    nside : int
-        The nside of the HEALPix map
-    pix : int
-        Pixel identifier
-    nest : bool, optional
-        If True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    order : int
+        HEALPix ``order`` parameter
+    ipix : int
+        HEALPix pixel index
+    frame : {'icrs', 'galactic', 'ecliptic'}
+        Sky coordinate frame
 
     Returns
     -------
-    theta, phi : float, array
-        Returns the angle (theta and phi) in radians
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from astropy.coordinates import SkyCoord
-    >>> from hips.utils import boundaries
-    >>> theta, phi = boundaries(nside=8, pix=450)
-    >>> SkyCoord(ra=phi, dec=np.pi/2 - theta, unit='radian', frame='icrs')
-    <SkyCoord (ICRS): (ra, dec) in deg
-    [( 264.375, -24.62431835), ( 258.75 , -30.        ),
-     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
+    corners : `~astropy.coordinates.SkyCoord`
+        Sky coordinates (array of length 4).
     """
-    boundary_coords = hp.boundaries(nside, pix, nest=nest)
+    nside = hp.order2nside(order)
+    boundary_coords = hp.boundaries(nside, ipix, nest=HIPS_HEALPIX_NEST)
     theta, phi = hp.vec2ang(np.transpose(boundary_coords))
-    return theta, phi
+    return healpix_theta_phi_to_skycoord(theta, phi, frame)
 
 
-def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
-    """Compute HEALPix pixels within a minimal disk covering a given WCSGeometry.
+def healpix_pixels_in_sky_image(geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
+    """Compute HEALPix pixels within a given sky image.
 
-    This function computes pixel coordinates for the given WCS object and
-    then calls `healpy.pixelfunc.ang2pix` and `numpy.unique` to compute
-    HEALPix pixel indices, which will be used in tile drawing.
+    The algorithm used is as follows:
+
+    * compute the sky position of every pixel in the image using the given ``geometry``
+    * compute the HEALPix pixel index for every pixel using `healpy.pixelfunc.ang2pix`
+    * compute the unique set of HEALPix pixel values that occur via `numpy.unique`
 
     Parameters
     ----------
-    wcs_geometry : `WCSGeometry`
-        Container for WCS object and image shape
+    geometry : `WCSGeometry`
+        Sky image WCS geometry
     order : int
-        The order of the HEALPix
+        HEALPix order
     healpix_frame : {'icrs', 'galactic', 'ecliptic'}
-        Coordinate system frame in which to compute the HEALPix pixel indices
+        HEALPix coordinate frame
 
     Returns
     -------
@@ -92,25 +105,25 @@ def compute_healpix_pixel_indices(wcs_geometry: WCSGeometry, order: int, healpix
     --------
     >>> from astropy.coordinates import SkyCoord
     >>> from hips.utils import WCSGeometry
-    >>> from hips.utils import compute_healpix_pixel_indices
+    >>> from hips.utils import healpix_pixels_in_sky_image
     >>> skycoord = SkyCoord(10, 20, unit="deg")
-    >>> wcs_geometry = WCSGeometry.create(
+    >>> geometry = WCSGeometry.create(
     ...     skydir=skycoord, shape=(10, 20),
     ...     coordsys='CEL', projection='AIT',
     ...     cdelt=1.0, crpix=(1., 1.),
     ... )
-    >>> compute_healpix_pixel_indices(wcs_geometry, order=3, healpix_frame='galactic')
+    >>> healpix_pixels_in_sky_image(geometry, order=3, healpix_frame='galactic')
     array([321, 611, 614, 615, 617, 618, 619, 620, 621, 622])
     """
     nside = hp.order2nside(order)
-    pixel_coords = wcs_geometry.pixel_skycoords.transform_to(healpix_frame)
-    theta, phi = _skycoord_to_theta_phi(pixel_coords)
-    ipix = hp.ang2pix(nside, theta, phi, nest=True)
+    pixel_coords = geometry.pixel_skycoords.transform_to(healpix_frame)
+    theta, phi = healpix_skycoord_to_theta_phi(pixel_coords)
+    ipix = hp.ang2pix(nside, theta, phi, nest=HIPS_HEALPIX_NEST)
     return np.unique(ipix)
 
 
-def get_hips_order_for_resolution(tile_width: int, resolution: float) -> int:
-    """Find the best HiPS order by looping through all possible options.
+def hips_order_for_pixel_resolution(tile_width: int, resolution: float) -> int:
+    """Find the HiPS tile order that will result in a given pixel resolution.
 
     Parameters
     ----------

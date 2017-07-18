@@ -4,10 +4,9 @@ Not of use for users / outside this package.
 """
 import os
 from pathlib import Path
-
 import pytest
 from astropy.coordinates import SkyCoord
-
+from astropy.wcs import WCS
 from .wcs import WCSGeometry
 
 
@@ -38,24 +37,20 @@ def requires_hips_extra():
     return pytest.mark.skipif(skip_it, reason=reason)
 
 
-def make_test_wcs_geometry(case=0):
-    if case == 0:
-        return WCSGeometry.create(
-            skydir=SkyCoord(3, 4, unit='deg', frame='galactic'),
-            width=2, height=3, coordsys='galactic',
-            projection='CAR', cdelt=1.0, crpix=(1, 1),
-        )
-    elif case == 1:
-        return WCSGeometry.create(
-            skydir=SkyCoord(10, 20, unit='deg', frame='galactic'),
-            width=20, height=10, coordsys='galactic',
-            projection='CAR', cdelt=1.0, crpix=(1, 1),
-        )
-    elif case == 2:
-        return WCSGeometry.create(
-            skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
-            width=2000, height=1000, coordsys='galactic',
-            projection='AIT', cdelt=0.01, crpix=(1000, 500),
-        )
-    else:
-        raise ValueError()  # pragma: no cover
+def make_test_wcs_geometry():
+    wcs = WCS(naxis=2)
+    wcs.wcs.ctype[0] = 'GLON-AIT'
+    wcs.wcs.ctype[1] = 'GLAT-AIT'
+    wcs.wcs.crval[0] = 0
+    wcs.wcs.crval[1] = 0
+    wcs.wcs.crpix[0] = 1000
+    wcs.wcs.crpix[1] = 500
+    wcs.wcs.cdelt[0] = -0.01
+    wcs.wcs.cdelt[1] = 0.01
+    return WCSGeometry(wcs, width=2000, height=1000)
+
+    # geometry = WCSGeometry.create(
+    #     skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
+    #     width=2000, height=1000, coordsys='galactic',
+    #     projection='AIT', cdelt=0.01, crpix=(1000, 500),
+    # )
