@@ -34,12 +34,12 @@ class WCSGeometry:
     >>> from astropy.coordinates import SkyCoord
     >>> from hips.utils import WCSGeometry
     >>> skycoord = SkyCoord(10, 20, unit='deg')
-    >>> wcs_geometry = WCSGeometry.create(
+    >>> geometry = WCSGeometry.create(
     ...     skydir=skycoord, width=20, height=10,
     ...     coordsys='CEL', projection='AIT',
     ...     cdelt=1.0, crpix=(1., 1.),
     ... )
-    >>> wcs_geometry.wcs
+    >>> geometry.wcs
     Number of WCS axes: 2
     CTYPE : 'RA---AIT'  'DEC--AIT'
     CRVAL : 10.0  20.0
@@ -48,7 +48,7 @@ class WCSGeometry:
     PC2_1 PC2_2  : 0.0  1.0
     CDELT : -1.0  1.0
     NAXIS : 0  0
-    >>> wcs_geometry.shape
+    >>> geometry.shape
     Shape(width=20, height=10)
     """
     WCS_ORIGIN_DEFAULT = 0
@@ -153,12 +153,12 @@ class WCSGeometry:
         >>> from astropy.coordinates import SkyCoord
         >>> from hips.utils import WCSGeometry
         >>> skycoord = SkyCoord(10, 20, unit='deg')
-        >>> wcs_geometry = WCSGeometry.create_simple(
+        >>> geometry = WCSGeometry.create_simple(
         ...     skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
         ...     width=2000, height=1000, fov='3 deg',
         ...     coordsys='galactic', projection='AIT',
         ... )
-        >>> wcs_geometry.wcs
+        >>> geometry.wcs
         Number of WCS axes: 2
         CTYPE : 'GLON-AIT'  'GLAT-AIT'
         CRVAL : 0.0  0.0
@@ -167,7 +167,7 @@ class WCSGeometry:
         PC2_1 PC2_2  : 0.0  1.0
         CDELT : -0.0015  0.0015
         NAXIS : 0  0
-        >>> wcs_geometry.shape
+        >>> geometry.shape
         Shape(width=2000, height=1000)
         """
         fov = Angle(fov)

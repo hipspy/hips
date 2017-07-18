@@ -15,7 +15,7 @@ __all__ = [
     'healpix_theta_phi_to_skycoord',
     'healpix_pixel_corners',
     'healpix_pixels_in_sky_image',
-    'get_hips_order_for_resolution',
+    'hips_order_for_pixel_resolution',
 ]
 
 __doctest_skip__ = [
@@ -81,7 +81,7 @@ def healpix_pixel_corners(order: int, ipix: int, frame: str) -> SkyCoord:
     return healpix_theta_phi_to_skycoord(theta, phi, frame)
 
 
-def healpix_pixels_in_sky_image(wcs_geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
+def healpix_pixels_in_sky_image(geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
     """Compute HEALPix pixels within a given sky image.
 
     The algorithm used is as follows:
@@ -92,12 +92,12 @@ def healpix_pixels_in_sky_image(wcs_geometry: WCSGeometry, order: int, healpix_f
 
     Parameters
     ----------
-    wcs_geometry : `WCSGeometry`
-        Container for WCS object and image shape
+    geometry : `WCSGeometry`
+        Sky image WCS geometry
     order : int
-        The order of the HEALPix
+        HEALPix order
     healpix_frame : {'icrs', 'galactic', 'ecliptic'}
-        Coordinate system frame in which to compute the HEALPix pixel indices
+        HEALPix coordinate frame
 
     Returns
     -------
@@ -110,23 +110,23 @@ def healpix_pixels_in_sky_image(wcs_geometry: WCSGeometry, order: int, healpix_f
     >>> from hips.utils import WCSGeometry
     >>> from hips.utils import healpix_pixels_in_sky_image
     >>> skycoord = SkyCoord(10, 20, unit="deg")
-    >>> wcs_geometry = WCSGeometry.create(
+    >>> geometry = WCSGeometry.create_simple(
     ...     skydir=skycoord, shape=(10, 20),
     ...     coordsys='CEL', projection='AIT',
     ...     cdelt=1.0, crpix=(1., 1.),
     ... )
-    >>> healpix_pixels_in_sky_image(wcs_geometry, order=3, healpix_frame='galactic')
+    >>> healpix_pixels_in_sky_image(geometry, order=3, healpix_frame='galactic')
     array([321, 611, 614, 615, 617, 618, 619, 620, 621, 622])
     """
     nside = hp.order2nside(order)
-    pixel_coords = wcs_geometry.pixel_skycoords.transform_to(healpix_frame)
+    pixel_coords = geometry.pixel_skycoords.transform_to(healpix_frame)
     theta, phi = healpix_skycoord_to_theta_phi(pixel_coords)
     ipix = hp.ang2pix(nside, theta, phi, nest=HIPS_HEALPIX_NEST)
     return np.unique(ipix)
 
 
-def get_hips_order_for_resolution(tile_width: int, resolution: float) -> int:
-    """Find the best HiPS order by looping through all possible options.
+def hips_order_for_pixel_resolution(tile_width: int, resolution: float) -> int:
+    """Find the HiPS tile order that will result in a given pixel resolution.
 
     Parameters
     ----------

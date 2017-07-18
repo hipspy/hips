@@ -2,7 +2,7 @@
 import pytest
 from numpy.testing import assert_allclose
 import healpy as hp
-from ..healpix import healpix_pixel_corners, healpix_pixels_in_sky_image, get_hips_order_for_resolution
+from ..healpix import healpix_pixel_corners, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 from ..testing import make_test_wcs_geometry
 
 
@@ -34,7 +34,7 @@ def test_wcs_healpix_pixel_indices(pars):
     dict(tile_width=128, resolution=0.00009032, resolution_res=0.00012491781102862408, order=13),
 ])
 def test_get_hips_order_for_resolution(pars):
-    hips_order = get_hips_order_for_resolution(pars['tile_width'], pars['resolution'])
+    hips_order = hips_order_for_pixel_resolution(pars['tile_width'], pars['resolution'])
     assert hips_order == pars['order']
     hips_resolution = hp.nside2resol(hp.order2nside(hips_order))
     assert_allclose(hips_resolution, pars['resolution_res'])
