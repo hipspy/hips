@@ -71,17 +71,6 @@ def healpix_pixel_corners(order: int, ipix: int, frame: str) -> SkyCoord:
     -------
     corners : `~astropy.coordinates.SkyCoord`
         Sky coordinates (array of length 4).
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from astropy.coordinates import SkyCoord
-    >>> from hips.utils import healpix_pixel_corners
-    >>> theta, phi = healpix_pixel_corners(nside=8, pix=450)
-    >>> SkyCoord(ra=phi, dec=np.pi/2 - theta, unit='radian', frame='icrs')
-    <SkyCoord (ICRS): (ra, dec) in deg
-    [( 264.375, -24.62431835), ( 258.75 , -30.        ),
-     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     """
     nside = hp.order2nside(order)
     boundary_coords = hp.boundaries(nside, ipix, nest=HIPS_HEALPIX_NEST)

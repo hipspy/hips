@@ -24,6 +24,10 @@ class TestHipsTileMeta:
     def test_frame(self):
         assert self.meta.frame == 'icrs'
 
+    def test_repr(self):
+        expected = "HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')"
+        assert repr(self.meta) == expected
+
     def test_skycoord_corners(self):
         coord = self.meta.skycoord_corners
         assert_allclose(coord.data.lat.deg, [-24.624318, -30., -35.685335, -30.])
@@ -41,6 +45,10 @@ class TestHipsTileMeta:
     def test_tile_url(self):
         url = self.meta.tile_default_url
         assert url == 'Norder3/Dir0/Npix450.fits'
+
+    def test_tile_path(self):
+        path = self.meta.tile_default_path
+        assert path == Path('Norder3/Dir0/Npix450.fits')
 
 
 HIPS_TILE_TEST_CASES = [

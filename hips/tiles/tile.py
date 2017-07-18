@@ -10,14 +10,16 @@ from astropy.io.fits.verify import VerifyWarning
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from ..utils import healpix_pixel_corners
-from .io import tile_default_url
+from .io import tile_default_url, tile_default_path
 
 __all__ = [
     'HipsTileMeta',
     'HipsTile',
 ]
 
-__doctest_skip__ = ['HipsTile']
+__doctest_skip__ = [
+    'HipsTile',
+]
 
 
 class HipsTileMeta:
@@ -38,10 +40,16 @@ class HipsTileMeta:
     --------
     >>> from hips.tiles import HipsTileMeta
     >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
+    >>> tile_meta
+    HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
     >>> tile_meta.skycoord_corners
     <SkyCoord (ICRS): (ra, dec) in deg
     [( 264.375, -24.62431835), ( 258.75 , -30.        ),
     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
+    >>> tile_meta.tile_default_url
+    'Norder3/Dir0/Npix450.fits'
+    >>> tile_meta.tile_default_path
+    PosixPath('Norder3/Dir0/Npix450.fits')
     """
 
     def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'icrs') -> None:
@@ -49,6 +57,12 @@ class HipsTileMeta:
         self.ipix = ipix
         self.file_format = file_format
         self.frame = frame
+
+    def __repr__(self):
+        return (
+            f'HipsTileMeta(order={self.order}, ipix={self.ipix}, '
+            f'file_format={self.file_format!r}, frame={self.frame!r})'
+        )
 
     def __eq__(self, other: 'HipsTileMeta') -> bool:
         return (
@@ -59,13 +73,18 @@ class HipsTileMeta:
 
     @property
     def skycoord_corners(self) -> SkyCoord:
-        """Corner sky coordinates (`~astropy.coordinates.SkyCoord`)"""
+        """Tile corner sky coordinates (`~astropy.coordinates.SkyCoord`)."""
         return healpix_pixel_corners(self.order, self.ipix, self.frame)
 
     @property
     def tile_default_url(self) -> str:
-        """Tile relative URL in the default scheme."""
+        """Tile relative URL (str)."""
         return tile_default_url(self.order, self.ipix, self.file_format)
+
+    @property
+    def tile_default_path(self) -> str:
+        """Tile relative filename path (`~pathlib.Path`)."""
+        return tile_default_path(self.order, self.ipix, self.file_format)
 
 
 class HipsTile:
