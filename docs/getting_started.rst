@@ -20,10 +20,10 @@ To make a sky image with the `hips` package, follow the following three steps:
     from astropy.coordinates import SkyCoord
     from hips.utils import WCSGeometry
 
-    geometry = WCSGeometry.create_simple(
+    geometry = WCSGeometry.create(
          skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
          width=2000, height=1000, fov="3 deg",
-         coordsys='galactic', projection='AIT'
+         coordsys='galactic', projection='AIT',
     )
 
 

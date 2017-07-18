@@ -1,8 +1,15 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""HEALpy wrapper functions.
+"""HEALPix and HiPS utility functions.
 
-This module contains wrapper functions around HEALPix utilizing
-the healpy library.
+At the moment we use the following functions from ``healpy``:
+
+* compute HEALPix pixel indices in nested scheme: ``hp.ang2pix`` and ``hp.order2nside``
+* compute HEALPix pixel corners: ``hp.boundaries`` and ``hp.vec2ang``
+
+We would like to get rid of the dependency on ``healpy``
+and re-implement those functions here or in Astropy core.
+
+Contributions welcome!
 """
 from typing import Tuple
 import numpy as np
@@ -20,6 +27,7 @@ __all__ = [
 
 __doctest_skip__ = [
     'healpix_pixel_corners',
+    'healpix_pixels_in_sky_image',
 ]
 
 HIPS_HEALPIX_NEST = True
@@ -110,7 +118,7 @@ def healpix_pixels_in_sky_image(geometry: WCSGeometry, order: int, healpix_frame
     >>> from hips.utils import WCSGeometry
     >>> from hips.utils import healpix_pixels_in_sky_image
     >>> skycoord = SkyCoord(10, 20, unit="deg")
-    >>> geometry = WCSGeometry.create_simple(
+    >>> geometry = WCSGeometry.create(
     ...     skydir=skycoord, shape=(10, 20),
     ...     coordsys='CEL', projection='AIT',
     ...     cdelt=1.0, crpix=(1., 1.),

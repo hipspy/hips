@@ -44,7 +44,7 @@ make_sky_image_pars = [
 @pytest.mark.parametrize('pars', make_sky_image_pars)
 def test_make_sky_image(pars):
     hips_survey = HipsSurveyProperties.fetch(url=pars['url'])
-    geometry = make_test_wcs_geometry(case=2)
+    geometry = make_test_wcs_geometry()
     image = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'])
     assert image.shape == pars['shape']
     assert image.dtype == pars['dtype']
@@ -59,10 +59,10 @@ class TestSimpleTilePainter:
     def setup_class(cls):
         url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
         cls.hips_survey = HipsSurveyProperties.fetch(url)
-        cls.geometry = WCSGeometry.create_simple(
+        cls.geometry = WCSGeometry.create(
             skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
             width=2000, height=1000, fov="3 deg",
-            coordsys='icrs', projection='AIT'
+            coordsys='icrs', projection='AIT',
         )
         cls.simple_tile_painter = SimpleTilePainter(cls.geometry, cls.hips_survey, 'fits')
 
@@ -84,10 +84,10 @@ class TestSimpleTilePainter:
     @requires_hips_extra()
     @pytest.mark.parametrize('pars', draw_hips_order_pars)
     def test_compute_matching_hips_order(self, pars):
-        geometry = WCSGeometry.create_simple(
+        geometry = WCSGeometry.create(
             skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
             width=2000, height=1000, fov=pars['fov'],
-            coordsys='icrs', projection='AIT'
+            coordsys='icrs', projection='AIT',
         )
         simple_tile_painter = SimpleTilePainter(geometry, self.hips_survey, 'fits')
         assert simple_tile_painter.draw_hips_order == pars['order']

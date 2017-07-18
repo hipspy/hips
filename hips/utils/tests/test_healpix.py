@@ -23,7 +23,7 @@ def test_healpix_pixel_corners():
     dict(frame='icrs', ipix=[448, 449, 450, 451, 454, 456, 457, 460, 661, 663, 669]),
 ])
 def test_wcs_healpix_pixel_indices(pars):
-    geometry = make_test_wcs_geometry(case=2)
+    geometry = make_test_wcs_geometry()
     healpix_pixel_indices = healpix_pixels_in_sky_image(geometry, order=3, healpix_frame=pars['frame'])
     assert list(healpix_pixel_indices) == pars['ipix']
 

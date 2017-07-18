@@ -6,7 +6,7 @@ from ..wcs import WCSGeometry
 
 class TestWCSGeometry:
     def setup(self):
-        self.geometry = WCSGeometry.create_simple(
+        self.geometry = WCSGeometry.create(
             skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
             width=2000, height=1000, fov='3 deg',
             coordsys='galactic', projection='AIT',
@@ -22,12 +22,12 @@ class TestWCSGeometry:
         assert_allclose(self.geometry.wcs.wcs.cdelt, [-0.0015, 0.0015])
 
     def test_celestial_frame(self):
-        wcs_geometry = WCSGeometry.create_simple(
+        geometry = WCSGeometry.create(
             skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
             width=2000, height=1000, fov='3 deg',
-            coordsys='icrs', projection='AIT'
+            coordsys='icrs', projection='AIT',
         )
-        c = wcs_geometry.center_skycoord
+        c = geometry.center_skycoord
 
         assert c.frame.name == 'icrs'
         assert_allclose(c.ra.deg, 359.99, atol=1e-2)

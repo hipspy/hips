@@ -42,10 +42,10 @@ class SimpleTilePainter:
     >>> from astropy.coordinates import SkyCoord
     >>> url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
     >>> hips_survey = HipsSurveyProperties.fetch(url)
-    >>> geometry = WCSGeometry.create_simple(
+    >>> geometry = WCSGeometry.create(
     ...     skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
-    ...     width=2000, height=1000, fov="3 deg",
-    ...     coordsys='icrs', projection='AIT'
+    ...     width=2000, height=1000, fov='3 deg',
+    ...     coordsys='icrs', projection='AIT',
     ... )
     >>> painter = SimpleTilePainter(geometry, hips_survey, 'fits')
     >>> painter.draw_hips_order
