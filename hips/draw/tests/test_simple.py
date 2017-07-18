@@ -5,7 +5,7 @@ from numpy.testing import assert_allclose
 from astropy.coordinates import SkyCoord
 from astropy.tests.helper import remote_data
 from ...tiles import HipsSurveyProperties
-from ..simple import make_sky_image, SimpleTilePainter
+from ..simple import make_sky_image, SimpleTilePainter, draw_debug_image
 from ...utils.wcs import WCSGeometry
 from ...utils.testing import make_test_wcs_geometry, requires_hips_extra
 
@@ -95,3 +95,9 @@ class TestSimpleTilePainter:
     def test_run(self):
         self.simple_tile_painter.run()
         assert_allclose(self.simple_tile_painter.image[200, 994], 2120)
+
+    def test_draw_hips_tile_grid(self):
+        self.simple_tile_painter.draw_hips_tile_grid()
+
+    def test_draw_debug_image(self):
+        draw_debug_image(self.geometry, self.simple_tile_painter.tiles[3], self.simple_tile_painter.image)

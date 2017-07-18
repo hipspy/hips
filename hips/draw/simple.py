@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
-from typing import Tuple, List
 import numpy as np
+from typing import Tuple, List
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
@@ -9,8 +9,7 @@ from ..utils import WCSGeometry, compute_healpix_pixel_indices, get_hips_order_f
 
 __all__ = [
     'make_sky_image',
-    'SimpleTilePainter',
-
+    'SimpleTilePainter'
 ]
 
 __doctest_skip__ = [
@@ -178,9 +177,47 @@ class SimpleTilePainter:
 
         return image
 
+    def draw_hips_tile_grid(self) -> None:
+        """Draw lines on the output image (mainly used for debugging)."""
+        import matplotlib.pyplot as plt
+        for tile in self.tiles:
+            corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
+            ax = plt.subplot(projection=self.geometry.wcs)
+            ax.plot(corners.data.lon.deg, corners.data.lat.deg,
+                    'red', lw=1, transform=ax.get_transform('icrs'))
+        ax.imshow(self.image, origin='lower')
+
     def run(self) -> None:
         """Run all steps of the naive algorithm."""
         self.float_image = self.draw_tiles()
+
+
+def draw_debug_image(geometry: WCSGeometry, tile: HipsTile, image: np.ndarray) -> None:
+    """Draw markers on the output image (mainly used for debugging).
+
+    The following denotes their correspondence:
+    * red <=> North
+    * green <=> West
+    * blue <=> South
+    * yellow <=> East
+
+    Parameters
+    ----------
+    geometry : `~hips.utils.WCSGeometry`
+        Geometry of the output image
+    tile : HipsTile
+        HiPS tile
+    image : np.ndarray
+        Image containing HiPS tiles
+    """
+    import matplotlib.pyplot as plt
+    corners = tile.meta.skycoord_corners.transform_to(geometry.celestial_frame)
+    colors = ['red', 'green', 'blue', 'yellow']
+    ax = plt.subplot(projection=geometry.wcs)
+    for index, corner in enumerate(corners):
+        ax.scatter(corner.data.lon.deg, corner.data.lat.deg,
+                   s=80, transform=ax.get_transform('icrs'), color=colors[index])
+    ax.imshow(image, origin='lower')
 
 
 def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> np.ndarray:
