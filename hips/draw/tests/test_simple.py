@@ -17,25 +17,25 @@ make_sky_image_pars = [
         data_1=2213,
         data_2=2296,
         data_sum=8756493140,
-        dtype='>i2'
+        dtype='>i2',
     ),
     dict(
         file_format='jpg',
         shape=(1000, 2000, 3),
         url='https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/FermiColor/properties',
-        data_1=[145, 98, 49],
-        data_2=[146, 99, 56],
-        data_sum=808113247,
-        dtype='uint8'
+        data_1=[133, 117, 121],
+        data_2=[137, 116, 114],
+        data_sum=828908873,
+        dtype='uint8',
     ),
     dict(
         file_format='png',
         shape=(1000, 2000, 4),
         url='https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/AKARI-FIS/properties',
-        data_1=[249, 237, 190, 255.],
-        data_2=[249, 238, 195, 255.],
-        data_sum=1632505453,
-        dtype='uint8'
+        data_1=[224, 216, 196, 255],
+        data_2=[227, 217, 205, 255],
+        data_sum=1635622838,
+        dtype='uint8',
     ),
 ]
 
