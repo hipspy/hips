@@ -1,10 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
 import numpy as np
-from typing import Tuple, List
+from typing import List
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
+from ..tiles.tile import compute_image_shape
 from ..utils import WCSGeometry, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 
 __all__ = [
@@ -124,29 +125,6 @@ class SimpleTilePainter:
 
         return self._tiles
 
-    @property
-    def shape(self) -> Tuple[int]:
-        """Shape of the output image.
-
-        The output image shape is 2-dim for grayscale, and 3-dim for color images:
-
-        * ``shape = (height, width)`` for FITS images with one grayscale channel
-        * ``shape = (height, width, 3)`` for JPG images with three RGB channels
-        * ``shape = (height, width, 4)`` for PNG images with four RGBA channels
-        """
-        height = self.geometry.shape.height
-        width = self.geometry.shape.width
-        tile_format = self.tile_format
-
-        if tile_format == 'fits':
-            return height, width
-        elif tile_format == 'jpg':
-            return height, width, 3
-        elif tile_format == 'png':
-            return height, width, 4
-        else:
-            return ValueError(f'Invalid tile format: {tile_format}')
-
     def warp_image(self, tile: HipsTile) -> np.ndarray:
         """Warp a HiPS tile and a sky image."""
         return warp(
@@ -160,7 +138,12 @@ class SimpleTilePainter:
         """Draw HiPS tiles onto an empty image."""
         tiles = self.tiles
 
-        image = np.zeros(self.shape, dtype=np.float32)
+        shape = compute_image_shape(
+            width=self.geometry.shape.width,
+            height=self.geometry.shape.height,
+            fmt=self.tile_format
+        )
+        image = np.zeros(shape, dtype=np.float32)
         for tile in tiles:
             tile_image = self.warp_image(tile)
             # TODO: put better algorithm here instead of summing pixels

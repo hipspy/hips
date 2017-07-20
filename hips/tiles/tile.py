@@ -1,4 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from typing import List, Tuple
+from copy import deepcopy
 import warnings
 import urllib.request
 from io import BytesIO
@@ -11,7 +13,6 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from ..utils import healpix_pixel_corners
 from .io import tile_default_url, tile_default_path
-from typing import List
 
 __all__ = [
     'HipsTileMeta',
@@ -21,6 +22,38 @@ __all__ = [
 __doctest_skip__ = [
     'HipsTile',
 ]
+
+
+# TODO: this could be a dict. Would that be better?
+def compute_image_shape(width: int, height: int, fmt: str) -> Tuple[int]:
+    """Compute numpy array shape for a given image.
+
+    The output image shape is 2-dim for grayscale, and 3-dim for color images:
+
+    * ``shape = (height, width)`` for FITS images with one grayscale channel
+    * ``shape = (height, width, 3)`` for JPG images with three RGB channels
+    * ``shape = (height, width, 4)`` for PNG images with four RGBA channels
+
+    Parameters
+    ----------
+    width, height : int
+        Width and height of the image
+    fmt : {'fits', 'jpg', 'png'}
+        Image format
+
+    Returns
+    -------
+    shape : tuple
+        Numpy array shape
+    """
+    if fmt == 'fits':
+        return height, width
+    elif fmt == 'jpg':
+        return height, width, 3
+    elif fmt == 'png':
+        return height, width, 4
+    else:
+        return ValueError(f'Invalid format: {fmt}')
 
 
 class HipsTileMeta:
@@ -36,13 +69,15 @@ class HipsTileMeta:
         File format
     frame : {'icrs', 'galactic', 'ecliptic'}
         Sky coordinate frame
+    width : int
+        Tile width (tiles always have width = height)
 
     Examples
     --------
     >>> from hips import HipsTileMeta
-    >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
+    >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits')
     >>> tile_meta
-    HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
+    HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs', width=512)
     >>> tile_meta.skycoord_corners
     <SkyCoord (ICRS): (ra, dec) in deg
     [( 264.375, -24.62431835), ( 258.75 , -30.        ),
@@ -53,24 +88,35 @@ class HipsTileMeta:
     PosixPath('Norder3/Dir0/Npix450.fits')
     """
 
-    def __init__(self, order: int, ipix: int, file_format: str, frame: str = 'icrs') -> None:
+    def __init__(self, order: int, ipix: int, file_format: str,
+                 frame: str = 'icrs', width: int = 512) -> None:
         self.order = order
         self.ipix = ipix
         self.file_format = file_format
         self.frame = frame
+        self.width = width
 
     def __repr__(self):
         return (
-            f'HipsTileMeta(order={self.order}, ipix={self.ipix}, '
-            f'file_format={self.file_format!r}, frame={self.frame!r})'
+            'HipsTileMeta('
+            f'order={self.order}, ipix={self.ipix}, '
+            f'file_format={self.file_format!r}, frame={self.frame!r}, '
+            f'width={self.width}'
+            ')'
         )
 
     def __eq__(self, other: 'HipsTileMeta') -> bool:
         return (
             self.order == other.order and
             self.ipix == other.ipix and
-            self.file_format == other.file_format
+            self.file_format == other.file_format and
+            self.frame == other.frame and
+            self.width == other.width
         )
+
+    def copy(self):
+        """An independent copy."""
+        return deepcopy(self)
 
     @property
     def skycoord_corners(self) -> SkyCoord:
@@ -123,6 +169,7 @@ class HipsTile:
     def __init__(self, meta: HipsTileMeta, raw_data: BytesIO) -> None:
         self.meta = meta
         self.raw_data = raw_data
+        self._data = None
 
     def __eq__(self, other: 'HipsTile') -> bool:
         return (
@@ -170,31 +217,44 @@ class HipsTile:
     @property
     def children(self) -> List['HipsTile']:
         """Create four children tiles from parent tile."""
-        children_tiles = []
         w = self.data.shape[0] // 2
-        child_data = [
+        data = [
             self.data[0: w, 0: w],
             self.data[0: w, w: w * 2],
             self.data[w: w * 2, 0: w],
             self.data[w: w * 2, w: w * 2]
         ]
 
-        for index, data in enumerate(child_data):
+        tiles = []
+        for idx in range(4):
             meta = HipsTileMeta(
                 self.meta.order + 1,
-                self.meta.ipix * 4 + index,
+                self.meta.ipix * 4 + idx,
                 self.meta.file_format,
                 self.meta.frame
             )
-            children_tiles.append(self.from_numpy(meta, data))
+            tile = self.from_numpy(meta, data[idx])
+            tiles.append(tile)
 
-        return children_tiles
+        return tiles
 
     @property
     def data(self) -> np.ndarray:
-        """Tile pixel data (`~numpy.ndarray`)."""
-        fmt = self.meta.file_format
-        bio = BytesIO(self.raw_data)
+        """Tile pixel data (`~numpy.ndarray`).
+
+        This is a cached property, it will only be computed once.
+        """
+        if self._data is None:
+            self._data = self._to_numpy(
+                self.raw_data,
+                self.meta.file_format,
+            )
+
+        return self._data
+
+    @staticmethod
+    def _to_numpy(raw_data, fmt):
+        bio = BytesIO(raw_data)
 
         if fmt == 'fits':
             # At the moment CDS is serving FITS tiles in non-standard FITS files
@@ -206,7 +266,6 @@ class HipsTile:
                 warnings.simplefilter('ignore', VerifyWarning)
                 with fits.open(bio) as hdu_list:
                     data = hdu_list[0].data
-                    # header = hdu_list[0].header
         elif fmt in {'jpg', 'png'}:
             with Image.open(bio) as image:
                 data = np.array(image)

@@ -10,7 +10,9 @@ from ..tile import HipsTileMeta, HipsTile
 class TestHipsTileMeta:
     @classmethod
     def setup_class(cls):
-        cls.meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
+        # Note: we're intentionally using positional args
+        # to make sure tests fail if the order of args is changed
+        cls.meta = HipsTileMeta(3, 450, 'fits', 'icrs', 512)
 
     def test_order(self):
         assert self.meta.order == 3
@@ -24,9 +26,22 @@ class TestHipsTileMeta:
     def test_frame(self):
         assert self.meta.frame == 'icrs'
 
+    def test_width(self):
+        assert self.meta.width == 512
+
     def test_repr(self):
-        expected = "HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')"
+        expected = "HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs', width=512)"
         assert repr(self.meta) == expected
+
+    def test_eq(self):
+        assert self.meta == HipsTileMeta(3, 450, 'fits', 'icrs', 512)
+        assert self.meta != HipsTileMeta(4, 450, 'fits', 'icrs', 512)
+
+    def test_copy(self):
+        meta = self.meta.copy()
+        meta.ipix = 42
+        assert self.meta.ipix == 450
+        assert meta.ipix == 42
 
     def test_skycoord_corners(self):
         coord = self.meta.skycoord_corners
