@@ -11,6 +11,7 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from ..utils import healpix_pixel_corners
 from .io import tile_default_url, tile_default_path
+from typing import List
 
 __all__ = [
     'HipsTileMeta',
@@ -165,6 +166,29 @@ class HipsTile:
         raw_data = bio.read()
 
         return cls(meta, raw_data)
+
+    @property
+    def children(self) -> List['HipsTile']:
+        """Create four children tiles from parent tile."""
+        children_tiles = []
+        w = self.data.shape[0] // 2
+        child_data = [
+            self.data[0: w, 0: w],
+            self.data[0: w, w: w * 2],
+            self.data[w: w * 2, 0: w],
+            self.data[w: w * 2, w: w * 2]
+        ]
+
+        for index, data in enumerate(child_data):
+            meta = HipsTileMeta(
+                self.meta.order + 1,
+                self.meta.ipix * 4 + index,
+                self.meta.file_format,
+                self.meta.frame
+            )
+            children_tiles.append(self.from_numpy(meta, data))
+
+        return children_tiles
 
     @property
     def data(self) -> np.ndarray:
