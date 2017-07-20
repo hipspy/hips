@@ -1,8 +1,6 @@
 """Basic example how to plot a sky image with the hips package"""
 from astropy.coordinates import SkyCoord
-from hips import HipsSurveyProperties
-from hips import make_sky_image
-from hips.utils import WCSGeometry
+from hips import WCSGeometry, HipsSurveyProperties, make_sky_image
 
 # Compute the sky image
 url = 'http://alasky.u-strasbg.fr/Fermi/Color/properties'

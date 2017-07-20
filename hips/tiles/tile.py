@@ -38,7 +38,7 @@ class HipsTileMeta:
 
     Examples
     --------
-    >>> from hips.tiles import HipsTileMeta
+    >>> from hips import HipsTileMeta
     >>> tile_meta = HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
     >>> tile_meta
     HipsTileMeta(order=3, ipix=450, file_format='fits', frame='icrs')
@@ -104,7 +104,7 @@ class HipsTile:
 
     Fetch a HiPS tile:
 
-    >>> from hips.tiles import HipsTile, HipsTileMeta
+    >>> from hips import HipsTile, HipsTileMeta
     >>> meta = HipsTileMeta(order=6, ipix=30889, file_format='fits')
     >>> url = 'http://alasky.unistra.fr/2MASS/H/Norder6/Dir30000/Npix30889.fits'
     >>> tile = HipsTile.fetch(meta, url)

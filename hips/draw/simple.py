@@ -35,17 +35,17 @@ class SimpleTilePainter:
 
     Examples
     --------
-    >>> from hips.utils import WCSGeometry
-    >>> from hips.draw import SimpleTilePainter
-    >>> from hips.tiles import HipsSurveyProperties
     >>> from astropy.coordinates import SkyCoord
-    >>> url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
-    >>> hips_survey = HipsSurveyProperties.fetch(url)
+    >>> from hips import WCSGeometry
+    >>> from hips import HipsSurveyProperties
+    >>> from hips import SimpleTilePainter
     >>> geometry = WCSGeometry.create(
     ...     skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
     ...     width=2000, height=1000, fov='3 deg',
     ...     coordsys='icrs', projection='AIT',
     ... )
+    >>> url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
+    >>> hips_survey = HipsSurveyProperties.fetch(url)
     >>> painter = SimpleTilePainter(geometry, hips_survey, 'fits')
     >>> painter.draw_hips_order
     7

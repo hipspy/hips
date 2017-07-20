@@ -18,7 +18,7 @@ To make a sky image with the `hips` package, follow the following three steps:
 1. Specify the sky image geometry you want by creating a `~hips.utils.WCSGeometry` object::
 
     from astropy.coordinates import SkyCoord
-    from hips.utils import WCSGeometry
+    from hips import WCSGeometry
 
     geometry = WCSGeometry.create(
          skydir=SkyCoord(0, 0, unit='deg', frame='galactic'),
@@ -31,7 +31,7 @@ To make a sky image with the `hips` package, follow the following three steps:
 
    A good address that lists available HiPS data is http://aladin.u-strasbg.fr/hips/list ::
 
-    from hips.tiles import HipsSurveyProperties
+    from hips import HipsSurveyProperties
     url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
     hips_survey = HipsSurveyProperties.fetch(url)
 
@@ -39,7 +39,7 @@ To make a sky image with the `hips` package, follow the following three steps:
 3. Call the `~hips.make_sky_image` function to fetch the HiPS data
    and draw it, returning the sky image pixel data as a Numpy array::
 
-    from hips.draw import make_sky_image
+    from hips import make_sky_image
 
     data = make_sky_image(geometry, hips_survey, 'fits')
 

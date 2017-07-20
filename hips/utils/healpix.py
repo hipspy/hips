@@ -104,7 +104,7 @@ def healpix_pixels_in_sky_image(geometry: WCSGeometry, order: int, healpix_frame
     Examples
     --------
     >>> from astropy.coordinates import SkyCoord
-    >>> from hips.utils import WCSGeometry
+    >>> from hips import WCSGeometry
     >>> from hips.utils import healpix_pixels_in_sky_image
     >>> skycoord = SkyCoord(10, 20, unit="deg")
     >>> geometry = WCSGeometry.create(
