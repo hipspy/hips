@@ -59,8 +59,13 @@ HIPS_TILE_TEST_CASES = [
 
         dtype='int16',
         shape=(512, 512),
+        child_order=4,
+        child_shape=(256, 256),
         pix_idx=[[510], [5]],
         pix_val=[3047],
+        child_ipix=[1852, 1853, 1854, 1855],
+        child_pix_idx=[[0], [255]],
+        child_pix_val=[2407, 2321, 2465, 2835],
     ),
     dict(
         meta=dict(order=3, ipix=463, file_format='jpg'),
@@ -69,8 +74,13 @@ HIPS_TILE_TEST_CASES = [
 
         dtype='uint8',
         shape=(512, 512, 3),
+        child_order=4,
+        child_shape=(256, 256, 3),
         pix_idx=[[510], [5]],
         pix_val=[[116, 81, 61]],
+        child_ipix=[1852, 1853, 1854, 1855],
+        child_pix_idx=[[0], [255]],
+        child_pix_val=[[[255, 241, 225]], [[109, 95, 86]], [[245, 214, 211]], [[137, 97, 87]]],
     ),
     dict(
         meta=dict(order=6, ipix=6112, file_format='png'),
@@ -79,8 +89,13 @@ HIPS_TILE_TEST_CASES = [
 
         dtype='uint8',
         shape=(512, 512, 4),
+        child_order=7,
+        child_shape=(256, 256, 4),
         pix_idx=[[253], [5]],
         pix_val=[[19, 19, 19, 255]],
+        child_ipix=[24448, 24449, 24450, 24451],
+        child_pix_idx=[[0], [255]],
+        child_pix_val=[[[15, 15, 15, 255]], [[20, 20, 20, 255]], [[17, 17, 17, 255]], [[13, 13, 13, 255]]],
     ),
 ]
 
@@ -117,7 +132,19 @@ class TestHipsTile:
         data = tile.data
         assert data.shape == pars['shape']
         assert data.dtype.name == pars['dtype']
-        assert_equal(tile.data[pars['pix_idx']], pars['pix_val'])
+        assert_equal(data[pars['pix_idx']], pars['pix_val'])
+
+    @requires_hips_extra()
+    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    def test_children(self, pars):
+        tile = self._read_tile(pars)
+        child_data = [_.data[pars['child_pix_idx']] for _ in tile.children]
+        child_ipix = [_.meta.ipix for _ in tile.children]
+
+        assert tile.children[0].meta.order == pars['child_order']
+        assert tile.children[0].data.shape == pars['child_shape']
+        assert_equal(child_ipix, pars['child_ipix'])
+        assert_equal(child_data, pars['child_pix_val'])
 
     @remote_data
     @requires_hips_extra()
