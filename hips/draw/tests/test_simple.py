@@ -64,16 +64,13 @@ class TestSimpleTilePainter:
             width=2000, height=1000, fov="3 deg",
             coordsys='icrs', projection='AIT',
         )
-        cls.simple_tile_painter = SimpleTilePainter(cls.geometry, cls.hips_survey, 'fits')
+        cls.painter = SimpleTilePainter(cls.geometry, cls.hips_survey, 'fits')
 
     def test_draw_hips_order(self):
-        assert self.simple_tile_painter.draw_hips_order == 7
-
-    def test_shape(self):
-        assert self.simple_tile_painter.shape == (1000, 2000)
+        assert self.painter.draw_hips_order == 7
 
     def test_tile_indices(self):
-        assert list(self.simple_tile_painter.tile_indices)[:4] == [69623, 69627, 69628, 69629]
+        assert list(self.painter.tile_indices)[:4] == [69623, 69627, 69628, 69629]
 
     draw_hips_order_pars = [
         dict(order=7, fov="3 deg"),
@@ -93,13 +90,14 @@ class TestSimpleTilePainter:
         assert simple_tile_painter.draw_hips_order == pars['order']
 
     def test_run(self):
-        self.simple_tile_painter.run()
-        assert_allclose(self.simple_tile_painter.image[200, 994], 2120)
+        self.painter.run()
+        assert self.painter.image.shape == (1000, 2000)
+        assert_allclose(self.painter.image[200, 994], 2120)
 
     def test_draw_hips_tile_grid(self):
-        self.simple_tile_painter.plot_mpl_hips_tile_grid()
+        self.painter.plot_mpl_hips_tile_grid()
 
     def test_draw_debug_image(self):
-        tile = self.simple_tile_painter.tiles[3]
-        image = self.simple_tile_painter.image
+        tile = self.painter.tiles[3]
+        image = self.painter.image
         plot_mpl_single_tile(self.geometry, tile, image)

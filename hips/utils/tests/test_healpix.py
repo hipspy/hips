@@ -2,8 +2,17 @@
 import pytest
 from numpy.testing import assert_allclose
 import healpy as hp
-from ..healpix import healpix_pixel_corners, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 from ..testing import make_test_wcs_geometry
+from ..healpix import (
+    healpix_order_to_npix,
+    healpix_pixel_corners,
+    healpix_pixels_in_sky_image,
+    hips_order_for_pixel_resolution,
+)
+
+
+def test_order_to_npix():
+    assert healpix_order_to_npix(3) == 768
 
 
 def test_healpix_pixel_corners():

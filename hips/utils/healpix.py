@@ -18,10 +18,13 @@ from astropy.coordinates import SkyCoord
 from .wcs import WCSGeometry
 
 __all__ = [
+    'healpix_order_to_npix',
     'healpix_skycoord_to_theta_phi',
     'healpix_theta_phi_to_skycoord',
+
     'healpix_pixel_corners',
     'healpix_pixels_in_sky_image',
+
     'hips_order_for_pixel_resolution',
 ]
 
@@ -32,6 +35,11 @@ __doctest_skip__ = [
 
 HIPS_HEALPIX_NEST = True
 """HiPS always uses the nested HEALPix pixel numbering scheme."""
+
+
+def healpix_order_to_npix(order: int) -> int:
+    """HEALPix order to npix."""
+    return hp.nside2npix(hp.order2nside(order))
 
 
 def healpix_skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:

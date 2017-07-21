@@ -2,3 +2,4 @@
 """Classes and functions to manage HiPS tiles."""
 from .tile import *
 from .surveys import *
+from .allsky import *
