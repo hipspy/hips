@@ -93,7 +93,6 @@ def test_tile(pars):
     allsky = _read_tile(pars)
 
     tile = allsky.tile(0)
-    print(tile.meta)
 
     assert tile.data.shape == (64, 64, 3)
     assert_equal(tile.data[0, 0], pars['tile_pix_val'])
