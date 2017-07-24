@@ -3,7 +3,6 @@ from typing import List
 import numpy as np
 from ..utils.healpix import healpix_order_to_npix
 from ..tiles import HipsTile
-from ..tiles.tile import compute_image_shape
 
 __all__ = [
     'HipsTileAllskyArray',
@@ -108,11 +107,12 @@ class HipsTileAllskyArray(HipsTile):
         tile_width = tiles[0].meta.width
 
         # Make an empty all-sky image
-        shape = compute_image_shape(
-            width=tile_width * n_tiles_in_row,
-            height=tile_width * n_tiles_in_col,
-            fmt=tiles[0].meta.file_format,
+        shape = (
+            tile_width * n_tiles_in_col,  # height
+            tile_width * n_tiles_in_row,  # width
         )
+        if len(tiles[0].data.shape) == 3:
+            shape = (*shape, tiles[0].data.shape[2])
         data = np.empty(shape, tiles[0].data.dtype)
 
         # Copy over the tile data into the all-sky image

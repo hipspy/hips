@@ -68,51 +68,62 @@ class TestHipsTileMeta:
 
 HIPS_TILE_TEST_CASES = [
     dict(
+        label='fits',
         meta=dict(order=3, ipix=463, file_format='fits'),
         url='http://alasky.unistra.fr/DSS/DSS2Merged/Norder3/Dir0/Npix463.fits',
         filename='datasets/samples/DSS2Red/Norder3/Dir0/Npix463.fits',
 
         dtype='int16',
         shape=(512, 512),
-        child_order=4,
-        child_shape=(256, 256),
         pix_idx=[[510], [5]],
         pix_val=[3047],
+
+        child_order=4,
+        child_shape=(256, 256),
         child_ipix=[1852, 1853, 1854, 1855],
         child_pix_idx=[[0], [255]],
         child_pix_val=[2407, 2321, 2465, 2835],
     ),
     dict(
+        label='jpg',
         meta=dict(order=3, ipix=463, file_format='jpg'),
         url='http://alasky.unistra.fr/Fermi/Color/Norder3/Dir0/Npix451.jpg',
         filename='datasets/samples/FermiColor/Norder3/Dir0/Npix451.jpg',
 
         dtype='uint8',
         shape=(512, 512, 3),
-        child_order=4,
-        child_shape=(256, 256, 3),
         pix_idx=[[510], [5]],
         pix_val=[[116, 81, 61]],
+
+        child_order=4,
+        child_shape=(256, 256, 3),
         child_ipix=[1852, 1853, 1854, 1855],
         child_pix_idx=[[0], [255]],
         child_pix_val=[[[255, 241, 225]], [[109, 95, 86]], [[245, 214, 211]], [[137, 97, 87]]],
     ),
     dict(
+        label='png',
         meta=dict(order=6, ipix=6112, file_format='png'),
         url='http://alasky.unistra.fr/2MASS6X/2MASS6X_H/Norder6/Dir0/Npix6112.png',
         filename='datasets/samples/2MASS6XH/Norder6/Dir0/Npix6112.png',
 
         dtype='uint8',
         shape=(512, 512, 4),
-        child_order=7,
-        child_shape=(256, 256, 4),
         pix_idx=[[253], [5]],
         pix_val=[[19, 19, 19, 255]],
+
+        child_order=7,
+        child_shape=(256, 256, 4),
         child_ipix=[24448, 24449, 24450, 24451],
         child_pix_idx=[[0], [255]],
         child_pix_val=[[[15, 15, 15, 255]], [[20, 20, 20, 255]], [[17, 17, 17, 255]], [[13, 13, 13, 255]]],
     ),
 ]
+
+
+def parametrize():
+    ids = lambda _: _['label']
+    return pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES, ids=ids)
 
 
 class TestHipsTile:
@@ -123,7 +134,7 @@ class TestHipsTile:
         return HipsTile.read(meta, filename)
 
     @requires_hips_extra()
-    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    @parametrize()
     def test_from_numpy(self, pars):
         tile = self._read_tile(pars)
         tile2 = HipsTile.from_numpy(tile.meta, tile.data)
@@ -134,7 +145,7 @@ class TestHipsTile:
             assert_equal(tile.data, tile2.data)
 
     @requires_hips_extra()
-    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    @parametrize()
     def test_read(self, pars):
         # Check that reading tiles in various formats works,
         # i.e. that pixel data in numpy array format
@@ -149,21 +160,9 @@ class TestHipsTile:
         assert data.dtype.name == pars['dtype']
         assert_equal(data[pars['pix_idx']], pars['pix_val'])
 
-    @requires_hips_extra()
-    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
-    def test_children(self, pars):
-        tile = self._read_tile(pars)
-        child_data = [_.data[pars['child_pix_idx']] for _ in tile.children]
-        child_ipix = [_.meta.ipix for _ in tile.children]
-
-        assert tile.children[0].meta.order == pars['child_order']
-        assert tile.children[0].data.shape == pars['child_shape']
-        assert_equal(child_ipix, pars['child_ipix'])
-        assert_equal(child_data, pars['child_pix_val'])
-
     @remote_data
     @requires_hips_extra()
-    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    @parametrize()
     def test_fetch(self, pars):
         # Check that tile HTTP fetch gives the same result as tile read from disk
         meta = HipsTileMeta(**pars['meta'])
@@ -175,7 +174,7 @@ class TestHipsTile:
         assert tile_fetch == tile_read
 
     @requires_hips_extra()
-    @pytest.mark.parametrize('pars', HIPS_TILE_TEST_CASES)
+    @parametrize()
     def test_write(self, tmpdir, pars):
         # Check that tile I/O works, i.e. round-trips on write / read
         tile = self._read_tile(pars)
@@ -185,3 +184,15 @@ class TestHipsTile:
         tile2 = HipsTile.read(tile.meta, filename)
 
         assert tile == tile2
+
+    @requires_hips_extra()
+    @parametrize()
+    def test_children(self, pars):
+        tile = self._read_tile(pars)
+        child_data = [_.data[pars['child_pix_idx']] for _ in tile.children]
+        child_ipix = [_.meta.ipix for _ in tile.children]
+
+        assert tile.children[0].meta.order == pars['child_order']
+        assert tile.children[0].data.shape == pars['child_shape']
+        assert_equal(child_ipix, pars['child_ipix'])
+        assert_equal(child_data, pars['child_pix_val'])
