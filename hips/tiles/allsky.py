@@ -113,7 +113,16 @@ class HipsTileAllskyArray(HipsTile):
         )
         if len(tiles[0].data.shape) == 3:
             shape = (*shape, tiles[0].data.shape[2])
-        data = np.empty(shape, tiles[0].data.dtype)
+
+        # TODO: is this a good way to fill the blank pixels?
+        # I checked `datasets/samples/DSS2Red/Norder3/Allsky.fits` and
+        # there in the FITS header and data array I see
+        # BLANK = -32768.0
+        # I don't do this here for now because I don't know how to
+        # handle this properly for FITS / JPEG / PNG
+        # Maybe we should switch to `NaN` or `-32768` for float data?
+        blank_value = 0
+        data = blank_value * np.ones(shape, tiles[0].data.dtype)
 
         # Copy over the tile data into the all-sky image
         for tile in tiles:
@@ -122,7 +131,8 @@ class HipsTileAllskyArray(HipsTile):
                 tile_width=tile.meta.width,
                 n_tiles_in_row=n_tiles_in_row,
             )
-            data[tile_slice] = tile.data
+            # TODO: explain this flip. (see comment below in the tile method)
+            data[::-1, ...][tile_slice] = tile.data[::-1, ...]
 
         return data
 
@@ -134,7 +144,7 @@ class HipsTileAllskyArray(HipsTile):
         """
         return [self.tile(ipix) for ipix in range(self.n_tiles)]
 
-    def tile(self, ipix: int, copy: bool = True) -> HipsTile:
+    def tile(self, ipix: int) -> HipsTile:
         """Extract one of the tiles (`~hips.HipsTile`)
 
         A copy of the data by default.
@@ -145,10 +155,15 @@ class HipsTileAllskyArray(HipsTile):
         meta.width = self.tile_width
 
         tile_slice = self._tile_slice(ipix, self.tile_width, self.n_tiles_in_row)
-        data = self.data[tile_slice]
+        # Note: apparently, tiles in all-sky files are ordered top to bottom,
+        # left to right, always assuming the JPEG / PNG orientation, even for
+        # FITS all-sky images!?
+        # That's why we flip the all-sky image to JPEG / PNG orientation here
+        # before extracting the tile data, and then we flip the tile data back
+        # because internally we're always using the FITS tile orientation
+        data = self.data[::-1, ...][tile_slice][::-1, ...]
 
-        if copy:
-            data = data.copy()
+        # data = self.data[tile_slice]
 
         return HipsTile.from_numpy(meta, data)
 

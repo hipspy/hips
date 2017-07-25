@@ -24,7 +24,7 @@ TEST_CASES = [
 
         tile_shape=(64, 64),
         # This is the same pixel as above, with the max value in the all-sky image
-        tile_idx=497,
+        tile_idx=281,
         tile_pix_idx=[[46], [38]],
         tile_pix_val=2174.190673828125,
 
@@ -46,7 +46,7 @@ TEST_CASES = [
 
         tile_shape=(64, 64),
         # This is the same pixel as above, with the max value in the all-sky image
-        tile_idx=497,
+        tile_idx=281,
         tile_pix_idx=[[46], [38]],
         tile_pix_val=244,
     ),
@@ -61,19 +61,23 @@ TEST_CASES = [
         dtype='uint8',
         shape=(1856, 1728, 3),
         pix_idx=([510], [5]),
-        pix_val=[[34, 23,  5]],
+        pix_val=[[34, 23, 5]],
 
         tile_shape=(64, 64, 3),
-        tile_idx=0,  # TODO: choose other tile
-        tile_pix_idx=([0], [0]),  # TODO: choose other pixel
-        tile_pix_val=[[22,  2,  0]],
+        tile_idx=0,
+        tile_pix_idx=([0], [0]),
+        tile_pix_val=[[62, 44, 30]],
     ),
 ]
 
 
-def parametrize():
+def parametrize(labels=None):
+    if labels:
+        test_cases = [_ for _ in TEST_CASES if _['label'] in labels]
+    else:
+        test_cases = TEST_CASES
     ids = lambda _: _['label']
-    return pytest.mark.parametrize('pars', TEST_CASES, ids=ids)
+    return pytest.mark.parametrize('pars', test_cases, ids=ids)
 
 
 def _read_tile(pars):
@@ -101,15 +105,12 @@ def test_read(pars):
 
 
 @requires_hips_extra()
-@parametrize()
+# JPEG encoding is lossy, so here we only run the FITS and PNG test cases
+@parametrize(labels='fits')
 def test_from_numpy(pars):
     tile = _read_tile(pars)
     tile2 = HipsTileAllskyArray.from_numpy(tile.meta, tile.data)
-
-    # JPEG encoding is lossy. So in that case, output pixel value
-    # aren't exactly the same as input pixel values
-    if tile.meta.file_format != 'jpg':
-        assert_equal(tile.data, tile2.data)
+    assert_equal(tile.data, tile2.data)
 
 
 @remote_data
@@ -151,7 +152,7 @@ def test_tile(pars):
 
 
 @requires_hips_extra()
-@parametrize()
+@parametrize(labels='fits')
 def test_from_tiles(pars):
     # Check that ``from_tiles`` works properly
     # For now, we check that ``tiles`` and ``from_tiles`` round-trip
@@ -159,20 +160,16 @@ def test_from_tiles(pars):
     # asserting on each of the two step. Round-trip can work, if
     # the same mistake is made in each conversion step.
     allsky = _read_tile(pars)
-    # print(allsky)
-    # allsky.write('/tmp/allsky.jpg')
-
     tiles = allsky.tiles
 
-    # allsky2 = HipsTileAllskyArray.from_tiles(tiles)
-    # print(allsky2)
-    # allsky.write('/tmp/allsky2.jpg')
+    # This is for debugging ...
+    allsky.write('/tmp/allsky.fits')
+    allsky2 = HipsTileAllskyArray.from_tiles(tiles)
+    allsky2.write('/tmp/allsky2.fits')
 
     # TODO: at the moment `HipsTileAllskyArray` always does a JPG encoding,
     # it can't hold the numpy array data unchanged.
     # This still doesn't work, because when going ``allsky.tiles`` another
     # JPG encoding happens.
-    # I did check the JPG files written above. They look the same, so it's working.
-    # Sigh.
     data2 = HipsTileAllskyArray.tiles_to_allsky_array(tiles)
-    # assert_equal(allsky.data, data2)
+    assert_allclose(allsky.data, data2)
