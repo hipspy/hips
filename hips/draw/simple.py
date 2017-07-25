@@ -129,7 +129,8 @@ class SimpleTilePainter:
 
     @property
     def result(self) -> 'HipsDrawResult':
-        return HipsDrawResult(self.image, self.geometry, self.tile_format)
+        """Return an object of `~hips.HipsDrawResult` class."""
+        return HipsDrawResult(self.image, self.geometry, self.tile_format, self.tiles)
 
     def warp_image(self, tile: HipsTile) -> np.ndarray:
         """Warp a HiPS tile and a sky image."""
@@ -189,25 +190,31 @@ class HipsDrawResult:
         An object of WCSGeometry
     tile_format : {'fits', 'jpg', 'png'}
         Format of HiPS tile
+    tiles: List[HipsTile]
     """
 
-    def __init__(self, image: np.ndarray, geometry: WCSGeometry, tile_format: str) -> None:
+    def __init__(self, image: np.ndarray, geometry: WCSGeometry, tile_format: str, tiles: List[HipsTile]) -> None:
         self.image = image
         self.geometry = geometry
         self.tile_format = tile_format
+        self.tiles = tiles
 
     def __str__(self):
         return (
-            'This class object contains two attributes: image and geometry'
+            'HiPS draw result:\n'
+            f'Sky image: shape={self.image.shape}, dtype={self.image.dtype}\n'
+            f'WCS geometry: {self.geometry}\n'
         )
 
     def __repr__(self):
         return (
+            'HipsDrawResult('
             f'width={self.image.shape[0]}, '
             f'height={self.image.shape[1]}, '
             f'channels={self.image.ndim}, '
             f'dtype={self.image.dtype}, '
             f'format={self.tile_format}'
+            ')'
         )
 
     def write_image(self, filename: str) -> None:
@@ -219,11 +226,23 @@ class HipsDrawResult:
             Filename
         """
         if self.tile_format == 'fits':
-            hdu = fits.PrimaryHDU(self.image)
+            hdu = fits.PrimaryHDU(data=self.image, header=self.geometry.fits_header)
             hdu.writeto(filename)
         else:
             image = Image.fromarray(self.image)
             image.save(filename)
+
+    def plot(self) -> None:
+        """Plot the all sky image using `astropy.visualization.wcsaxes` and showing the HEALPix grid."""
+        import matplotlib.pyplot as plt
+        for tile in self.tiles:
+            corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
+            ax = plt.subplot(projection=self.geometry.wcs)
+            opts = dict(color='red', lw=1, )
+            ax.plot(corners.data.lon.deg, corners.data.lat.deg,
+                    transform=ax.get_transform('world'), **opts)
+        ax.imshow(self.image, origin='lower')
+
 
 def measure_tile_shape(corners: tuple) -> Tuple[List[float]]:
     """Compute length of tile edges and diagonals."""

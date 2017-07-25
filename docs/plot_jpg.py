@@ -10,9 +10,9 @@ geometry = WCSGeometry.create(
     width=2000, height=1000, fov="3 deg",
     coordsys='galactic', projection='AIT',
 )
-image = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format='jpg')
+result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format='jpg')
 
 # Draw the sky image
 import matplotlib.pyplot as plt
 ax = plt.subplot(projection=geometry.wcs)
-ax.imshow(image, origin='lower')
+ax.imshow(result.image, origin='lower')

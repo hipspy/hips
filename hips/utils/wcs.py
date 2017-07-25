@@ -58,6 +58,13 @@ class WCSGeometry:
         self.wcs = wcs
         self.shape = Shape(width=width, height=height)
 
+    def __str__(self):
+        return (
+            'WCSGeometry data:\n'
+            f'WCS: {self.wcs}\n'
+            f'Shape: {self.shape}\n'
+        )
+
     @property
     def center_pix(self) -> Tuple[float, float]:
         """Image center in pixel coordinates (tuple of x, y)."""
