@@ -172,6 +172,29 @@ class SimpleTilePainter:
         ax.imshow(self.image, origin='lower')
 
 
+def _measure_tile_shape(corners: tuple) -> List[list]:
+    """Compute length of tile edges and diagonals."""
+    x, y = corners
+
+    def compute_distance(i: int, j: int) -> float:
+        """Compute distance between two points."""
+        return np.sqrt((x[i] - x[j]) ** 2 + (y[i] - y[j]) ** 2)
+
+    edges = [compute_distance((i + 1) % 4, i) for i in range(4)]
+    diagonals = [compute_distance(0, 2), compute_distance(1, 3)]
+    ratio = float(np.min(diagonals) / np.max(diagonals))
+
+    return [edges, diagonals, ratio]
+
+def _is_tile_distorted(corners: tuple) -> bool:
+    """Implement tile splitting criteria as mentioned in :ref:`drawing_algo` page."""
+    edges, diagonals, ratio = _measure_tile_shape(corners)
+
+    return max(edges) > 300 or \
+           max(diagonals) > 150 or \
+           ratio < 0.7
+
+
 def tile_corner_pixel_coordinates(width, file_format) -> np.ndarray:
     """Tile corner pixel coordinates for projective transform.
 
