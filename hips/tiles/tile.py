@@ -139,6 +139,14 @@ class HipsTile:
 
     This class provides methods for fetching, reading, and writing a HiPS tile.
 
+    .. note::
+
+        In HiPS, the pixel data is flipped in the y direction for
+        ``jpg`` and ``png`` format with respect to FITS.
+        In this package, we handle this by flipping ``jpg`` and ``png``
+        data to match the ``fits`` orientation, at the I/O boundary,
+        i.e. in `from_numpy` and `to_numpy`.
+
     Parameters
     ----------
     meta : `~hips.HipsTileMeta`
@@ -200,9 +208,13 @@ class HipsTile:
             hdu = fits.PrimaryHDU(data)
             hdu.writeto(bio)
         elif fmt == 'jpg':
+            # Flip tile to be consistent with FITS orientation
+            data = np.flipud(data)
             image = Image.fromarray(data)
             image.save(bio, format='jpeg')
         elif fmt == 'png':
+            # Flip tile to be consistent with FITS orientation
+            data = np.flipud(data)
             image = Image.fromarray(data)
             image.save(bio, format='png')
         else:
@@ -243,9 +255,11 @@ class HipsTile:
         """Tile pixel data (`~numpy.ndarray`).
 
         This is a cached property, it will only be computed once.
+
+        See the `to_numpy` function.
         """
         if self._data is None:
-            self._data = self._to_numpy(
+            self._data = self.to_numpy(
                 self.raw_data,
                 self.meta.file_format,
             )
@@ -253,7 +267,21 @@ class HipsTile:
         return self._data
 
     @staticmethod
-    def _to_numpy(raw_data, fmt):
+    def to_numpy(raw_data: bytes, fmt: str) -> np.ndarray:
+        """Convert raw image bytes to Numpy array pixel data.
+
+        Parameters
+        ----------
+        raw_data : bytes
+            Raw image bytes (usually read from file or fetched from URL)
+        fmt : {'fits', 'jpg', 'png'}
+            File format
+
+        Returns
+        -------
+        data : `~numpy.ndarray`
+            Pixel data as a numpy array
+        """
         bio = BytesIO(raw_data)
 
         if fmt == 'fits':
@@ -269,6 +297,8 @@ class HipsTile:
         elif fmt in {'jpg', 'png'}:
             with Image.open(bio) as image:
                 data = np.array(image)
+                # Flip tile to be consistent with FITS orientation
+                data = np.flipud(data)
         else:
             raise ValueError(f'Tile file format not supported: {fmt}. '
                              'Supported formats: fits, jpg, png')

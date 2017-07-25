@@ -41,14 +41,14 @@ TEST_CASES = [
         shape=(1856, 1728),
         # This is the same pixel as used above in the FITS test case
         # For JPEG it's saturated at value 255 and not the unique max
-        pix_idx=([658], [742]),
+        pix_idx=([1198], [742]),
         pix_val=255,
 
         tile_shape=(64, 64),
         # This is the same pixel as above, with the max value in the all-sky image
         tile_idx=497,
         tile_pix_idx=[[46], [38]],
-        tile_pix_val=0,   # why is this 0 ???
+        tile_pix_val=244,
     ),
     dict(
         label='jpg-rgb',
@@ -61,12 +61,12 @@ TEST_CASES = [
         dtype='uint8',
         shape=(1856, 1728, 3),
         pix_idx=([510], [5]),
-        pix_val=[[90, 89, 85]],
+        pix_val=[[34, 23,  5]],
 
         tile_shape=(64, 64, 3),
         tile_idx=0,  # TODO: choose other tile
         tile_pix_idx=([0], [0]),  # TODO: choose other pixel
-        tile_pix_val=[[49, 44, 38]],
+        tile_pix_val=[[22,  2,  0]],
     ),
 ]
 
