@@ -46,12 +46,12 @@ make_sky_image_pars = [
 def test_make_sky_image(pars):
     hips_survey = HipsSurveyProperties.fetch(url=pars['url'])
     geometry = make_test_wcs_geometry()
-    image = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'])
-    assert image.shape == pars['shape']
-    assert image.dtype == pars['dtype']
-    assert_allclose(np.sum(image), pars['data_sum'])
-    assert_allclose(image[200, 994], pars['data_1'])
-    assert_allclose(image[200, 995], pars['data_2'])
+    result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'])
+    assert result.image.shape == pars['shape']
+    assert result.image.dtype == pars['dtype']
+    assert_allclose(np.sum(result.image), pars['data_sum'])
+    assert_allclose(result.image[200, 994], pars['data_1'])
+    assert_allclose(result.image[200, 995], pars['data_2'])
 
 
 @remote_data

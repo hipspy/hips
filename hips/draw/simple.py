@@ -125,6 +125,10 @@ class SimpleTilePainter:
 
         return self._tiles
 
+    @property
+    def result(self) -> 'HipsDrawResult':
+        return HipsDrawResult(self.image, self.geometry)
+
     def warp_image(self, tile: HipsTile) -> np.ndarray:
         """Warp a HiPS tile and a sky image."""
         return warp(
@@ -170,6 +174,14 @@ class SimpleTilePainter:
             ax.plot(corners.data.lon.deg, corners.data.lat.deg,
                     transform=ax.get_transform('world'), **opts)
         ax.imshow(self.image, origin='lower')
+
+
+class HipsDrawResult:
+    """Container class for reporting information related with fetching / drawing of HiPS tiles."""
+
+    def __init__(self, image: np.ndarray, geometry: WCSGeometry) -> None:
+        self.image = image
+        self.geometry = geometry
 
 
 def measure_tile_shape(corners: tuple) -> Tuple[List[float]]:
@@ -268,7 +280,7 @@ def plot_mpl_single_tile(geometry: WCSGeometry, tile: HipsTile, image: np.ndarra
     ax.imshow(image, origin='lower')
 
 
-def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> np.ndarray:
+def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> 'HipsDrawResult':
     """Make sky image: fetch tiles and draw.
 
     The example for this can be found on the :ref:`gs` page.
@@ -291,4 +303,4 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, til
     painter = SimpleTilePainter(geometry, hips_survey, tile_format)
     painter.run()
 
-    return painter.image
+    return painter.result
