@@ -1,6 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
 import numpy as np
+from PIL import Image
+from astropy.io import fits
 from typing import List, Tuple
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
@@ -127,7 +129,7 @@ class SimpleTilePainter:
 
     @property
     def result(self) -> 'HipsDrawResult':
-        return HipsDrawResult(self.image, self.geometry)
+        return HipsDrawResult(self.image, self.geometry, self.tile_format)
 
     def warp_image(self, tile: HipsTile) -> np.ndarray:
         """Warp a HiPS tile and a sky image."""
@@ -177,12 +179,51 @@ class SimpleTilePainter:
 
 
 class HipsDrawResult:
-    """Container class for reporting information related with fetching / drawing of HiPS tiles."""
+    """Container class for reporting information related with fetching / drawing of HiPS tiles.
 
-    def __init__(self, image: np.ndarray, geometry: WCSGeometry) -> None:
+    Parameters
+    ----------
+    image: `~numpy.ndarray`
+        Container for HiPS tile data
+    geometry : `~hips.utils.WCSGeometry`
+        An object of WCSGeometry
+    tile_format : {'fits', 'jpg', 'png'}
+        Format of HiPS tile
+    """
+
+    def __init__(self, image: np.ndarray, geometry: WCSGeometry, tile_format: str) -> None:
         self.image = image
         self.geometry = geometry
+        self.tile_format = tile_format
 
+    def __str__(self):
+        return (
+            'This class object contains two attributes: image and geometry'
+        )
+
+    def __repr__(self):
+        return (
+            f'width={self.image.shape[0]}, '
+            f'height={self.image.shape[1]}, '
+            f'channels={self.image.ndim}, '
+            f'dtype={self.image.dtype}, '
+            f'format={self.tile_format}'
+        )
+
+    def write_image(self, filename: str) -> None:
+        """Write image to file.
+
+        Parameters
+        ----------
+        filename : str
+            Filename
+        """
+        if self.tile_format == 'fits':
+            hdu = fits.PrimaryHDU(self.image)
+            hdu.writeto(filename)
+        else:
+            image = Image.fromarray(self.image)
+            image.save(filename)
 
 def measure_tile_shape(corners: tuple) -> Tuple[List[float]]:
     """Compute length of tile edges and diagonals."""

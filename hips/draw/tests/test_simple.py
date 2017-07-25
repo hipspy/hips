@@ -19,6 +19,7 @@ make_sky_image_pars = [
         data_2=2296,
         data_sum=8756493140,
         dtype='>i2',
+        repr='width=1000, height=2000, channels=2, dtype=>i2, format=fits'
     ),
     dict(
         file_format='jpg',
@@ -28,6 +29,7 @@ make_sky_image_pars = [
         data_2=[137, 116, 114],
         data_sum=828908873,
         dtype='uint8',
+        repr='width=1000, height=2000, channels=3, dtype=uint8, format=jpg'
     ),
     dict(
         file_format='png',
@@ -37,6 +39,7 @@ make_sky_image_pars = [
         data_2=[227, 217, 205, 255],
         data_sum=1635622838,
         dtype='uint8',
+        repr='width=1000, height=2000, channels=3, dtype=uint8, format=png'
     ),
 ]
 
@@ -52,7 +55,8 @@ def test_make_sky_image(pars):
     assert_allclose(np.sum(result.image), pars['data_sum'])
     assert_allclose(result.image[200, 994], pars['data_1'])
     assert_allclose(result.image[200, 995], pars['data_2'])
-
+    # result.write_image('test.' + pars['file_format'])
+    assert repr(result) == pars['repr']
 
 @remote_data
 class TestSimpleTilePainter:
