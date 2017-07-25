@@ -96,10 +96,7 @@ class SimpleTilePainter:
         """Estimate projective transformation on a HiPS tile."""
         corners = tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
         src = np.array(corners).T.reshape((4, 2))
-        dst = tile_corner_pixel_coordinates(
-            self.hips_survey.tile_width,
-            self.tile_format
-        )
+        dst = tile_corner_pixel_coordinates(self.hips_survey.tile_width)
         pt = ProjectiveTransform()
         pt.estimate(src, dst)
         return pt
@@ -198,14 +195,13 @@ def is_tile_distorted(corners: tuple) -> bool:
     )
 
 
-def tile_corner_pixel_coordinates(width, file_format) -> np.ndarray:
+def tile_corner_pixel_coordinates(width) -> np.ndarray:
     """Tile corner pixel coordinates for projective transform.
 
-    The HiPS tile pixels (given by the Numpy array ``tile.data`` in our code)
-    have a different orientation for FITS than for JPEG or PNG.
-    This is noted in the HiPS spec (http://www.ivoa.net/documents/HiPS/20160623/index.html):
-    > Contrary to the FITS convention, in JPEG and PNG the lines of the pixel
-    array are stored in top->down direction.
+    Note that in this package we flip pixel data from JPEG and PNG
+    to be consistent with FITS tile orientation on read.
+    For that reason we can treat all tiles the same here and in other
+    places in the package, and assume the FITS tile orientation is given.
 
     The order of corners below is chosen such that it matches the order
     of the pixel corner sky coordinates from ``healpix_pixel_corners``:
@@ -215,28 +211,15 @@ def tile_corner_pixel_coordinates(width, file_format) -> np.ndarray:
     - south
     - east
 
-    and then gives correct results when used to compute the projective transform,
-    i.e. as input ``src`` and ``dst`` parameters for the ``ProjectiveTransform.estimat`` call.
+    and then gives correct results when used to compute the projective transform for tile drawing.
     """
     w = width - 1
-    if file_format == 'fits':
-        corners = [
-            [w, 0],  # north
-            [w, w],  # west
-            [0, w],  # south
-            [0, 0],  # east
-        ]
-    elif file_format in {'jpg', 'png'}:
-        corners = [
-            [w, w],  # north
-            [w, 0],  # west
-            [0, 0],  # south
-            [0, w],  # east
-        ]
-    else:
-        raise ValueError(f'Invalid file_format: {file_format}')
-
-    return np.array(corners)
+    return np.array([
+        [w, 0],  # north
+        [w, w],  # west
+        [0, w],  # south
+        [0, 0],  # east
+    ])
 
 
 def plot_mpl_single_tile(geometry: WCSGeometry, tile: HipsTile, image: np.ndarray) -> None:

@@ -34,6 +34,7 @@ Other resources
 * GSoC 2017 blog by Adeel: https://adl1995.github.io
 * `HiPS at CDS`_ (contains a list and preview of available HiPS data)
 * `HiPS paper`_
+* `HiPS IVOA recommendation`_
 * A Jupyter widget for Aladin Lite: https://github.com/cds-astro/ipyaladin
 * Small example HiPS datasets we use for testing and docs examples: https://github.com/hipspy/hips-extra
 

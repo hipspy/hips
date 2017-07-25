@@ -2,14 +2,57 @@
 from pathlib import Path
 import pytest
 from astropy.tests.helper import remote_data
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose
 from ...utils.testing import get_hips_extra_file, requires_hips_extra
 from ..tile import HipsTileMeta
 from ..allsky import HipsTileAllskyArray
 
 TEST_CASES = [
     dict(
-        meta=dict(order=3, ipix=463, file_format='jpg'),
+        label='fits',
+        meta=dict(order=3, ipix=-1, file_format='fits'),
+        url='http://alasky.unistra.fr/IRAC4/Norder3/Allsky.fits',
+        filename='datasets/samples/IRAC4/Norder3/Allsky.fits',
+
+        repr="HipsTileAllskyArray(format='fits', order=3, width=1728, "
+             "height=1856, n_tiles=768, tile_width=64)",
+        dtype='float32',
+        shape=(1856, 1728),
+        # This is the pixel with the maximum value, to make it easy to find
+        pix_idx=([1198], [742]),
+        pix_val=2174.190673828125,
+
+        tile_shape=(64, 64),
+        # This is the same pixel as above, with the max value in the all-sky image
+        tile_idx=281,
+        tile_pix_idx=[[46], [38]],
+        tile_pix_val=2174.190673828125,
+
+    ),
+    dict(
+        label='jpg-grayscale',
+        meta=dict(order=3, ipix=-1, file_format='jpg'),
+        url='http://alasky.unistra.fr/IRAC4/Norder3/Allsky.jpg',
+        filename='datasets/samples/IRAC4/Norder3/Allsky.jpg',
+
+        repr="HipsTileAllskyArray(format='jpg', order=3, width=1728, "
+             "height=1856, n_tiles=768, tile_width=64)",
+        dtype='uint8',
+        shape=(1856, 1728),
+        # This is the same pixel as used above in the FITS test case
+        # For JPEG it's saturated at value 255 and not the unique max
+        pix_idx=([1198], [742]),
+        pix_val=255,
+
+        tile_shape=(64, 64),
+        # This is the same pixel as above, with the max value in the all-sky image
+        tile_idx=281,
+        tile_pix_idx=[[46], [38]],
+        tile_pix_val=244,
+    ),
+    dict(
+        label='jpg-rgb',
+        meta=dict(order=3, ipix=-1, file_format='jpg'),
         url='http://alasky.unistra.fr/Fermi/Color/Norder3/Allsky.jpg',
         filename='datasets/samples/FermiColor/Norder3/Allsky.jpg',
 
@@ -17,11 +60,24 @@ TEST_CASES = [
              "height=1856, n_tiles=768, tile_width=64)",
         dtype='uint8',
         shape=(1856, 1728, 3),
-        pix_idx=[[510], [5]],
-        pix_val=[[90, 89, 85]],
-        tile_pix_val=[49, 44, 38],
+        pix_idx=([510], [5]),
+        pix_val=[[34, 23, 5]],
+
+        tile_shape=(64, 64, 3),
+        tile_idx=0,
+        tile_pix_idx=([0], [0]),
+        tile_pix_val=[[62, 44, 30]],
     ),
 ]
+
+
+def parametrize(labels=None):
+    if labels:
+        test_cases = [_ for _ in TEST_CASES if _['label'] in labels]
+    else:
+        test_cases = TEST_CASES
+    ids = lambda _: _['label']
+    return pytest.mark.parametrize('pars', test_cases, ids=ids)
 
 
 def _read_tile(pars):
@@ -31,7 +87,7 @@ def _read_tile(pars):
 
 
 @requires_hips_extra()
-@pytest.mark.parametrize('pars', TEST_CASES)
+@parametrize()
 def test_read(pars):
     # Check that reading tiles in various formats works,
     # i.e. that pixel data in numpy array format
@@ -45,24 +101,21 @@ def test_read(pars):
     data = allsky.data
     assert data.shape == pars['shape']
     assert data.dtype.name == pars['dtype']
-    assert_equal(allsky.data[pars['pix_idx']], pars['pix_val'])
+    assert_allclose(allsky.data[pars['pix_idx']], pars['pix_val'])
 
 
 @requires_hips_extra()
-@pytest.mark.parametrize('pars', TEST_CASES)
+# JPEG encoding is lossy, so here we only run the FITS and PNG test cases
+@parametrize(labels='fits')
 def test_from_numpy(pars):
     tile = _read_tile(pars)
     tile2 = HipsTileAllskyArray.from_numpy(tile.meta, tile.data)
-
-    # JPEG encoding is lossy. So in that case, output pixel value
-    # aren't exactly the same as input pixel values
-    if tile.meta.file_format != 'jpg':
-        assert_equal(tile.data, tile2.data)
+    assert_equal(tile.data, tile2.data)
 
 
 @remote_data
 @requires_hips_extra()
-@pytest.mark.parametrize('pars', TEST_CASES)
+@parametrize()
 def test_fetch(pars):
     # Check that tile HTTP fetch gives the same result as tile read from disk
     meta = HipsTileMeta(**pars['meta'])
@@ -75,7 +128,7 @@ def test_fetch(pars):
 
 
 @requires_hips_extra()
-@pytest.mark.parametrize('pars', TEST_CASES)
+@parametrize()
 def test_write(tmpdir, pars):
     # Check that tile I/O works, i.e. round-trips on write / read
     tile = _read_tile(pars)
@@ -88,19 +141,18 @@ def test_write(tmpdir, pars):
 
 
 @requires_hips_extra()
-@pytest.mark.parametrize('pars', TEST_CASES)
+@parametrize()
 def test_tile(pars):
     allsky = _read_tile(pars)
 
-    tile = allsky.tile(0)
-    print(tile.meta)
+    tile = allsky.tile(pars['tile_idx'])
 
-    assert tile.data.shape == (64, 64, 3)
-    assert_equal(tile.data[0, 0], pars['tile_pix_val'])
+    assert tile.data.shape == pars['tile_shape']
+    assert_allclose(tile.data[pars['tile_pix_idx']], pars['tile_pix_val'])
 
 
 @requires_hips_extra()
-@pytest.mark.parametrize('pars', TEST_CASES)
+@parametrize(labels='fits')
 def test_from_tiles(pars):
     # Check that ``from_tiles`` works properly
     # For now, we check that ``tiles`` and ``from_tiles`` round-trip
@@ -108,20 +160,16 @@ def test_from_tiles(pars):
     # asserting on each of the two step. Round-trip can work, if
     # the same mistake is made in each conversion step.
     allsky = _read_tile(pars)
-    # print(allsky)
-    # allsky.write('/tmp/allsky.jpg')
-
     tiles = allsky.tiles
 
-    # allsky2 = HipsTileAllskyArray.from_tiles(tiles)
-    # print(allsky2)
-    # allsky.write('/tmp/allsky2.jpg')
+    # This is for debugging ...
+    allsky.write('/tmp/allsky.fits')
+    allsky2 = HipsTileAllskyArray.from_tiles(tiles)
+    allsky2.write('/tmp/allsky2.fits')
 
     # TODO: at the moment `HipsTileAllskyArray` always does a JPG encoding,
     # it can't hold the numpy array data unchanged.
     # This still doesn't work, because when going ``allsky.tiles`` another
     # JPG encoding happens.
-    # I did check the JPG files written above. They look the same, so it's working.
-    # Sigh.
     data2 = HipsTileAllskyArray.tiles_to_allsky_array(tiles)
-    # assert_equal(allsky.data, data2)
+    assert_allclose(allsky.data, data2)

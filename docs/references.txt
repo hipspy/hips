@@ -4,4 +4,5 @@
 .. _scikit-image: http://scikit-image.org
 .. _Pillow: https://python-pillow.org/
 .. _HiPS paper: https://www.aanda.org/articles/aa/pdf/2015/06/aa26075-15.pdf
+.. _HiPS IVOA recommendation: http://www.ivoa.net/documents/HiPS/
 .. _HiPS at CDS: http://aladin.u-strasbg.fr/hips/
