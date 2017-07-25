@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
 import numpy as np
-from typing import List
+from typing import List, Tuple
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
@@ -172,27 +172,30 @@ class SimpleTilePainter:
         ax.imshow(self.image, origin='lower')
 
 
-def _measure_tile_shape(corners: tuple) -> List[list]:
+def measure_tile_shape(corners: tuple) -> Tuple[List[float]]:
     """Compute length of tile edges and diagonals."""
     x, y = corners
 
-    def compute_distance(i: int, j: int) -> float:
+    def dist(i: int, j: int) -> float:
         """Compute distance between two points."""
         return np.sqrt((x[i] - x[j]) ** 2 + (y[i] - y[j]) ** 2)
 
-    edges = [compute_distance((i + 1) % 4, i) for i in range(4)]
-    diagonals = [compute_distance(0, 2), compute_distance(1, 3)]
-    ratio = float(np.min(diagonals) / np.max(diagonals))
+    edges = [dist((i + 1) % 4, i) for i in range(4)]
+    diagonals = [dist(0, 2), dist(1, 3)]
 
-    return [edges, diagonals, ratio]
+    return edges, diagonals
 
-def _is_tile_distorted(corners: tuple) -> bool:
+
+def is_tile_distorted(corners: tuple) -> bool:
     """Implement tile splitting criteria as mentioned in :ref:`drawing_algo` page."""
-    edges, diagonals, ratio = _measure_tile_shape(corners)
+    edges, diagonals = measure_tile_shape(corners)
+    diagonal_ratio = min(diagonals) / max(diagonals)
 
-    return max(edges) > 300 or \
-           max(diagonals) > 150 or \
-           ratio < 0.7
+    return bool(
+        max(edges) > 300 or
+        max(diagonals) > 150 or
+        diagonal_ratio < 0.7
+    )
 
 
 def tile_corner_pixel_coordinates(width, file_format) -> np.ndarray:

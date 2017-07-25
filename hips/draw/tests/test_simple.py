@@ -4,10 +4,11 @@ import numpy as np
 from numpy.testing import assert_allclose
 from astropy.coordinates import SkyCoord
 from astropy.tests.helper import remote_data
-from ...tiles import HipsSurveyProperties
-from ..simple import make_sky_image, SimpleTilePainter, plot_mpl_single_tile, _is_tile_distorted, _measure_tile_shape
-from ...utils.wcs import WCSGeometry
 from ...utils.testing import make_test_wcs_geometry, requires_hips_extra
+from ...utils.wcs import WCSGeometry
+from ...tiles import HipsSurveyProperties
+from ..simple import make_sky_image, SimpleTilePainter, plot_mpl_single_tile
+from ..simple import is_tile_distorted, measure_tile_shape
 
 make_sky_image_pars = [
     dict(
@@ -103,27 +104,22 @@ class TestSimpleTilePainter:
         image = self.painter.image
         plot_mpl_single_tile(self.geometry, tile, image)
 
-    def test_corners(self):
-        tile = self.painter.tiles[3]
-        x, y = tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
 
-        assert_allclose(x, [764.627476, 999., 764.646551, 530.26981])
-        assert_allclose(y, [300.055412, 101.107245, -97.849955, 101.105373])
+@pytest.fixture(scope='session')
+def corners():
+    x = [764.627476, 999., 764.646551, 530.26981]
+    y = [300.055412, 101.107245, -97.849955, 101.105373]
+    return x, y
 
-    def test_is_tile_distorted(self):
-        tile = self.painter.tiles[3]
-        corners = tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
-        assert _is_tile_distorted(corners) == True
 
-    def test_measure_tile_shape(self):
-        tile = self.painter.tiles[3]
-        corners = tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
-        edges, diagonals, ratio = _measure_tile_shape(corners)
+def test_is_tile_distorted(corners):
+    assert is_tile_distorted(corners) is True
 
-        edges_precomp = [307.426175, 307.417479, 307.434024, 307.41606]
-        diagonals_precomp = [397.905367, 468.73019]
-        ratio_precomp = 0.848900658905216
 
-        assert_allclose(edges_precomp, edges)
-        assert_allclose(diagonals_precomp, diagonals)
-        assert_allclose(ratio_precomp, ratio)
+def test_measure_tile_shape(corners):
+    edges, diagonals = measure_tile_shape(corners)
+
+    expected = [307.426175, 307.417479, 307.434024, 307.41606]
+    assert_allclose(edges, expected)
+
+    assert_allclose(diagonals, [397.905367, 468.73019])
