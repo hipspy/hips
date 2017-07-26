@@ -19,6 +19,7 @@ make_sky_image_pars = [
         data_2=2296,
         data_sum=8756493140,
         dtype='>i2',
+        repr='HipsDrawResult(width=1000, height=2000, channels=2, dtype=>i2, format=fits)'
     ),
     dict(
         file_format='jpg',
@@ -28,6 +29,7 @@ make_sky_image_pars = [
         data_2=[137, 116, 114],
         data_sum=828908873,
         dtype='uint8',
+        repr='HipsDrawResult(width=1000, height=2000, channels=3, dtype=uint8, format=jpg)'
     ),
     dict(
         file_format='png',
@@ -37,22 +39,25 @@ make_sky_image_pars = [
         data_2=[227, 217, 205, 255],
         data_sum=1635622838,
         dtype='uint8',
+        repr='HipsDrawResult(width=1000, height=2000, channels=3, dtype=uint8, format=png)'
     ),
 ]
 
 
 @remote_data
 @pytest.mark.parametrize('pars', make_sky_image_pars)
-def test_make_sky_image(pars):
+def test_make_sky_image(tmpdir, pars):
     hips_survey = HipsSurveyProperties.fetch(url=pars['url'])
     geometry = make_test_wcs_geometry()
-    image = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'])
-    assert image.shape == pars['shape']
-    assert image.dtype == pars['dtype']
-    assert_allclose(np.sum(image), pars['data_sum'])
-    assert_allclose(image[200, 994], pars['data_1'])
-    assert_allclose(image[200, 995], pars['data_2'])
-
+    result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'])
+    assert result.image.shape == pars['shape']
+    assert result.image.dtype == pars['dtype']
+    assert repr(result) == pars['repr']
+    assert_allclose(np.sum(result.image), pars['data_sum'])
+    assert_allclose(result.image[200, 994], pars['data_1'])
+    assert_allclose(result.image[200, 995], pars['data_2'])
+    result.write_image(str(tmpdir / 'test.' + pars['file_format']))
+    result.plot()
 
 @remote_data
 class TestSimpleTilePainter:

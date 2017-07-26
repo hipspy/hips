@@ -37,22 +37,34 @@ To make a sky image with the `hips` package, follow the following three steps:
 
 
 3. Call the `~hips.make_sky_image` function to fetch the HiPS data
-   and draw it, returning the sky image pixel data as a Numpy array::
+   and draw it, returning an object of `~hips.HipsDrawResult`::
 
     from hips import make_sky_image
 
-    data = make_sky_image(geometry, hips_survey, 'fits')
+    result = make_sky_image(geometry, hips_survey, 'fits')
 
 
 That's it. Go ahead and try it out for your favourite sky region and survey.
 
 Now you can then save the sky image to local disk e.g. FITS file format::
 
-    from astropy.io import fits
-    hdu = fits.PrimaryHDU(data=data, header=geometry.fits_header)
-    hdu.writeto('my_image.fits')
+    result.write_image('my_image.fits')
 
-or plot and analyse the sky image however you like.
+The ``result`` object also contains other useful information, such as::
+
+    result.image
+
+will return a NumPy array containing pixel data, you can also get the WCS information using::
+
+    result.geometry
+
+If you want, you could also print out information about the ``result``::
+
+    print(result)
+
+or plot and analyse the sky image using::
+
+    result.plot()
 
 If you execute the example above, you will get this sky image which was plotted using `astropy.visualization.wcsaxes`
 
