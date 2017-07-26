@@ -12,6 +12,7 @@ and re-implement those functions here or in Astropy core.
 Contributions welcome!
 """
 from typing import Tuple
+from functools import lru_cache
 import numpy as np
 import healpy as hp
 from astropy.coordinates import SkyCoord
@@ -155,3 +156,55 @@ def hips_order_for_pixel_resolution(tile_width: int, resolution: float) -> int:
             break
 
     return candidate_tile_order
+
+
+@lru_cache(maxsize=None)
+def hips_tile_healpix_ipix_array(shift_order: int) -> np.ndarray:
+    """
+
+    TODO: write a good description what this is.
+    Note that there is already a mention of this in the high-level docs:
+    https://github.com/hipspy/hips/blame/71e593ab7e60767be70d9b2b13398016c35db09a/docs/drawing_algo.rst#L103
+
+    Parameters
+    ----------
+    shift_order : int
+        The HiPS tile "shift order", which is related to the tile
+        pixel width as follows: ``tile_width = 2 ** shift_order``.
+        Supported range of values: 1 to 16
+
+    Returns
+    -------
+    shift_ipix_array : `~numpy.ndarray`
+        2-dimensional array of HEALPix nested order ``ipix`` values
+        for the tile pixels. These numbers are relative to the
+        HiPS tile HEALPix index, which needs to be added.
+
+    Examples
+    --------
+    TODO: give examples here, or elsewhere from where this helper is called?
+    """
+    # Sanity check, prevent users from shooting themselves in the foot here
+    # and waste a lot of CPU and memory.
+    if not isinstance(shift_order, int):
+        raise TypeError('The `shift_order` option must by of type `int`.')
+    # Usually tiles have ``shift_order == 9``, i.e. ``tile_width == 512`
+    # There's no examples for very high shift order,
+    # so the ``shift_oder == 16`` limit (``tile_width == 65536``) here should be OK.
+    if shift_order < 1 or shift_order > 16:
+        raise ValueError('The `shift_order` must be in the range 1 to 16.')
+
+    if shift_order == 1:
+        return np.array([[0, 1], [2, 3]])
+    else:
+        # Create 4 tiled copies of the parent
+        ipix_parent = hips_tile_healpix_ipix_array(shift_order - 1)
+        data1 = np.tile(ipix_parent, reps=(2, 2))
+
+        # Add the right offset values to each of the 4 parts
+        repeats = 2 ** (shift_order - 1)
+        data2 = (repeats ** 2) * np.array([[0, 1], [2, 3]])
+        data2 = np.repeat(data2, repeats, axis=0)
+        data2 = np.repeat(data2, repeats, axis=1)
+
+        return data1 + data2

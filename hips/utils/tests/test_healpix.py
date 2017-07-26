@@ -1,6 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import pytest
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 import healpy as hp
 from ..testing import make_test_wcs_geometry
 from ..healpix import (
@@ -8,6 +8,7 @@ from ..healpix import (
     healpix_pixel_corners,
     healpix_pixels_in_sky_image,
     hips_order_for_pixel_resolution,
+    hips_tile_healpix_ipix_array,
 )
 
 
@@ -47,3 +48,28 @@ def test_get_hips_order_for_resolution(pars):
     assert hips_order == pars['order']
     hips_resolution = hp.nside2resol(hp.order2nside(hips_order))
     assert_allclose(hips_resolution, pars['resolution_res'])
+
+
+def test_hips_tile_healpix_ipix_array():
+    ipix = hips_tile_healpix_ipix_array(shift_order=1)
+    ipix_expected = [
+        [0, 1],
+        [2, 3],
+    ]
+    assert ipix.shape == (2, 2)
+    assert_equal(ipix, ipix_expected)
+
+    ipix = hips_tile_healpix_ipix_array(shift_order=2)
+    ipix_expected = [
+        [0, 1, 4, 5],
+        [2, 3, 6, 7],
+        [8, 9, 12, 13],
+        [10, 11, 14, 15],
+    ]
+    assert ipix.shape == (4, 4)
+    assert_equal(ipix, ipix_expected)
+
+    ipix = hips_tile_healpix_ipix_array(shift_order=3)
+    assert ipix.shape == (8, 8)
+    assert ipix[0, 0] == 0
+    assert ipix[-1, -1] == 63
