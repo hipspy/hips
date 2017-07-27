@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import pytest
 from numpy.testing import assert_allclose
 from astropy.utils.data import get_pkg_data_filename
 from astropy.tests.helper import remote_data
@@ -11,33 +12,44 @@ class TestHipsSurveyProperties:
     @classmethod
     def setup_class(cls):
         filename = get_pkg_data_filename('data/properties.txt')
-        cls.hips_survey = HipsSurveyProperties.read(filename)
+        cls.survey = HipsSurveyProperties.read(filename)
+
+    @remote_data
+    def test_from_name(self):
+        survey = HipsSurveyProperties.from_name('CDS/P/2MASS/color')
+        assert survey.title == '2MASS color J (1.23 microns), H (1.66 microns), K (2.16 microns)'
+
+    @remote_data
+    def test_make(self):
+        survey = HipsSurveyProperties.make('CDS/P/EGRET/Dif/300-500')
+        assert survey.title == 'EGRET Dif 300-500'
+        assert self.survey is HipsSurveyProperties.make(self.survey)
 
     def test_title(self):
-        assert self.hips_survey.title == 'DSS colored'
+        assert self.survey.title == 'DSS colored'
 
     def test_hips_version(self):
-        assert self.hips_survey.hips_version == '1.31'
+        assert self.survey.hips_version == '1.31'
 
     def test_hips_frame(self):
-        assert self.hips_survey.hips_frame == 'equatorial'
+        assert self.survey.hips_frame == 'equatorial'
 
     def test_astropy_frame(self):
-        assert self.hips_survey.astropy_frame == 'icrs'
+        assert self.survey.astropy_frame == 'icrs'
 
     def test_hips_order(self):
-        assert self.hips_survey.hips_order == 9
+        assert self.survey.hips_order == 9
 
     def test_tile_format(self):
-        assert self.hips_survey.tile_format == 'jpeg'
+        assert self.survey.tile_format == 'jpeg'
 
     def test_base_url(self):
         expected = 'http://alasky.u-strasbg.fr/DSS/DSSColor'
-        assert self.hips_survey.base_url == expected
+        assert self.survey.base_url == expected
 
     def test_tile_default_url(self):
         tile_meta = HipsTileMeta(order=9, ipix=54321, file_format='fits')
-        url = self.hips_survey.tile_url(tile_meta)
+        url = self.survey.tile_url(tile_meta)
         assert url == 'http://alasky.u-strasbg.fr/DSS/DSSColor/Norder9/Dir50000/Npix54321.fits'
 
     @staticmethod
@@ -85,8 +97,12 @@ class TestHipsSurveyPropertiesList:
         surveys = HipsSurveyPropertiesList.fetch()
         assert len(surveys.data) > 3
 
-        # TODO: look up survey by name here
-        # Otherwise this will break when the list changes
-        survey = surveys.data[0]
+        survey = surveys.from_name('CDS/P/2MASS/H')
         assert survey.title == '2MASS H (1.66 microns)'
         assert survey.hips_order == 9
+
+    @remote_data
+    def test_key_error(self):
+        with pytest.raises(KeyError):
+            surveys = HipsSurveyPropertiesList.fetch()
+            surveys.from_name('Kronka Lonka')

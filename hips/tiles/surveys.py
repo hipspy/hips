@@ -3,7 +3,7 @@ from collections import OrderedDict
 from io import StringIO
 from csv import DictWriter
 import urllib.request
-from typing import List
+from typing import List, Union
 from astropy.table import Table
 from .tile import HipsTileMeta
 
@@ -44,33 +44,22 @@ class HipsSurveyProperties:
     def __init__(self, data: OrderedDict) -> None:
         self.data = data
 
-    # TODO for Adeel: implement this (add docstring & test)
     @classmethod
-    def from_name(cls, name):
-        """
-        """
+    def from_name(cls, name: str) -> 'HipsSurveyProperties':
+        """Create object from Survey ID (`HipsSurveyProperties`)."""
         # TODO: implement some kind of caching for HipsSurveyPropertiesList
-        # Also update the getting started example to use this simple solution.
-        # Discuss with Thomas how to do it.
-        # See https://github.com/hipspy/hips/issues/81
         surveys = HipsSurveyPropertiesList.fetch()
-        for survey in surveys.data:
-            if survey.data['ID'].strip() == name.strip():
-                return survey
-
-        raise KeyError(f'Survey not found: {name}')
+        return surveys.from_name(name)
 
     @classmethod
-    def make(cls, hips_survey):
-        """Convenience constructor from string or existing object."""
-        return hips_survey
-        # TODO for Adeel: Implement the `HipsSurveyProperties.from_name` and add a test for this lookup by name
-        # if isinstance(hips_survey, str):
-        #     hips_survey = HipsSurveyProperties.from_name(hips_survey)
-        # elif isinstance(hips_survey, HipsSurveyProperties):
-        #     pass
-        # else:
-        #     raise TypeError(f'hips_survey must be str or HipsSurveyProperties. You gave {type(hips_survey)}')
+    def make(cls, hips_survey: Union[str, 'HipsSurveyProperties']) -> 'HipsSurveyProperties':
+        """Convenience constructor for from_string classmethod or existing object (`HipsSurveyProperties`)."""
+        if isinstance(hips_survey, str):
+            return HipsSurveyProperties.from_name(hips_survey)
+        elif isinstance(hips_survey, HipsSurveyProperties):
+            return hips_survey
+        else:
+            raise TypeError(f'hips_survey must be of type str or `HipsSurveyProperties`. You gave {type(hips_survey)}')
 
     @classmethod
     def read(cls, filename: str) -> 'HipsSurveyProperties':
@@ -294,3 +283,11 @@ class HipsSurveyPropertiesList:
         writer.writeheader()
         writer.writerows(rows)
         return Table.read(buffer.getvalue(), format='ascii.csv', guess=False)
+
+    def from_name(self, name: str) -> 'HipsSurveyProperties':
+        """Return a matching HiPS survey (`HipsSurveyProperties`)."""
+        for survey in self.data:
+            if survey.data['ID'].strip() == name.strip():
+                return survey
+
+        raise KeyError(f'Survey not found: {name}')

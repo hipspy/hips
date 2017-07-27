@@ -26,21 +26,16 @@ To draw a sky image from HiPS image tiles with the `hips` package, follow the fo
          coordsys='galactic', projection='AIT',
     )
 
-
-2. Specify the HiPS survey you want by creating a `~hips.HipsSurveyProperties` object.
+2. Specify the HiPS survey you want. You just need to provide a valid HiPS survey ID.
 
    A good address that lists available HiPS data is http://aladin.u-strasbg.fr/hips/list ::
 
-    from hips import HipsSurveyProperties
-    url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
-    hips_survey = HipsSurveyProperties.fetch(url)
-
+    hips_survey = 'CDS/P/DSS2/red'
 
 3. Call the `~hips.make_sky_image` function to fetch the HiPS data
    and draw it, returning an object of `~hips.HipsDrawResult`::
 
     from hips import make_sky_image
-
     result = make_sky_image(geometry, hips_survey, 'fits')
 
 Of course, you could change the parameters to chose any sky image geometry and
