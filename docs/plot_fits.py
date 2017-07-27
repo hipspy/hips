@@ -11,10 +11,14 @@ geometry = WCSGeometry.create(
     coordsys='galactic', projection='AIT',
 )
 result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format='fits')
+result.plot()
 
 # Draw the sky image
-import matplotlib.pyplot as plt
-from astropy.visualization.mpl_normalize import simple_norm
-ax = plt.subplot(projection=geometry.wcs)
-norm = simple_norm(result.image, 'sqrt', min_percent=1, max_percent=99)
-ax.imshow(result.image, origin='lower', norm=norm, cmap='gray')
+# import matplotlib.pyplot as plt
+# from astropy.visualization.mpl_normalize import simple_norm
+# ax = plt.subplot(projection=geometry.wcs)
+# norm = simple_norm(result.image, 'sqrt', min_percent=1, max_percent=99)
+# ax.imshow(result.image, origin='lower', norm=norm, cmap='gray')
+
+# import matplotlib.pyplot as plt
+# plt.show()

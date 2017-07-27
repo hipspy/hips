@@ -13,7 +13,7 @@ This is a quick getting started guide for the Python `hips` package.
 Make a sky image
 ================
 
-To make a sky image with the `hips` package, follow the following three steps:
+To draw a sky image from HiPS image tiles with the `hips` package, follow the following three steps:
 
 1. Specify the sky image geometry you want by creating a `~hips.utils.WCSGeometry` object::
 
@@ -43,33 +43,41 @@ To make a sky image with the `hips` package, follow the following three steps:
 
     result = make_sky_image(geometry, hips_survey, 'fits')
 
+Of course, you could change the parameters to chose any sky image geometry and
+available HiPS survey you like!
 
-That's it. Go ahead and try it out for your favourite sky region and survey.
+Work with the result
+====================
 
-Now you can then save the sky image to local disk e.g. FITS file format::
-
-    result.write_image('my_image.fits')
-
-The ``result`` object also contains other useful information, such as::
-
-    result.image
-
-will return a NumPy array containing pixel data, you can also get the WCS information using::
-
-    result.geometry
-
-If you want, you could also print out information about the ``result``::
-
-    print(result)
-
-or plot and analyse the sky image using::
+The `~hips.HipsDrawResult` object from the last section makes it easy for you
+to plot, save or analyse the sky image. To generate a quick-look plot of the sky image,
+with rectangles outlining the HiPS tiles that were fetched and drawn to create the sky image::
 
     result.plot()
 
-If you execute the example above, you will get this sky image which was plotted using `astropy.visualization.wcsaxes`
+this will result in the following plot:
 
 .. plot:: plot_fits.py
 
+To save the sky image to a file::
+
+    result.write_image('my_image.fits')
+
+To analyse the data, or make a publication-quality plot, you can get the sky
+image pixel data as a `numpy.ndarray`::
+
+    >>> result.image
+
+and the sky image `astropy.wcs.WCS` mapping pixel to sky coordinates via::
+
+    >>> result.geometry.wcs
+
+To print out summary information about the result::
+
+    >>> print(result)
+
+The `~hips.HipsDrawResult` object also gives access to the `~hips.HipsTile`
+objects that were used for drawing the sky image, as well as other things.
 
 Make a color sky image
 ======================

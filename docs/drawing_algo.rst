@@ -19,7 +19,7 @@ Naive algorithm
 ===============
 
 This is a naive (one could also say: simple and fast) algorithm for drawing HiPS
-tiles using affine transformations, implemented in the `~hips.SimpleTilePainter`
+tiles using affine transformations, implemented in the `~hips.HipsPainter`
 class and usually executed by users via the high-level `~hips.make_sky_image` function.
 
 First we compute and fetch the tiles that are needed for the given sky image:
