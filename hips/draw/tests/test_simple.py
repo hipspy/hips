@@ -7,7 +7,7 @@ from astropy.tests.helper import remote_data
 from ...utils.testing import make_test_wcs_geometry, requires_hips_extra
 from ...utils.wcs import WCSGeometry
 from ...tiles import HipsSurveyProperties
-from ..simple import make_sky_image, SimpleTilePainter, plot_mpl_single_tile
+from ..simple import make_sky_image, HipsPainter, plot_mpl_single_tile
 from ..simple import is_tile_distorted, measure_tile_shape
 
 make_sky_image_pars = [
@@ -49,7 +49,9 @@ make_sky_image_pars = [
 def test_make_sky_image(tmpdir, pars):
     hips_survey = HipsSurveyProperties.fetch(url=pars['url'])
     geometry = make_test_wcs_geometry()
+
     result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'])
+
     assert result.image.shape == pars['shape']
     assert result.image.dtype == pars['dtype']
     assert repr(result) == pars['repr']
@@ -59,8 +61,9 @@ def test_make_sky_image(tmpdir, pars):
     result.write_image(str(tmpdir / 'test.' + pars['file_format']))
     result.plot()
 
+
 @remote_data
-class TestSimpleTilePainter:
+class TestHipsPainter:
     @classmethod
     def setup_class(cls):
         url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
@@ -70,7 +73,7 @@ class TestSimpleTilePainter:
             width=2000, height=1000, fov="3 deg",
             coordsys='icrs', projection='AIT',
         )
-        cls.painter = SimpleTilePainter(cls.geometry, cls.hips_survey, 'fits')
+        cls.painter = HipsPainter(cls.geometry, cls.hips_survey, 'fits')
 
     def test_draw_hips_order(self):
         assert self.painter.draw_hips_order == 7
@@ -93,7 +96,7 @@ class TestSimpleTilePainter:
             coordsys='icrs', projection='AIT',
         )
 
-        simple_tile_painter = SimpleTilePainter(geometry, self.hips_survey, 'fits')
+        simple_tile_painter = HipsPainter(geometry, self.hips_survey, 'fits')
         assert simple_tile_painter.draw_hips_order == pars['order']
 
     def test_run(self):
@@ -106,7 +109,7 @@ class TestSimpleTilePainter:
 
     def test_draw_debug_image(self):
         tile = self.painter.tiles[3]
-        image = self.painter.image
+        image = self.painter._make_empty_sky_image()
         plot_mpl_single_tile(self.geometry, tile, image)
 
 

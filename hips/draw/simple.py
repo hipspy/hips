@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HiPS tile drawing -- simple method."""
+import time
 import numpy as np
 from PIL import Image
 from astropy.io import fits
@@ -12,18 +13,21 @@ from ..utils import WCSGeometry, healpix_pixels_in_sky_image, hips_order_for_pix
 
 __all__ = [
     'make_sky_image',
-    'SimpleTilePainter'
+    'HipsPainter',
+    'HipsDrawResult',
 ]
 
 __doctest_skip__ = [
-    'SimpleTilePainter'
+    'HipsPainter',
 ]
 
 
-class SimpleTilePainter:
-    """Draw sky image using the simple and quick method.
+# TODO for Adeel: add option "precise".
+# Should be default "true" eventually, for now, can use "false" if it's very slow.
+class HipsPainter:
+    """Paint a sky image from HiPS image tiles.
 
-    Paint HiPS tiles onto an all-sky image using a simple projective
+    Paint HiPS tiles onto a ky image using a simple projective
     transformation method. The algorithm implemented is described
     here: :ref:`drawing_algo`.
 
@@ -31,7 +35,7 @@ class SimpleTilePainter:
     ----------
     geometry : `~hips.utils.WCSGeometry`
         An object of WCSGeometry
-    hips_survey : `~hips.HipsSurveyProperties`
+    hips_survey : str or `~hips.HipsSurveyProperties`
         HiPS survey properties
     tile_format : {'fits', 'jpg', 'png'}
         Format of HiPS tile
@@ -41,7 +45,7 @@ class SimpleTilePainter:
     >>> from astropy.coordinates import SkyCoord
     >>> from hips import WCSGeometry
     >>> from hips import HipsSurveyProperties
-    >>> from hips import SimpleTilePainter
+    >>> from hips import HipsPainter
     >>> geometry = WCSGeometry.create(
     ...     skydir=SkyCoord(0, 0, unit='deg', frame='icrs'),
     ...     width=2000, height=1000, fov='3 deg',
@@ -49,7 +53,7 @@ class SimpleTilePainter:
     ... )
     >>> url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
     >>> hips_survey = HipsSurveyProperties.fetch(url)
-    >>> painter = SimpleTilePainter(geometry, hips_survey, 'fits')
+    >>> painter = HipsPainter(geometry, hips_survey, 'fits')
     >>> painter.draw_hips_order
     7
     >>> painter.run()
@@ -59,9 +63,11 @@ class SimpleTilePainter:
 
     def __init__(self, geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> None:
         self.geometry = geometry
-        self.hips_survey = hips_survey
+        self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
         self._tiles = None
+        self.float_image = None
+        self._stats = {}
 
     @property
     def image(self) -> np.ndarray:
@@ -70,7 +76,7 @@ class SimpleTilePainter:
         * The ``dtype`` is always chosen to match the tile ``dtype``.
           This is ``uint8`` for JPG or PNG tiles,
           and can be e.g. ``int16`` or ``float32`` for FITS tiles.
-        * The output shape is documented here: `~SimpleTilePainter.shape`.
+        * The output shape is documented here: `~HipsPainter.shape`.
         """
         return self.float_image.astype(self.tiles[0].data.dtype)
 
@@ -98,7 +104,7 @@ class SimpleTilePainter:
         """Estimate projective transformation on a HiPS tile."""
         corners = tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
         src = np.array(corners).T.reshape((4, 2))
-        dst = tile_corner_pixel_coordinates(self.hips_survey.tile_width)
+        dst = tile_corner_pixel_coordinates(tile.meta.width)
         pt = ProjectiveTransform()
         pt.estimate(src, dst)
         return pt
@@ -119,6 +125,12 @@ class SimpleTilePainter:
     @property
     def tiles(self) -> List[HipsTile]:
         """List of `~hips.HipsTile` (cached on multiple access)."""
+        # TODO: add progress bar reporting here???
+        # Do it in a separate pull request
+        # It has to work in the terminal and Jupyter notebook
+        # Users have to be able to turn it off
+        # So you have an option for it.
+        # Maybe if you add it now, make it off by default.
         if self._tiles is None:
             self._tiles = list(self._fetch_tiles())
 
@@ -138,27 +150,65 @@ class SimpleTilePainter:
             preserve_range=True,
         )
 
-    def draw_tiles(self) -> np.ndarray:
+    def run(self) -> np.ndarray:
         """Draw HiPS tiles onto an empty image."""
-        tiles = self.tiles
+        t0 = time.time()
+        self.make_tile_list()
+        t1 = time.time()
+        self._stats['fetch_time'] = t1 - t0
 
+        t0 = time.time()
+        self.draw_all_tiles()
+        t1 = time.time()
+        self._stats['draw_time'] = t1 - t0
+
+        # Todo for Adeel: copy over the stats dir to the DrawResult
+        # and print it out nicely for the user in the report.
+        # TODO: could add more code here that e.g. tries to measure memory usage
+        # this could be done with https://pypi.python.org/pypi/psutil
+        # or you could just compute the size of `raw_data` and `data` for each tile and sum them up
+        # and also measure the memory used by the output sky image in MB
+        # Other useful info: number of tiles fetched
+
+    def make_tile_list(self):
+        # Fetch all tiles needed
+        parent_tiles = self.tiles
+
+        # TODO for Adeel: implement distortion correction here.
+        # Create new list of tiles, where some have been replaced by 4 children.
+        # Suggestion: for now, just split once, no recursion.
+        # Leave TODO, to discuss with Thomas next week.
+        # See also: https://github.com/hipspy/hips/issues/92
+
+        # For now, we just create a 1:1 copy
+        tiles = []
+        for tile in parent_tiles:
+            tiles.append(tile)
+
+        self.draw_tiles = tiles
+
+    def _make_empty_sky_image(self):
         shape = compute_image_shape(
             width=self.geometry.shape.width,
             height=self.geometry.shape.height,
-            fmt=self.tile_format
+            fmt=self.tile_format,
         )
-        image = np.zeros(shape, dtype=np.float32)
-        for tile in tiles:
+        return np.zeros(shape, dtype=np.float32)
+
+    def draw_all_tiles(self):
+        """Make an empty sky image and draw all the tiles."""
+        image = self._make_empty_sky_image()
+
+        # TODO: this is the second place where we should add
+        # progress reporting
+        for tile in self.draw_tiles:
             tile_image = self.warp_image(tile)
             # TODO: put better algorithm here instead of summing pixels
             # this can lead to pixels that are painted twice and become to bright
             image += tile_image
 
-        return image
-
-    def run(self) -> None:
-        """Run all steps of the naive algorithm."""
-        self.float_image = self.draw_tiles()
+        # Store the result
+        self.float_image = image
 
     def plot_mpl_hips_tile_grid(self) -> None:
         """Plot output image and HiPS grid with matplotlib.
@@ -177,17 +227,18 @@ class SimpleTilePainter:
 
 
 class HipsDrawResult:
-    """Container class for reporting information related with fetching / drawing of HiPS tiles.
+    """HiPS draw result object, containing a sky image and extra infos.
 
     Parameters
     ----------
-    image: `~numpy.ndarray`
-        Container for HiPS tile data
+    image : `~numpy.ndarray`
+        Sky image (the main result)
     geometry : `~hips.utils.WCSGeometry`
-        An object of WCSGeometry
+        WCS geometry of the sky image
     tile_format : {'fits', 'jpg', 'png'}
         Format of HiPS tile
-    tiles: List[HipsTile]
+    tiles : list
+        Python list of `~hips.HipsTile` objects that were used
     """
 
     def __init__(self, image: np.ndarray, geometry: WCSGeometry, tile_format: str, tiles: List[HipsTile]) -> None:
@@ -230,10 +281,14 @@ class HipsDrawResult:
             image.save(filename)
 
     def plot(self) -> None:
-        """Plot the all sky image using `astropy.visualization.wcsaxes` and showing the HEALPix grid."""
+        """Plot the all sky image and overlay HiPS tile outlines.
+
+        Uses `astropy.visualization.wcsaxes`.
+        """
         import matplotlib.pyplot as plt
         for tile in self.tiles:
-            corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
+            corners = tile.meta.skycoord_corners
+            corners = corners.transform_to(self.geometry.celestial_frame)
             ax = plt.subplot(projection=self.geometry.wcs)
             opts = dict(color='red', lw=1, )
             ax.plot(corners.data.lon.deg, corners.data.lat.deg,
@@ -256,7 +311,11 @@ def measure_tile_shape(corners: tuple) -> Tuple[List[float]]:
 
 
 def is_tile_distorted(corners: tuple) -> bool:
-    """Implement tile splitting criteria as mentioned in :ref:`drawing_algo` page."""
+    """Is the tile with the given corners distorted?
+
+    The criterion implemented here is described on the
+    :ref:`drawing_algo` page, as part of the tile drawing algorithm.
+    """
     edges, diagonals = measure_tile_shape(corners)
     diagonal_ratio = min(diagonals) / max(diagonals)
 
@@ -332,7 +391,7 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, til
     ----------
     geometry : `~hips.utils.WCSGeometry`
         Geometry of the output image
-    hips_survey : `~hips.HipsSurveyProperties`
+    hips_survey : str or `~hips.HipsSurveyProperties`
         HiPS survey properties
     tile_format : {'fits', 'jpg', 'png'}
         Format of HiPS tile to use
@@ -343,7 +402,7 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, til
     image : `~numpy.ndarray`
         Output image pixels
     """
-    painter = SimpleTilePainter(geometry, hips_survey, tile_format)
+    painter = HipsPainter(geometry, hips_survey, tile_format)
     painter.run()
 
     return painter.result

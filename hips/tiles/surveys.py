@@ -44,6 +44,34 @@ class HipsSurveyProperties:
     def __init__(self, data: OrderedDict) -> None:
         self.data = data
 
+    # TODO for Adeel: implement this (add docstring & test)
+    @classmethod
+    def from_name(cls, name):
+        """
+        """
+        # TODO: implement some kind of caching for HipsSurveyPropertiesList
+        # Also update the getting started example to use this simple solution.
+        # Discuss with Thomas how to do it.
+        # See https://github.com/hipspy/hips/issues/81
+        surveys = HipsSurveyPropertiesList.fetch()
+        for survey in surveys.data:
+            if survey.data['ID'].strip() == name.strip():
+                return survey
+
+        raise KeyError(f'Survey not found: {name}')
+
+    @classmethod
+    def make(cls, hips_survey):
+        """Convenience constructor from string or existing object."""
+        return hips_survey
+        # TODO for Adeel: Implement the `HipsSurveyProperties.from_name` and add a test for this lookup by name
+        # if isinstance(hips_survey, str):
+        #     hips_survey = HipsSurveyProperties.from_name(hips_survey)
+        # elif isinstance(hips_survey, HipsSurveyProperties):
+        #     pass
+        # else:
+        #     raise TypeError(f'hips_survey must be str or HipsSurveyProperties. You gave {type(hips_survey)}')
+
     @classmethod
     def read(cls, filename: str) -> 'HipsSurveyProperties':
         """Read from HiPS survey description file (`HipsSurveyProperties`).
@@ -167,8 +195,8 @@ class HipsSurveyPropertiesList:
 
     Parameters
     ----------
-    data : List[HipsSurveyProperties]
-        HiPS survey properties
+    data : list
+        Python list of `~hips.HipsSurveyProperties`
 
     Examples
     --------
