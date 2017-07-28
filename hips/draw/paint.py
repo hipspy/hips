@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
 import numpy as np
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict, Any, Iterator
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
@@ -62,7 +62,7 @@ class HipsPainter:
         self.tile_format = tile_format
         self._tiles = None
         self.float_image = None
-        self._stats = {}
+        self._stats: Dict[str, Any] = {}
 
     @property
     def image(self) -> np.ndarray:
@@ -104,7 +104,7 @@ class HipsPainter:
         pt.estimate(src, dst)
         return pt
 
-    def _fetch_tiles(self) -> HipsTile:
+    def _fetch_tiles(self) -> Iterator[HipsTile]:
         """Generator function to fetch HiPS tiles from a remote URL."""
         for healpix_pixel_index in self.tile_indices:
             tile_meta = HipsTileMeta(
@@ -216,8 +216,23 @@ class HipsPainter:
         ax.imshow(self.image, origin='lower')
 
 
-def measure_tile_shape(corners: tuple) -> Tuple[List[float]]:
-    """Compute length of tile edges and diagonals."""
+def measure_tile_lengths(corners: Tuple[np.ndarray, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    """Compute length of tile edges and diagonals.
+
+    Parameters
+    ----------
+    corners : tuple of `~numpy.ndarray`
+        Tile corner pixel coordinates ``(x, y)``
+
+    Returns
+    -------
+    edges : `~numpy.ndarray`
+        Tile edge pixel lengths.
+        Entries: 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 0
+    diagonals : `~numpy.ndarray`
+        Tile diagonal pixel lengths
+        Entries: 0 -> 2, 1 -> 3
+    """
     x, y = corners
 
     def dist(i: int, j: int) -> float:
@@ -227,7 +242,7 @@ def measure_tile_shape(corners: tuple) -> Tuple[List[float]]:
     edges = [dist((i + 1) % 4, i) for i in range(4)]
     diagonals = [dist(0, 2), dist(1, 3)]
 
-    return edges, diagonals
+    return np.array(edges), np.array(diagonals)
 
 
 def is_tile_distorted(corners: tuple) -> bool:
@@ -236,7 +251,7 @@ def is_tile_distorted(corners: tuple) -> bool:
     The criterion implemented here is described on the
     :ref:`drawing_algo` page, as part of the tile drawing algorithm.
     """
-    edges, diagonals = measure_tile_shape(corners)
+    edges, diagonals = measure_tile_lengths(corners)
     diagonal_ratio = min(diagonals) / max(diagonals)
 
     return bool(

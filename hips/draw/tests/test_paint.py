@@ -6,7 +6,7 @@ from astropy.tests.helper import remote_data
 from ...utils.testing import requires_hips_extra
 from ...utils.wcs import WCSGeometry
 from ...tiles import HipsSurveyProperties
-from ..paint import is_tile_distorted, measure_tile_shape, HipsPainter, plot_mpl_single_tile
+from ..paint import is_tile_distorted, measure_tile_lengths, HipsPainter, plot_mpl_single_tile
 
 
 @remote_data
@@ -71,8 +71,8 @@ def test_is_tile_distorted(corners):
     assert is_tile_distorted(corners) is True
 
 
-def test_measure_tile_shape(corners):
-    edges, diagonals = measure_tile_shape(corners)
+def test_measure_tile_lengths(corners):
+    edges, diagonals = measure_tile_lengths(corners)
 
     expected = [307.426175, 307.417479, 307.434024, 307.41606]
     assert_allclose(edges, expected)
