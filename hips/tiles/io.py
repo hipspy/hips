@@ -4,6 +4,8 @@ from typing import List
 from pathlib import Path
 
 __all__ = [
+    'tile_default_url',
+    'tile_default_path',
 ]
 
 

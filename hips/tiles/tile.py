@@ -25,7 +25,7 @@ __doctest_skip__ = [
 
 
 # TODO: this could be a dict. Would that be better?
-def compute_image_shape(width: int, height: int, fmt: str) -> Tuple[int]:
+def compute_image_shape(width: int, height: int, fmt: str) -> tuple:
     """Compute numpy array shape for a given image.
 
     The output image shape is 2-dim for grayscale, and 3-dim for color images:
@@ -53,7 +53,7 @@ def compute_image_shape(width: int, height: int, fmt: str) -> Tuple[int]:
     elif fmt == 'png':
         return height, width, 4
     else:
-        return ValueError(f'Invalid format: {fmt}')
+        raise ValueError(f'Invalid format: {fmt}')
 
 
 class HipsTileMeta:
@@ -129,7 +129,7 @@ class HipsTileMeta:
         return tile_default_url(self.order, self.ipix, self.file_format)
 
     @property
-    def tile_default_path(self) -> str:
+    def tile_default_path(self) -> Path:
         """Tile relative filename path (`~pathlib.Path`)."""
         return tile_default_path(self.order, self.ipix, self.file_format)
 
@@ -174,7 +174,7 @@ class HipsTile:
     int16
     """
 
-    def __init__(self, meta: HipsTileMeta, raw_data: BytesIO) -> None:
+    def __init__(self, meta: HipsTileMeta, raw_data: bytes) -> None:
         self.meta = meta
         self.raw_data = raw_data
         self._data = None

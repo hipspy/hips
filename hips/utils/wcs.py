@@ -1,10 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from collections import namedtuple
-from typing import Tuple
+from typing import Tuple, Union
 import numpy as np
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import Angle, SkyCoord
+from astropy.io.fits import Header
 from astropy.wcs import WCS
-from astropy.coordinates import Angle
 from astropy.wcs.utils import pixel_to_skycoord, wcs_to_celestial_frame
 
 __all__ = [
@@ -88,7 +88,7 @@ class WCSGeometry:
         return pixel_to_skycoord(x, y, self.wcs, self.WCS_ORIGIN_DEFAULT)
 
     @classmethod
-    def create(cls, skydir: SkyCoord, width: int, height: int, fov: {str, Angle},
+    def create(cls, skydir: SkyCoord, width: int, height: int, fov: Union[str, Angle],
                coordsys: str = 'icrs', projection: str = 'AIT') -> 'WCSGeometry':
         """Create WCS object for given sky image parameters (`WCSGeometry`).
 
@@ -167,6 +167,6 @@ class WCSGeometry:
         return wcs_to_celestial_frame(self.wcs)
 
     @property
-    def fits_header(self) -> 'astropy.io.fits.Header':
+    def fits_header(self) -> Header:
         """FITS header for the given WCS (`~astropy.io.fits.Header`)."""
         return self.wcs.to_header()
