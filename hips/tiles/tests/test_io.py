@@ -8,6 +8,6 @@ def test_tile_default_url():
     assert url == 'Norder9/Dir50000/Npix54321.fits'
 
 
-def test_tile_default_url():
+def test_tile_default_path():
     path = tile_default_path(order=9, ipix=54321, file_format='fits')
     assert path == Path('Norder9/Dir50000/Npix54321.fits')
