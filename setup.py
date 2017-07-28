@@ -24,12 +24,12 @@ conf = ConfigParser()
 conf.read(['setup.cfg'])
 metadata = dict(conf.items('metadata'))
 
-PACKAGENAME = metadata.get('package_name', 'hips')
-DESCRIPTION = metadata.get('description', 'Python astronomy package for HiPS')
-AUTHOR = metadata.get('author', 'HiPS developers')
-AUTHOR_EMAIL = metadata.get('author_email', '')
-LICENSE = metadata.get('license', 'unknown')
-URL = metadata.get('url', 'https://github.com/hipspy/hips')
+PACKAGENAME = metadata['package_name']
+DESCRIPTION = metadata['description']
+AUTHOR = metadata['author']
+AUTHOR_EMAIL = metadata['author_email']
+LICENSE = metadata['license']
+URL = metadata['url']
 
 with open('LONG_DESCRIPTION.rst') as f:
     LONG_DESCRIPTION = f.read()
@@ -39,7 +39,7 @@ with open('LONG_DESCRIPTION.rst') as f:
 builtins._ASTROPY_PACKAGE_NAME_ = PACKAGENAME
 
 # VERSION should be PEP440 compatible (http://www.python.org/dev/peps/pep-0440)
-VERSION = metadata.get('version', '0.0.dev')
+VERSION = metadata.get('version')
 
 # Indicates if this version is a release version
 RELEASE = 'dev' not in VERSION
