@@ -4,7 +4,7 @@ import time
 import numpy as np
 from PIL import Image
 from astropy.io import fits
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
@@ -61,7 +61,7 @@ class HipsPainter:
     (1000, 2000)
     """
 
-    def __init__(self, geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> None:
+    def __init__(self, geometry: WCSGeometry, hips_survey: Union[str, HipsSurveyProperties], tile_format: str) -> None:
         self.geometry = geometry
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
@@ -382,7 +382,7 @@ def plot_mpl_single_tile(geometry: WCSGeometry, tile: HipsTile, image: np.ndarra
     ax.imshow(image, origin='lower')
 
 
-def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, tile_format: str) -> 'HipsDrawResult':
+def make_sky_image(geometry: WCSGeometry, hips_survey: Union[str, 'HipsSurveyProperties'], tile_format: str) -> 'HipsDrawResult':
     """Make sky image: fetch tiles and draw.
 
     The example for this can be found on the :ref:`gs` page.
@@ -399,8 +399,8 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: HipsSurveyProperties, til
 
     Returns
     -------
-    image : `~numpy.ndarray`
-        Output image pixels
+    result : `~hips.HipsDrawResult`
+        Result object
     """
     painter = HipsPainter(geometry, hips_survey, tile_format)
     painter.run()
