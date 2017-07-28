@@ -100,7 +100,7 @@ class HipsSurveyProperties:
         url : str
             Properties URL of HiPS
         """
-        data = OrderedDict()
+        data: OrderedDict = OrderedDict()
         for line in text.split('\n'):
             # Skip empty or comment lines
             if line == '' or line.startswith('#'):

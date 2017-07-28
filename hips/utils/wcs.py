@@ -2,9 +2,9 @@
 from collections import namedtuple
 from typing import Tuple, Union
 import numpy as np
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import Angle, SkyCoord
+from astropy.io.fits import Header
 from astropy.wcs import WCS
-from astropy.coordinates import Angle
 from astropy.wcs.utils import pixel_to_skycoord, wcs_to_celestial_frame
 
 __all__ = [
@@ -167,6 +167,6 @@ class WCSGeometry:
         return wcs_to_celestial_frame(self.wcs)
 
     @property
-    def fits_header(self) -> 'astropy.io.fits.Header':
+    def fits_header(self) -> Header:
         """FITS header for the given WCS (`~astropy.io.fits.Header`)."""
         return self.wcs.to_header()

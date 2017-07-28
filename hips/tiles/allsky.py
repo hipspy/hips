@@ -2,7 +2,7 @@
 from typing import List
 import numpy as np
 from ..utils.healpix import healpix_order_to_npix
-from ..tiles import HipsTile
+from .tile import HipsTile
 
 __all__ = [
     'HipsTileAllskyArray',
