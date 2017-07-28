@@ -39,7 +39,7 @@ Then we draw the tiles one by one using these steps:
 
 #. For each tile, compute the world coordinates of the tile corner
    vertices, using healpy ``boundaries`` function.
-#. For each tile, project vertices in image coordinates according to the 
+#. For each tile, project vertices in image coordinates according to the
    requested WCS (performing ICRS to Galactic frame transformation if
    the HiPS and sky image aren't in the same frame already).
 #. We extend the tile by 1 pixel in all directions in order to hide "stitches"
@@ -68,7 +68,7 @@ between the equatorial zone and the polar cap.
 
 An example of such distortions is shown in the example below (uncheck *Activate
 deformations reduction algorithm* to view the astrometry offsets):
-http://cds.unistra.fr/~boch/AL/test-reduce-deformations2.html 
+http://cds.unistra.fr/~boch/AL/test-reduce-deformations2.html
 
 To overcome this problem, Aladin Desktop and Aladin Lite use the following
 recursive strategy: for tiles either too large (one edge is >300 pixels or
@@ -98,8 +98,8 @@ for the drawing step is to scan the result image pixels, and for each of them
 interpolate (Nearest neighbour or bilinear) the value, ie compute the indexes of
 nearest neighbour(s), retrieve the values of these pixels and merge them to
 determine the value of the target pixel. This is very similar to what `reproject
-<https://github.com/astrofrog/reproject>`_ is doing. 
-       
+<https://github.com/astrofrog/reproject>`_ is doing.
+
 One challenge is that one needs to know how to find the tile and pixel
 corresponding to a given HEALPix index. The correspondance between a HEALPix
 index and a pixel in a HiPS tile is given by a ``hpx2xy`` array (see method
