@@ -1,6 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from collections import namedtuple
-from typing import Tuple
+from typing import Tuple, Union
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.wcs import WCS
@@ -88,7 +88,7 @@ class WCSGeometry:
         return pixel_to_skycoord(x, y, self.wcs, self.WCS_ORIGIN_DEFAULT)
 
     @classmethod
-    def create(cls, skydir: SkyCoord, width: int, height: int, fov: {str, Angle},
+    def create(cls, skydir: SkyCoord, width: int, height: int, fov: Union[str, Angle],
                coordsys: str = 'icrs', projection: str = 'AIT') -> 'WCSGeometry':
         """Create WCS object for given sky image parameters (`WCSGeometry`).
 

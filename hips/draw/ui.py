@@ -13,9 +13,6 @@ __all__ = [
     'HipsDrawResult',
 ]
 
-__doctest_skip__ = [
-]
-
 
 def make_sky_image(geometry: WCSGeometry, hips_survey: Union[str, 'HipsSurveyProperties'],
                    tile_format: str) -> 'HipsDrawResult':
