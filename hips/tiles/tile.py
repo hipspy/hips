@@ -231,10 +231,10 @@ class HipsTile:
         """Create four children tiles from parent tile."""
         w = self.data.shape[0] // 2
         data = [
-            self.data[0: w, 0: w],
-            self.data[0: w, w: w * 2],
             self.data[w: w * 2, 0: w],
-            self.data[w: w * 2, w: w * 2]
+            self.data[0: w, 0: w],
+            self.data[w: w * 2, w: w * 2],
+            self.data[0: w, w: w * 2]
         ]
 
         tiles = []
@@ -243,7 +243,8 @@ class HipsTile:
                 self.meta.order + 1,
                 self.meta.ipix * 4 + idx,
                 self.meta.file_format,
-                self.meta.frame
+                self.meta.frame,
+                len(data[0])
             )
             tile = self.from_numpy(meta, data[idx])
             tiles.append(tile)

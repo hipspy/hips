@@ -15,7 +15,7 @@ __all__ = [
 
 
 def make_sky_image(geometry: WCSGeometry, hips_survey: Union[str, 'HipsSurveyProperties'],
-                   tile_format: str) -> 'HipsDrawResult':
+                   tile_format: str, precise: bool = False) -> 'HipsDrawResult':
     """Make sky image: fetch tiles and draw.
 
     The example for this can be found on the :ref:`gs` page.
@@ -29,13 +29,15 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: Union[str, 'HipsSurveyPro
     tile_format : {'fits', 'jpg', 'png'}
         Format of HiPS tile to use
         (some surveys are available in several formats, so this extra argument is needed)
+    precise : bool
+        Use the precise drawing algorithm
 
     Returns
     -------
     result : `~hips.HipsDrawResult`
         Result object
     """
-    painter = HipsPainter(geometry, hips_survey, tile_format)
+    painter = HipsPainter(geometry, hips_survey, tile_format, precise)
     painter.run()
     return HipsDrawResult.from_painter(painter)
 
