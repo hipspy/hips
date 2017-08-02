@@ -158,6 +158,23 @@ class WCSGeometry:
 
         return cls(w, width, height)
 
+    @classmethod
+    def create_from_dict(cls, params: dict) -> 'WCSGeometry':
+        """Create WCS object from a dictionary (`WCSGeometry`)."""
+        skycoord = SkyCoord.from_name(params.pop('target'), frame=params['coordsys'])
+        # print(**params)
+        return cls.create(skycoord, **params)
+
+    @classmethod
+    def make(cls, geometry: Union[dict, 'WCSGeometry']) -> 'WCSGeometry':
+        """Convenience constructor for create_from_dict classmethod or existing object (`WCSGeometry`)."""
+        if isinstance(geometry, str):
+            return WCSGeometry.create_from_dict(geometry)
+        elif isinstance(geometry, WCSGeometry):
+            return geometry
+        else:
+            raise TypeError(f'geometry must be of type dict or `WCSGeometry`. You gave {type(geometry)}')
+
     @property
     def celestial_frame(self) -> str:
         """Celestial frame for the given WCS (str).

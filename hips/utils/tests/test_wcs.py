@@ -34,3 +34,11 @@ class TestWCSGeometry:
         assert_allclose(c.dec.deg, 0.00075, atol=1e-2)
         assert_allclose(self.geometry.wcs.wcs.crpix, [1000., 500.])
         assert_allclose(self.geometry.wcs.wcs.cdelt, [-0.0015, 0.0015])
+
+    def test_create_from_dict(self):
+        params = dict(target='crab', width=2000, height=1000, fov='3 deg',
+                      coordsys='galactic', projection='AIT')
+        geometry = WCSGeometry.create_from_dict(params)
+
+        c = self.geometry.center_skycoord
+        assert c.frame.name == 'galactic'
