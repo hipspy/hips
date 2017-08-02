@@ -40,5 +40,9 @@ class TestWCSGeometry:
                       coordsys='galactic', projection='AIT')
         geometry = WCSGeometry.create_from_dict(params)
 
-        c = self.geometry.center_skycoord
+        c = geometry.center_skycoord
         assert c.frame.name == 'galactic'
+        assert_allclose(c.l.deg, 184.55, atol=1e-2)
+        assert_allclose(c.b.deg, -5.78, atol=1e-2)
+        assert_allclose(self.geometry.wcs.wcs.crpix, [1000., 500.])
+        assert_allclose(self.geometry.wcs.wcs.cdelt, [-0.0015, 0.0015])
