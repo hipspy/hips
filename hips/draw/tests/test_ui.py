@@ -16,7 +16,8 @@ make_sky_image_pars = [
         data_2=2296,
         data_sum=8756493140,
         dtype='>i2',
-        repr='HipsDrawResult(width=1000, height=2000, channels=2, dtype=>i2, format=fits)'
+        repr='HipsDrawResult(width=1000, height=2000, channels=2, dtype=>i2, format=fits)',
+        precise=False
     ),
     dict(
         file_format='jpg',
@@ -26,7 +27,19 @@ make_sky_image_pars = [
         data_2=[137, 116, 114],
         data_sum=828908873,
         dtype='uint8',
-        repr='HipsDrawResult(width=1000, height=2000, channels=3, dtype=uint8, format=jpg)'
+        repr='HipsDrawResult(width=1000, height=2000, channels=3, dtype=uint8, format=jpg)',
+        precise=False
+    ),
+    dict(
+        file_format='jpg',
+        shape=(1000, 2000, 3),
+        url='https://raw.githubusercontent.com/hipspy/hips-extra/master/datasets/samples/FermiColor/properties',
+        data_1=[139, 114, 115],
+        data_2=[142, 113, 110],
+        data_sum=825148172,
+        dtype='uint8',
+        repr='HipsDrawResult(width=1000, height=2000, channels=3, dtype=uint8, format=jpg)',
+        precise=True
     ),
     dict(
         file_format='png',
@@ -36,7 +49,8 @@ make_sky_image_pars = [
         data_2=[227, 217, 205, 255],
         data_sum=1635622838,
         dtype='uint8',
-        repr='HipsDrawResult(width=1000, height=2000, channels=3, dtype=uint8, format=png)'
+        repr='HipsDrawResult(width=1000, height=2000, channels=3, dtype=uint8, format=png)',
+        precise=False
     ),
 ]
 
@@ -47,7 +61,7 @@ def test_make_sky_image(tmpdir, pars):
     hips_survey = HipsSurveyProperties.fetch(url=pars['url'])
     geometry = make_test_wcs_geometry()
 
-    result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'])
+    result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'], precise=pars['precise'])
 
     assert result.image.shape == pars['shape']
     assert result.image.dtype == pars['dtype']

@@ -17,8 +17,6 @@ __doctest_skip__ = [
 ]
 
 
-# TODO for Adeel: add option "precise".
-# Should be default "true" eventually, for now, can use "false" if it's very slow.
 class HipsPainter:
     """Paint a sky image from HiPS image tiles.
 
@@ -34,6 +32,8 @@ class HipsPainter:
         HiPS survey properties
     tile_format : {'fits', 'jpg', 'png'}
         Format of HiPS tile
+    precise : bool
+        Use the precise drawing algorithm
 
     Examples
     --------
@@ -56,10 +56,11 @@ class HipsPainter:
     (1000, 2000)
     """
 
-    def __init__(self, geometry: WCSGeometry, hips_survey: Union[str, HipsSurveyProperties], tile_format: str) -> None:
+    def __init__(self, geometry: WCSGeometry, hips_survey: Union[str, HipsSurveyProperties], tile_format: str, precise: bool = False) -> None:
         self.geometry = geometry
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
+        self.precise = precise
         self._tiles = None
         self.float_image = None
         self._stats: Dict[str, Any] = {}
@@ -161,21 +162,23 @@ class HipsPainter:
         # Other useful info: number of tiles fetched
 
     def make_tile_list(self):
-        # Fetch all tiles needed
         parent_tiles = self.tiles
 
-        # TODO for Adeel: implement distortion correction here.
-        # Create new list of tiles, where some have been replaced by 4 children.
         # Suggestion: for now, just split once, no recursion.
         # Leave TODO, to discuss with Thomas next week.
         # See also: https://github.com/hipspy/hips/issues/92
 
-        # For now, we just create a 1:1 copy
-        tiles = []
-        for tile in parent_tiles:
-            tiles.append(tile)
-
-        self.draw_tiles = tiles
+        if self.precise == True:
+            tiles = []
+            for tile in parent_tiles:
+                corners = tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
+                if is_tile_distorted(corners):
+                    tiles.append(tile.children)
+                else:
+                    tiles.append(tile)
+            self.draw_tiles = [tile for children in tiles for tile in children]
+        else:
+            self.draw_tiles = parent_tiles
 
     def _make_empty_sky_image(self):
         shape = compute_image_shape(
@@ -207,7 +210,8 @@ class HipsPainter:
         not something end-users will call or need to know about.
         """
         import matplotlib.pyplot as plt
-        for tile in self.tiles:
+        self.make_tile_list()
+        for tile in self.draw_tiles:
             corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
             ax = plt.subplot(projection=self.geometry.wcs)
             opts = dict(color='red', lw=1, )
