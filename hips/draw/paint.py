@@ -26,7 +26,7 @@ class HipsPainter:
 
     Parameters
     ----------
-    geometry : `~hips.utils.WCSGeometry`
+    geometry : dict or `~hips.utils.WCSGeometry`
         An object of WCSGeometry
     hips_survey : str or `~hips.HipsSurveyProperties`
         HiPS survey properties
@@ -56,8 +56,8 @@ class HipsPainter:
     (1000, 2000)
     """
 
-    def __init__(self, geometry: WCSGeometry, hips_survey: Union[str, HipsSurveyProperties], tile_format: str, precise: bool = False) -> None:
-        self.geometry = geometry
+    def __init__(self, geometry: Union[dict, WCSGeometry], hips_survey: Union[str, HipsSurveyProperties], tile_format: str, precise: bool = False) -> None:
+        self.geometry = WCSGeometry.make(geometry)
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
         self.precise = precise

@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-def make_sky_image(geometry: WCSGeometry, hips_survey: Union[str, 'HipsSurveyProperties'],
+def make_sky_image(geometry: Union[dict, WCSGeometry], hips_survey: Union[str, 'HipsSurveyProperties'],
                    tile_format: str, precise: bool = False) -> 'HipsDrawResult':
     """Make sky image: fetch tiles and draw.
 
@@ -22,7 +22,7 @@ def make_sky_image(geometry: WCSGeometry, hips_survey: Union[str, 'HipsSurveyPro
 
     Parameters
     ----------
-    geometry : `~hips.utils.WCSGeometry`
+    geometry : dict or `~hips.utils.WCSGeometry`
         Geometry of the output image
     hips_survey : str or `~hips.HipsSurveyProperties`
         HiPS survey properties
