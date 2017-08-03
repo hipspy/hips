@@ -71,9 +71,8 @@ deformations reduction algorithm* to view the astrometry offsets):
 http://cds.unistra.fr/~boch/AL/test-reduce-deformations2.html
 
 To overcome this problem, Aladin Desktop and Aladin Lite use the following
-recursive strategy: for tiles either too large (one edge is >300 pixels or
-diagonal is > 150 pixels when projected) or too distorted (ratio of smaller
-diagonal on larger diagonal is smaller than 0.7):
+recursive strategy: for tiles either too large (one edge is >300 pixels when projected) or too distorted (ratio of smaller
+diagonal on larger diagonal is smaller than 0.7 and one of the diagonal is > 150 pixels when projected):
 
 * We consider 4 children tiles, dynamically generated from the pixels of their
   father. Each children tile has a width and height equal to half of its
