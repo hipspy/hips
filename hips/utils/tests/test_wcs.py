@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from astropy.tests.helper import remote_data
 from numpy.testing import assert_allclose
 from astropy.coordinates import SkyCoord
 from ..wcs import WCSGeometry
@@ -35,6 +36,7 @@ class TestWCSGeometry:
         assert_allclose(self.geometry.wcs.wcs.crpix, [1000., 500.])
         assert_allclose(self.geometry.wcs.wcs.cdelt, [-0.0015, 0.0015])
 
+    @remote_data
     def test_create_from_dict(self):
         params = dict(target='crab', width=2000, height=1000, fov='3 deg',
                       coordsys='galactic', projection='AIT')
