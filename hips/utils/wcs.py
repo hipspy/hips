@@ -98,7 +98,7 @@ class WCSGeometry:
             Sky coordinate of the WCS reference point
         width, height : int
             Width and height of the image in pixels
-        fov: str or `~astropy.coordinates.Angle`
+        fov : str or `~astropy.coordinates.Angle`
             Field of view
         coordsys : {'icrs', 'galactic'}
             Coordinate system
@@ -160,9 +160,20 @@ class WCSGeometry:
 
     @classmethod
     def create_from_dict(cls, params: dict) -> 'WCSGeometry':
-        """Create WCS object from a dictionary (`WCSGeometry`)."""
+        """Create WCS object from a dictionary (`WCSGeometry`).
+
+        The extra options are passed to the ``create`` class method, it can take the following parameters:
+
+        * target
+        * width
+        * height
+        * fov
+        * coordsys
+        * projection
+
+        For detailed description, see the ``create`` class method's docstring.
+        """
         skycoord = SkyCoord.from_name(params.pop('target'), frame=params['coordsys'])
-        # print(**params)
         return cls.create(skycoord, **params)
 
     @classmethod

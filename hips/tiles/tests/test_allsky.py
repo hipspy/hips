@@ -11,7 +11,7 @@ TEST_CASES = [
     dict(
         label='fits',
         meta=dict(order=3, ipix=-1, file_format='fits'),
-        url='http://alasky.unistra.fr/IRAC4/Norder3/Allsky.fits',
+        url='https://github.com/hipspy/hips-extra/blob/master/datasets/samples/IRAC4/Norder3/Allsky.fits?raw=true',
         filename='datasets/samples/IRAC4/Norder3/Allsky.fits',
 
         repr="HipsTileAllskyArray(format='fits', order=3, width=1728, "
