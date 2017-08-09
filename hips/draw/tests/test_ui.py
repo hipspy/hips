@@ -71,3 +71,4 @@ def test_make_sky_image(tmpdir, pars):
     assert_allclose(result.image[200, 995], pars['data_2'])
     result.write_image(str(tmpdir / 'test.' + pars['file_format']))
     result.plot()
+    result.report()
