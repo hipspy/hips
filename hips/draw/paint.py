@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
 import numpy as np
+from tqdm import tqdm
 from typing import List, Tuple, Union, Dict, Any, Iterator
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
@@ -34,6 +35,8 @@ class HipsPainter:
         Format of HiPS tile
     precise : bool
         Use the precise drawing algorithm
+    progress_bar : bool
+        Show a progress bar for tile fetching and drawing
 
     Examples
     --------
@@ -56,11 +59,13 @@ class HipsPainter:
     (1000, 2000)
     """
 
-    def __init__(self, geometry: Union[dict, WCSGeometry], hips_survey: Union[str, HipsSurveyProperties], tile_format: str, precise: bool = False) -> None:
+    def __init__(self, geometry: Union[dict, WCSGeometry], hips_survey: Union[str, HipsSurveyProperties],
+                 tile_format: str, precise: bool = False, progress_bar: bool = False) -> None:
         self.geometry = WCSGeometry.make(geometry)
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
         self.precise = precise
+        self.progress_bar = progress_bar
         self._tiles = None
         self.float_image = None
         self._stats: Dict[str, Any] = {}
@@ -107,7 +112,7 @@ class HipsPainter:
 
     def _fetch_tiles(self) -> Iterator[HipsTile]:
         """Generator function to fetch HiPS tiles from a remote URL."""
-        for healpix_pixel_index in self.tile_indices:
+        for healpix_pixel_index in tqdm(self.tile_indices, desc='Fetching tiles', disable=not self.progress_bar):
             tile_meta = HipsTileMeta(
                 order=self.draw_hips_order,
                 ipix=healpix_pixel_index,
@@ -121,12 +126,6 @@ class HipsPainter:
     @property
     def tiles(self) -> List[HipsTile]:
         """List of `~hips.HipsTile` (cached on multiple access)."""
-        # TODO: add progress bar reporting here???
-        # Do it in a separate pull request
-        # It has to work in the terminal and Jupyter notebook
-        # Users have to be able to turn it off
-        # So you have an option for it.
-        # Maybe if you add it now, make it off by default.
         if self._tiles is None:
             self._tiles = list(self._fetch_tiles())
 
@@ -157,6 +156,7 @@ class HipsPainter:
         self._stats['consumed_memory'] = 0
         for tile in self.draw_tiles:
             self._stats['consumed_memory'] += len(tile.raw_data)
+
 
 
     def make_tile_list(self):
@@ -190,9 +190,7 @@ class HipsPainter:
         """Make an empty sky image and draw all the tiles."""
         image = self._make_empty_sky_image()
 
-        # TODO: this is the second place where we should add
-        # progress reporting
-        for tile in self.draw_tiles:
+        for tile in tqdm(self.draw_tiles, desc='Drawing tiles', disable=not self.progress_bar):
             tile_image = self.warp_image(tile)
             # TODO: put better algorithm here instead of summing pixels
             # this can lead to pixels that are painted twice and become to bright

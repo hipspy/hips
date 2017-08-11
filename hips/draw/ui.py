@@ -15,7 +15,7 @@ __all__ = [
 
 
 def make_sky_image(geometry: Union[dict, WCSGeometry], hips_survey: Union[str, 'HipsSurveyProperties'],
-                   tile_format: str, precise: bool = False) -> 'HipsDrawResult':
+                   tile_format: str, precise: bool = False, progress_bar: bool = False) -> 'HipsDrawResult':
     """Make sky image: fetch tiles and draw.
 
     The example for this can be found on the :ref:`gs` page.
@@ -31,13 +31,15 @@ def make_sky_image(geometry: Union[dict, WCSGeometry], hips_survey: Union[str, '
         (some surveys are available in several formats, so this extra argument is needed)
     precise : bool
         Use the precise drawing algorithm
+    progress_bar : bool
+        Show a progress bar for tile fetching and drawing
 
     Returns
     -------
     result : `~hips.HipsDrawResult`
         Result object
     """
-    painter = HipsPainter(geometry, hips_survey, tile_format, precise)
+    painter = HipsPainter(geometry, hips_survey, tile_format, precise, progress_bar)
     painter.run()
     return HipsDrawResult.from_painter(painter)
 
