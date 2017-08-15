@@ -1,7 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
+import aiohttp
+import asyncio
 import numpy as np
-from typing import List, Tuple, Union, Dict, Any, Iterator
+from typing import List, Tuple, Union, Dict, Any, Generator
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
@@ -109,7 +111,12 @@ class HipsPainter:
         pt.estimate(src, dst)
         return pt
 
-    def _fetch_tiles(self) -> Iterator[HipsTile]:
+    async def fetch_tile_threaded(self, url: str, session: aiohttp.client.ClientSession) -> Generator:
+        """Fetch a HiPS tile asynchronously."""
+        async with session.get(url) as response:
+            return await response.read()
+
+    async def _fetch_tiles(self) -> List[HipsTile]:
         """Generator function to fetch HiPS tiles from a remote URL."""
         if self.progress_bar:
             from tqdm import tqdm
@@ -118,21 +125,35 @@ class HipsPainter:
             tile_indices = self.tile_indices
 
         for healpix_pixel_index in tile_indices:
+        tile_urls, tile_metas = [], []
+        for healpix_pixel_index in self.tile_indices:
             tile_meta = HipsTileMeta(
                 order=self.draw_hips_order,
                 ipix=healpix_pixel_index,
                 frame=self.hips_survey.astropy_frame,
                 file_format=self.tile_format,
             )
-            url = self.hips_survey.tile_url(tile_meta)
-            tile = HipsTile.fetch(tile_meta, url)
-            yield tile
+            tile_urls.append(self.hips_survey.tile_url(tile_meta))
+            tile_metas.append(tile_meta)
+
+        tasks = []
+        async with aiohttp.ClientSession() as session:
+            for idx, url in enumerate(tile_urls):
+                task = asyncio.ensure_future(self.fetch_tile_threaded(url.format(idx), session))
+                tasks.append(task)
+
+            raw_responses = await asyncio.gather(*tasks)
+
+        tiles = []
+        for idx, raw_data in enumerate(raw_responses):
+            tiles.append(HipsTile(tile_metas[idx], raw_data))
+        return tiles
 
     @property
     def tiles(self) -> List[HipsTile]:
         """List of `~hips.HipsTile` (cached on multiple access)."""
         if self._tiles is None:
-            self._tiles = list(self._fetch_tiles())
+            self._tiles = asyncio.get_event_loop().run_until_complete(self._fetch_tiles())
 
         return self._tiles
 
@@ -161,7 +182,6 @@ class HipsPainter:
         self._stats['consumed_memory'] = 0
         for tile in self.draw_tiles:
             self._stats['consumed_memory'] += len(tile.raw_data)
-
 
 
     def make_tile_list(self):
