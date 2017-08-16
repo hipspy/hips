@@ -153,13 +153,11 @@ class HipsPainter:
         t1 = time.time()
         self._stats['draw_time'] = t1 - t0
 
-        # Todo for Adeel: copy over the stats dir to the DrawResult
-        # and print it out nicely for the user in the report.
-        # TODO: could add more code here that e.g. tries to measure memory usage
-        # this could be done with https://pypi.python.org/pypi/psutil
-        # or you could just compute the size of `raw_data` and `data` for each tile and sum them up
-        # and also measure the memory used by the output sky image in MB
-        # Other useful info: number of tiles fetched
+        self._stats['tile_count'] = len(self.draw_tiles)
+        self._stats['consumed_memory'] = 0
+        for tile in self.draw_tiles:
+            self._stats['consumed_memory'] += len(tile.raw_data)
+
 
     def make_tile_list(self):
         parent_tiles = self.tiles

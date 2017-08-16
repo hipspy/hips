@@ -55,13 +55,16 @@ class HipsDrawResult:
         Format of HiPS tile
     tiles : list
         Python list of `~hips.HipsTile` objects that were used
+    stats : dict
+        Information including time for fetching and drawing HiPS tiles
     """
 
-    def __init__(self, image: np.ndarray, geometry: WCSGeometry, tile_format: str, tiles: List[HipsTile]) -> None:
+    def __init__(self, image: np.ndarray, geometry: WCSGeometry, tile_format: str, tiles: List[HipsTile], stats: dict) -> None:
         self.image = image
         self.geometry = geometry
         self.tile_format = tile_format
         self.tiles = tiles
+        self.stats = stats
 
     def __str__(self):
         return (
@@ -89,6 +92,7 @@ class HipsDrawResult:
             geometry=painter.geometry,
             tile_format=painter.tile_format,
             tiles=painter.tiles,
+            stats=painter._stats,
         )
 
     def write_image(self, filename: str) -> None:
@@ -120,3 +124,13 @@ class HipsDrawResult:
             ax.plot(corners.data.lon.deg, corners.data.lat.deg,
                     transform=ax.get_transform('world'), **opts)
         ax.imshow(self.image, origin='lower')
+
+    def report(self) -> None:
+        """Print a brief report for the fetched data."""
+
+        print (
+            f"Time for fetching tiles = {self.stats['fetch_time']} seconds\n"
+            f"Time for drawing tiles = {self.stats['draw_time']} seconds\n"
+            f"Total memory consumed = {self.stats['consumed_memory'] / 1e6} MB\n"
+            f"Total tiles fetched = {self.stats['tile_count']}\n"
+        )
