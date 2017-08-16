@@ -74,7 +74,7 @@ matrix:
         # Run static code analysis
         - os: linux
           env: MAIN_CMD='make code-analysis' SETUP_CMD=''
-               PIP_DEPENDENCIES='mypy pycodestyle'
+               PIP_DEPENDENCIES='mypy pycodestyle tqdm'
 
 
 install:
