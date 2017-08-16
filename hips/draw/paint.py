@@ -59,7 +59,7 @@ class HipsPainter:
     """
 
     def __init__(self, geometry: Union[dict, WCSGeometry], hips_survey: Union[str, HipsSurveyProperties],
-                 tile_format: str, precise: bool = False, progress_bar: bool = False) -> None:
+                 tile_format: str, precise: bool = False, progress_bar: bool = True) -> None:
         self.geometry = WCSGeometry.make(geometry)
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
@@ -113,7 +113,7 @@ class HipsPainter:
         """Generator function to fetch HiPS tiles from a remote URL."""
         if self.progress_bar:
             from tqdm import tqdm
-            tile_indices = tqdm(self.tile_indices, desc='Fetching tiles', disable=not self.progress_bar)
+            tile_indices = tqdm(self.tile_indices, desc='Fetching tiles')
         else:
             tile_indices = self.tile_indices
 
@@ -196,7 +196,7 @@ class HipsPainter:
         image = self._make_empty_sky_image()
         if self.progress_bar:
             from tqdm import tqdm
-            tiles = tqdm(self.draw_tiles, desc='Drawing tiles', disable=not self.progress_bar)
+            tiles = tqdm(self.draw_tiles, desc='Drawing tiles')
         else:
             tiles = self.draw_tiles
 
