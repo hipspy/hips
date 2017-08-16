@@ -260,8 +260,8 @@ def is_tile_distorted(corners: tuple) -> bool:
 
     return bool(
         max(edges) > 300 or
-        max(diagonals) > 150 or
-        diagonal_ratio < 0.7
+        (max(diagonals) > 150 and
+        diagonal_ratio < 0.7)
     )
 
 
