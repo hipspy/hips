@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
 import numpy as np
-from tqdm import tqdm
 from typing import List, Tuple, Union, Dict, Any, Iterator
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
@@ -112,7 +111,13 @@ class HipsPainter:
 
     def _fetch_tiles(self) -> Iterator[HipsTile]:
         """Generator function to fetch HiPS tiles from a remote URL."""
-        for healpix_pixel_index in tqdm(self.tile_indices, desc='Fetching tiles', disable=not self.progress_bar):
+        if self.progress_bar:
+            from tqdm import tqdm
+            tile_indices = tqdm(self.tile_indices, desc='Fetching tiles', disable=not self.progress_bar)
+        else:
+            tile_indices = self.tile_indices
+
+        for healpix_pixel_index in tile_indices:
             tile_meta = HipsTileMeta(
                 order=self.draw_hips_order,
                 ipix=healpix_pixel_index,
@@ -189,8 +194,13 @@ class HipsPainter:
     def draw_all_tiles(self):
         """Make an empty sky image and draw all the tiles."""
         image = self._make_empty_sky_image()
+        if self.progress_bar:
+            from tqdm import tqdm
+            tiles = tqdm(self.draw_tiles, desc='Drawing tiles', disable=not self.progress_bar)
+        else:
+            tiles = self.draw_tiles
 
-        for tile in tqdm(self.draw_tiles, desc='Drawing tiles', disable=not self.progress_bar):
+        for tile in tiles:
             tile_image = self.warp_image(tile)
             # TODO: put better algorithm here instead of summing pixels
             # this can lead to pixels that are painted twice and become to bright
