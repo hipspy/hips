@@ -105,16 +105,15 @@ install_requires = [
 extras_require = dict(
     recommended=[
         'matplotlib>=2.0',
-
-        'tqdm>=4.15',
         'reproject>=0.3.1',
+        'tqdm',
     ],
     develop=[
         'matplotlib>=2.0',
         'reproject>=0.3.1',
         'pytest>=3.0',
         'mypy>=0.501',
-        'tqdm>=4.15',
+        'tqdm',
     ],
 )
 

@@ -11,6 +11,7 @@ dependencies:
     - healpy
     - reproject
     - matplotlib
+    - tqdm
     # There's a problem with Sphinx 1.6 with astropy-helpers
     # For now, we pin the Sphinx version to something that works
     - sphinx==1.5.6
