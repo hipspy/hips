@@ -33,7 +33,10 @@ To draw a sky image from HiPS image tiles with the `hips` package, follow the fo
     hips_survey = 'CDS/P/DSS2/red'
 
 3. Call the `~hips.make_sky_image` function to fetch the HiPS data
-   and draw it, returning an object of `~hips.HipsDrawResult`::
+   and draw it, returning an object of `~hips.HipsDrawResult`.
+   By default a progress bar is shown for fetching and
+   drawing HiPS tiles. For batch processing, this can be
+   turned off by passing a keyword argument: `progress_bar=False`::
 
     from hips import make_sky_image
     result = make_sky_image(geometry, hips_survey, 'fits')
