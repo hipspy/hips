@@ -6,7 +6,7 @@ import numpy as np
 from typing import List, Tuple, Union, Dict, Any, Generator
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
-from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
+from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta, HipsTileFetcher
 from ..tiles.tile import compute_image_shape
 from ..utils import WCSGeometry, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 
@@ -153,7 +153,8 @@ class HipsPainter:
     def tiles(self) -> List[HipsTile]:
         """List of `~hips.HipsTile` (cached on multiple access)."""
         if self._tiles is None:
-            self._tiles = asyncio.get_event_loop().run_until_complete(self._fetch_tiles())
+            # self._tiles = asyncio.get_event_loop().run_until_complete(tile_fetcher.tiles)
+            self._tiles = tile_fetcher.tiles
 
         return self._tiles
 
