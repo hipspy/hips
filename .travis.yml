@@ -27,7 +27,7 @@ env:
         - MAIN_CMD='python setup.py'
         - SETUP_CMD='test'
         - EVENT_TYPE='pull_request push'
-        - CONDA_DEPENDENCIES='healpy scikit-image Pillow reproject matplotlib'
+        - CONDA_DEPENDENCIES='healpy scikit-image Pillow reproject matplotlib tqdm'
         - PIP_DEPENDENCIES=''
         - CONDA_CHANNELS='conda-forge astropy-ci-extras astropy'
         - SETUP_XVFB=True
@@ -74,7 +74,7 @@ matrix:
         # Run static code analysis
         - os: linux
           env: MAIN_CMD='make code-analysis' SETUP_CMD=''
-               PIP_DEPENDENCIES='mypy pycodestyle tqdm'
+               PIP_DEPENDENCIES='mypy pycodestyle'
 
 
 install:
