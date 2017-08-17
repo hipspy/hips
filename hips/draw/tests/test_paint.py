@@ -20,7 +20,7 @@ class TestHipsPainter:
             width=2000, height=1000, fov="3 deg",
             coordsys='icrs', projection='AIT',
         )
-        cls.painter = HipsPainter(cls.geometry, cls.hips_survey, 'fits')
+        cls.painter = HipsPainter(cls.geometry, cls.hips_survey, 'fits', fetch_package='aiohttp')
 
     def test_draw_hips_order(self):
         assert self.painter.draw_hips_order == 7
@@ -43,7 +43,7 @@ class TestHipsPainter:
             coordsys='icrs', projection='AIT',
         )
 
-        simple_tile_painter = HipsPainter(geometry, self.hips_survey, 'fits')
+        simple_tile_painter = HipsPainter(geometry, self.hips_survey, 'fits', fetch_package='aiohttp')
         assert simple_tile_painter.draw_hips_order == pars['order']
 
     def test_run(self):

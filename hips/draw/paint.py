@@ -1,9 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
-import aiohttp
-import asyncio
 import numpy as np
-from typing import List, Tuple, Union, Dict, Any, Generator
+from typing import List, Tuple, Union, Dict, Any
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta, HipsTileFetcher
@@ -38,6 +36,8 @@ class HipsPainter:
         Use the precise drawing algorithm
     progress_bar : bool
         Show a progress bar for tile fetching and drawing
+    fetch_package : {'urllib', 'aiohttp'}
+        Package to use for fetching HiPS tiles
 
     Examples
     --------
@@ -61,12 +61,13 @@ class HipsPainter:
     """
 
     def __init__(self, geometry: Union[dict, WCSGeometry], hips_survey: Union[str, HipsSurveyProperties],
-                 tile_format: str, precise: bool = False, progress_bar: bool = True) -> None:
+                 tile_format: str, precise: bool = False, progress_bar: bool = True, fetch_package: str = 'urllib') -> None:
         self.geometry = WCSGeometry.make(geometry)
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
         self.precise = precise
         self.progress_bar = progress_bar
+        self.fetch_package = fetch_package
         self._tiles = None
         self.float_image = None
         self._stats: Dict[str, Any] = {}
@@ -111,21 +112,10 @@ class HipsPainter:
         pt.estimate(src, dst)
         return pt
 
-    async def fetch_tile_threaded(self, url: str, session: aiohttp.client.ClientSession) -> Generator:
-        """Fetch a HiPS tile asynchronously."""
-        async with session.get(url) as response:
-            return await response.read()
-
-    async def _fetch_tiles(self) -> List[HipsTile]:
-        """Generator function to fetch HiPS tiles from a remote URL."""
-        if self.progress_bar:
-            from tqdm import tqdm
-            tile_indices = tqdm(self.tile_indices, desc='Fetching tiles')
-        else:
-            tile_indices = self.tile_indices
-
-        for healpix_pixel_index in tile_indices:
-        tile_urls, tile_metas = [], []
+    @property
+    def tiles(self) -> List[HipsTile]:
+        """List of `~hips.HipsTile` (cached on multiple access)."""
+        tile_metas = []
         for healpix_pixel_index in self.tile_indices:
             tile_meta = HipsTileMeta(
                 order=self.draw_hips_order,
@@ -133,27 +123,12 @@ class HipsPainter:
                 frame=self.hips_survey.astropy_frame,
                 file_format=self.tile_format,
             )
-            tile_urls.append(self.hips_survey.tile_url(tile_meta))
             tile_metas.append(tile_meta)
 
-        tasks = []
-        async with aiohttp.ClientSession() as session:
-            for idx, url in enumerate(tile_urls):
-                task = asyncio.ensure_future(self.fetch_tile_threaded(url.format(idx), session))
-                tasks.append(task)
+        tile_fetcher = HipsTileFetcher(tile_metas=tile_metas, hips_survey=self.hips_survey,
+                                       progress_bar=self.progress_bar, fetch_package=self.fetch_package)
 
-            raw_responses = await asyncio.gather(*tasks)
-
-        tiles = []
-        for idx, raw_data in enumerate(raw_responses):
-            tiles.append(HipsTile(tile_metas[idx], raw_data))
-        return tiles
-
-    @property
-    def tiles(self) -> List[HipsTile]:
-        """List of `~hips.HipsTile` (cached on multiple access)."""
         if self._tiles is None:
-            # self._tiles = asyncio.get_event_loop().run_until_complete(tile_fetcher.tiles)
             self._tiles = tile_fetcher.tiles
 
         return self._tiles
