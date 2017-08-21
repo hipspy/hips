@@ -80,5 +80,6 @@ In addition, the following packages are needed for optional functionality:
 
 * `Matplotlib`_ 2.0 or later. Used for plotting in examples.
 * `tqdm`_. Used for showing progress bar either on terminal or in Jupyter notebook.
+* `aiohttp`_. Used for fetching HiPS tiles.
 
 We have some info at :ref:`py3` on why we don't support legacy Python (Python 2).

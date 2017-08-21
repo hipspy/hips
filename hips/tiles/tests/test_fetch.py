@@ -1,34 +1,47 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import pytest
 from astropy.tests.helper import remote_data
 from numpy.testing import assert_allclose
-from ..fetch import HipsTileFetcher
+from ..fetch import fetch_tiles
 from ..survey import HipsSurveyProperties
 from ..tile import HipsTileMeta
 
-class TestHipsTileFetcher:
-    @classmethod
-    def setup_class(cls):
-        url = 'http://alasky.unistra.fr/DSS/DSS2Merged/properties'
-        hips_survey = HipsSurveyProperties.fetch(url)
+TILE_FETCH_TEST_CASES = [
+    dict(
+        tile_indices=[69623, 69627, 69628, 69629, 69630, 69631],
+        tile_format='fits',
+        order=7,
+        url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',
+        progress_bar=True,
+        data=[2101, 1680, 1532, 1625, 2131],
+        fetch_package='urllib'
+    ),
+    dict(
+        tile_indices=[69623, 69627, 69628, 69629, 69630, 69631],
+        tile_format='fits',
+        order=7,
+        url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',
+        progress_bar=True,
+        data=[2101, 1680, 1532, 1625, 2131],
+        fetch_package='aiohttp'
+    ),
+]
 
-        tile_metas, tile_indices = [], [69623, 69627, 69628, 69629, 69630, 69631]
-        for healpix_pixel_index in tile_indices:
-            tile_meta = HipsTileMeta(
-                order=7,
-                ipix=healpix_pixel_index,
-                frame=hips_survey.astropy_frame,
-                file_format='fits',
-            )
-            tile_metas.append(tile_meta)
 
-        cls.fetcher = HipsTileFetcher(tile_metas, hips_survey, progress_bar=False)
+@pytest.mark.parametrize('pars', TILE_FETCH_TEST_CASES)
+@remote_data
+def test_fetch_tiles(pars):
+    hips_survey = HipsSurveyProperties.fetch(pars['url'])
 
-    @remote_data
-    def test_tiles(self):
-        tiles = self.fetcher.tiles
-        assert_allclose(tiles[0].data[0][5:10], [2101, 1680, 1532, 1625, 2131])
+    tile_metas = []
+    for healpix_pixel_index in pars['tile_indices']:
+        tile_meta = HipsTileMeta(
+            order=pars['order'],
+            ipix=healpix_pixel_index,
+            frame=hips_survey.astropy_frame,
+            file_format=pars['tile_format'],
+        )
+        tile_metas.append(tile_meta)
 
-    @remote_data
-    def test_tiles_aiohttp(self):
-        tiles = self.fetcher.tiles_aiohttp
-        assert_allclose(tiles[0].data[0][5:10], [2101, 1680, 1532, 1625, 2131])
+    tiles = fetch_tiles(tile_metas, hips_survey, progress_bar=pars['progress_bar'], fetch_package=pars['fetch_package'])
+    assert_allclose(tiles[0].data[0][5:10], [2101, 1680, 1532, 1625, 2131])

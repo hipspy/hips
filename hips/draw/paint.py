@@ -4,7 +4,7 @@ import numpy as np
 from typing import List, Tuple, Union, Dict, Any
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
-from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta, HipsTileFetcher
+from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta, fetch_tiles
 from ..tiles.tile import compute_image_shape
 from ..utils import WCSGeometry, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 
@@ -36,8 +36,8 @@ class HipsPainter:
         Use the precise drawing algorithm
     progress_bar : bool
         Show a progress bar for tile fetching and drawing
-    fetch_package : {'urllib', 'aiohttp'}
-        Package to use for fetching HiPS tiles
+    fetch_opts : dict
+        Keyword arguments for fetching HiPS tiles
 
     Examples
     --------
@@ -61,13 +61,13 @@ class HipsPainter:
     """
 
     def __init__(self, geometry: Union[dict, WCSGeometry], hips_survey: Union[str, HipsSurveyProperties],
-                 tile_format: str, precise: bool = False, progress_bar: bool = True, fetch_package: str = 'urllib') -> None:
+                 tile_format: str, precise: bool = False, progress_bar: bool = True, fetch_opts : dict = None) -> None:
         self.geometry = WCSGeometry.make(geometry)
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
         self.precise = precise
         self.progress_bar = progress_bar
-        self.fetch_package = fetch_package
+        self.fetch_opts = fetch_opts
         self._tiles = None
         self.float_image = None
         self._stats: Dict[str, Any] = {}
@@ -125,11 +125,9 @@ class HipsPainter:
             )
             tile_metas.append(tile_meta)
 
-        tile_fetcher = HipsTileFetcher(tile_metas=tile_metas, hips_survey=self.hips_survey,
-                                       progress_bar=self.progress_bar, fetch_package=self.fetch_package)
-
         if self._tiles is None:
-            self._tiles = tile_fetcher.tiles
+            self._tiles = fetch_tiles(tile_metas=tile_metas, hips_survey=self.hips_survey,
+                                      progress_bar=self.progress_bar, **self.fetch_opts)
 
         return self._tiles
 
