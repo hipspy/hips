@@ -34,7 +34,8 @@ def make_sky_image(geometry: Union[dict, WCSGeometry], hips_survey: Union[str, '
     progress_bar : bool
         Show a progress bar for tile fetching and drawing
     fetch_opts : dict
-        Keyword arguments for fetching HiPS tiles
+        Keyword arguments for fetching HiPS tiles. To see the
+        list of passable arguments, refer to `~hips.fetch_tiles`
 
     Returns
     -------

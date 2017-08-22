@@ -8,7 +8,7 @@ from ..tile import HipsTileMeta
 
 TILE_FETCH_TEST_CASES = [
     dict(
-        tile_indices=[69623, 69627, 69628, 69629, 69630, 69631],
+        tile_indices=[69623],
         tile_format='fits',
         order=7,
         url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',
@@ -17,7 +17,7 @@ TILE_FETCH_TEST_CASES = [
         fetch_package='urllib'
     ),
     dict(
-        tile_indices=[69623, 69627, 69628, 69629, 69630, 69631],
+        tile_indices=[69623],
         tile_format='fits',
         order=7,
         url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',

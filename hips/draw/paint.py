@@ -37,7 +37,8 @@ class HipsPainter:
     progress_bar : bool
         Show a progress bar for tile fetching and drawing
     fetch_opts : dict
-        Keyword arguments for fetching HiPS tiles
+        Keyword arguments for fetching HiPS tiles. To see the
+        list of passable arguments, refer to `~fetch_tiles`
 
     Examples
     --------
@@ -127,7 +128,7 @@ class HipsPainter:
 
         if self._tiles is None:
             self._tiles = fetch_tiles(tile_metas=tile_metas, hips_survey=self.hips_survey,
-                                      progress_bar=self.progress_bar, **self.fetch_opts)
+                                      progress_bar=self.progress_bar, **(self.fetch_opts or {}))
 
         return self._tiles
 
