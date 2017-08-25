@@ -118,40 +118,40 @@ def tiles_urllib(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyProperti
     return tiles
 
 
-async def fetch_tile_aiohttp(url: str, meta: HipsTileMeta, session) -> Generator:
+async def fetch_tile_aiohttp(url: str, meta: HipsTileMeta, session, timeout: float) -> Generator:
     """Fetch a HiPS tile asynchronously using aiohttp."""
-    async with session.get(url) as response:
+    async with session.get(url, timeout=timeout) as response:
         raw_data = await response.read()
         return HipsTile(meta, raw_data)
 
 
-async def fetch_all_tiles_aiohttp(tile_metas: List[HipsTileMeta],
-                                  hips_survey: HipsSurveyProperties, progress_bar: bool) -> List[HipsTile]:
+async def fetch_all_tiles_aiohttp(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyProperties,
+                                  progress_bar: bool, n_parallel: int, timeout: float) -> List[HipsTile]:
     """Generator function to fetch HiPS tiles from a remote URL using aiohttp."""
     import aiohttp
 
-    async with aiohttp.ClientSession() as session:
-        futures = []
-        for meta in tile_metas:
-            url = hips_survey.tile_url(meta)
-            future = asyncio.ensure_future(fetch_tile_aiohttp(url, meta, session))
-            futures.append(future)
+    with await asyncio.Semaphore(n_parallel):
+        async with aiohttp.ClientSession() as session:
+            futures = []
+            for meta in tile_metas:
+                url = hips_survey.tile_url(meta)
+                future = asyncio.ensure_future(fetch_tile_aiohttp(url, meta, session, timeout))
+                futures.append(future)
 
-        futures = asyncio.as_completed(futures)
-        if progress_bar:
-            from tqdm import tqdm
-            futures = tqdm(futures, total=len(tile_metas), desc='Fetching tiles')
+            futures = asyncio.as_completed(futures)
+            if progress_bar:
+                from tqdm import tqdm
+                futures = tqdm(futures, total=len(tile_metas), desc='Fetching tiles')
 
-        tiles = []
-        for future in futures:
-            tiles.append(await future)
+            tiles = []
+            for future in futures:
+                tiles.append(await future)
 
     return tiles
 
 
 def tiles_aiohttp(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyProperties,
                   progress_bar: bool, n_parallel: int = 10, timeout: float = 10) -> List[HipsTile]:
-    # TODO: implement n_parallel and timeout
     return asyncio.get_event_loop().run_until_complete(
-        fetch_all_tiles_aiohttp(tile_metas, hips_survey, progress_bar)
+        fetch_all_tiles_aiohttp(tile_metas, hips_survey, progress_bar, n_parallel, timeout)
     )
