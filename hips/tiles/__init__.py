@@ -3,3 +3,4 @@
 from .tile import *
 from .survey import *
 from .allsky import *
+from .fetch import *

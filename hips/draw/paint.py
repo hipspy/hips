@@ -1,10 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
 import numpy as np
-from typing import List, Tuple, Union, Dict, Any, Iterator
+from typing import List, Tuple, Union, Dict, Any
 from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
-from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta
+from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta, fetch_tiles
 from ..tiles.tile import compute_image_shape
 from ..utils import WCSGeometry, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 
@@ -36,6 +36,9 @@ class HipsPainter:
         Use the precise drawing algorithm
     progress_bar : bool
         Show a progress bar for tile fetching and drawing
+    fetch_opts : dict
+        Keyword arguments for fetching HiPS tiles. To see the
+        list of passable arguments, refer to `~fetch_tiles`
 
     Examples
     --------
@@ -59,12 +62,13 @@ class HipsPainter:
     """
 
     def __init__(self, geometry: Union[dict, WCSGeometry], hips_survey: Union[str, HipsSurveyProperties],
-                 tile_format: str, precise: bool = False, progress_bar: bool = True) -> None:
+                 tile_format: str, precise: bool = False, progress_bar: bool = True, fetch_opts : dict = None) -> None:
         self.geometry = WCSGeometry.make(geometry)
         self.hips_survey = HipsSurveyProperties.make(hips_survey)
         self.tile_format = tile_format
         self.precise = precise
         self.progress_bar = progress_bar
+        self.fetch_opts = fetch_opts
         self._tiles = None
         self.float_image = None
         self._stats: Dict[str, Any] = {}
@@ -109,30 +113,22 @@ class HipsPainter:
         pt.estimate(src, dst)
         return pt
 
-    def _fetch_tiles(self) -> Iterator[HipsTile]:
-        """Generator function to fetch HiPS tiles from a remote URL."""
-        if self.progress_bar:
-            from tqdm import tqdm
-            tile_indices = tqdm(self.tile_indices, desc='Fetching tiles')
-        else:
-            tile_indices = self.tile_indices
-
-        for healpix_pixel_index in tile_indices:
+    @property
+    def tiles(self) -> List[HipsTile]:
+        """List of `~hips.HipsTile` (cached on multiple access)."""
+        tile_metas = []
+        for healpix_pixel_index in self.tile_indices:
             tile_meta = HipsTileMeta(
                 order=self.draw_hips_order,
                 ipix=healpix_pixel_index,
                 frame=self.hips_survey.astropy_frame,
                 file_format=self.tile_format,
             )
-            url = self.hips_survey.tile_url(tile_meta)
-            tile = HipsTile.fetch(tile_meta, url)
-            yield tile
+            tile_metas.append(tile_meta)
 
-    @property
-    def tiles(self) -> List[HipsTile]:
-        """List of `~hips.HipsTile` (cached on multiple access)."""
         if self._tiles is None:
-            self._tiles = list(self._fetch_tiles())
+            self._tiles = fetch_tiles(tile_metas=tile_metas, hips_survey=self.hips_survey,
+                                      progress_bar=self.progress_bar, **(self.fetch_opts or {}))
 
         return self._tiles
 
@@ -161,7 +157,6 @@ class HipsPainter:
         self._stats['consumed_memory'] = 0
         for tile in self.draw_tiles:
             self._stats['consumed_memory'] += len(tile.raw_data)
-
 
 
     def make_tile_list(self):

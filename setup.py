@@ -107,6 +107,7 @@ extras_require = dict(
         'matplotlib>=2.0',
         'reproject>=0.3.1',
         'tqdm',
+        'aiohttp',
     ],
     develop=[
         'matplotlib>=2.0',
@@ -114,6 +115,7 @@ extras_require = dict(
         'pytest>=3.0',
         'mypy>=0.501',
         'tqdm',
+        'aiohttp',
     ],
 )
 
