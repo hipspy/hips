@@ -17,12 +17,12 @@ class TestHipsSurveyProperties:
     @remote_data
     def test_from_name(self):
         survey = HipsSurveyProperties.from_name('CDS/P/2MASS/color')
-        assert survey.title == '2MASS color J (1.23 microns), H (1.66 microns), K (2.16 microns)'
+        assert survey.title == '2MASS color J (1.23um), H (1.66um), K (2.16um)'
 
     @remote_data
     def test_make(self):
         survey = HipsSurveyProperties.make('CDS/P/EGRET/Dif/300-500')
-        assert survey.title == 'EGRET Dif 300-500'
+        assert survey.title == 'EGRET Dif 300-500MeV'
         assert self.survey is HipsSurveyProperties.make(self.survey)
 
     def test_title(self):
@@ -98,7 +98,7 @@ class TestHipsSurveyPropertiesList:
         assert len(surveys.data) > 3
 
         survey = surveys.from_name('CDS/P/2MASS/H')
-        assert survey.title == '2MASS H (1.66 microns)'
+        assert survey.title == '2MASS H (1.66um)'
         assert survey.hips_order == 9
 
     @remote_data
