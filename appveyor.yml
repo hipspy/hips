@@ -14,7 +14,7 @@ environment:
       # For this package-template, we include examples of Cython modules,
       # so Cython is required for testing. If your package does not include
       # Cython code, you can set CONDA_DEPENDENCIES=''
-      CONDA_DEPENDENCIES: "reproject matplotlib"
+      CONDA_DEPENDENCIES: "astropy-healpix scikit-image Pillow reproject tqdm aiohttp matplotlib"
 
       # Conda packages for affiliated packages are hosted in channel
       # "astropy" while builds for astropy LTS with recent numpy versions
@@ -25,7 +25,7 @@ environment:
 
   matrix:
 
-      - PYTHON_VERSION: "3.5"
+      - PYTHON_VERSION: "3.6"
         ASTROPY_VERSION: "stable"
         NUMPY_VERSION: "stable"
 

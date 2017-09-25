@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import pytest
 from numpy.testing import assert_allclose, assert_equal
-import healpy as hp
+from astropy_healpix import healpy as hp
 from ..testing import make_test_wcs_geometry
 from ..healpix import (
     healpix_order_to_npix,

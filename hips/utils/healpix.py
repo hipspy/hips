@@ -14,7 +14,7 @@ Contributions welcome!
 from typing import Tuple
 from functools import lru_cache
 import numpy as np
-import healpy as hp
+from astropy_healpix import healpy as hp
 from astropy.coordinates import SkyCoord
 from .wcs import WCSGeometry
 

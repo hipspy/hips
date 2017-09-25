@@ -27,8 +27,8 @@ env:
         - MAIN_CMD='python setup.py'
         - SETUP_CMD='test'
         - EVENT_TYPE='pull_request push'
-        - CONDA_DEPENDENCIES='healpy scikit-image Pillow reproject matplotlib tqdm aiohttp'
-        - PIP_DEPENDENCIES=''
+        - CONDA_DEPENDENCIES='astropy-healpix scikit-image Pillow reproject matplotlib tqdm aiohttp'
+#        - PIP_DEPENDENCIES='git+https://github.com/astropy/astropy-healpix.git#egg=astropy_healpix'
         - CONDA_CHANNELS='conda-forge astropy-ci-extras astropy'
         - SETUP_XVFB=True
         - DEBUG=True
@@ -56,7 +56,7 @@ matrix:
         # Check that install / tests work with minimal required dependencies
         - os: linux
           env: SETUP_CMD='test -V'
-               CONDA_DEPENDENCIES='healpy scikit-image Pillow'
+               CONDA_DEPENDENCIES='astropy-healpix scikit-image Pillow'
 
         # Try MacOS X
         - os: osx

@@ -8,24 +8,18 @@ from astropy.tests.pytest_plugins import *
 ## exceptions
 # enable_deprecations_as_exceptions()
 
-## Uncomment and customize the following lines to add/remove entries from
-## the list of packages for which version numbers are displayed when running
-## the tests. Making it pass for KeyError is essential in some cases when
-## the package uses other astropy affiliated packages.
-try:
-    PYTEST_HEADER_MODULES['Astropy'] = 'astropy'
-    PYTEST_HEADER_MODULES['healpy'] = 'healpy'
-    PYTEST_HEADER_MODULES['reproject'] = 'reproject'
-    PYTEST_HEADER_MODULES['matplotlib'] = 'matplotlib'
-    PYTEST_HEADER_MODULES.pop('h5py', None)
-    PYTEST_HEADER_MODULES.pop('Pandas', None)
-except KeyError:
-    pass
+PYTEST_HEADER_MODULES.clear()
+PYTEST_HEADER_MODULES.update([
+    ('numpy', 'numpy'),
+    ('Pillow', 'PIL'),
+    ('scikit-image', 'skimage'),
+    ('Astropy', 'astropy'),
+    ('astropy-healpix', 'astropy_healpix'),
+    ('aiohttp', 'aiohttp'),
+    ('reproject', 'reproject'),
+    ('matplotlib', 'matplotlib'),
+])
 
-## Uncomment the following lines to display the version number of the
-## package rather than the version number of Astropy in the top line when
-## running the tests.
-import os
 
 # This is to figure out the affiliated package version, rather than
 # using Astropy's
@@ -33,6 +27,8 @@ try:
     from .version import version
 except ImportError:
     version = 'dev'
+
+import os
 
 packagename = os.path.basename(os.path.dirname(__file__))
 TESTED_VERSIONS[packagename] = version

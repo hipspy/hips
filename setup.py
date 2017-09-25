@@ -97,7 +97,7 @@ package_info['package_data'][PACKAGENAME].extend(c_files)
 install_requires = [
     'numpy>=1.11',
     'astropy>=1.3',
-    'healpy>=1.9',
+    'astropy-healpix',
     'scikit-image',
     'Pillow',
 ]
