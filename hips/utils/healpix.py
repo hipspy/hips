@@ -9,9 +9,11 @@ from .wcs import WCSGeometry
 
 __all__ = [
     'healpix_order_to_npix',
-    'healpix_pixel_corners',
-    'healpix_pixels_in_sky_image',
     'hips_order_for_pixel_resolution',
+    'healpix_pixel_corners',
+
+    'healpix_pixels_in_sky_image',
+    'hips_tile_healpix_ipix_array',
 ]
 
 __doctest_skip__ = [
@@ -205,6 +207,8 @@ def nside_to_level(nside):
 
 
 # TODO: move to astropy-healpix
+# or maybe call this? `astropy.coordinates.frame_transform_graph.lookup_name(frame)`
+# See https://github.com/astropy/astropy-healpix/issues/56#issuecomment-336803290
 def make_frame(frame):
     if isinstance(frame, BaseCoordinateFrame):
         return frame
