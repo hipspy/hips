@@ -68,7 +68,7 @@ def test_make_sky_image(tmpdir, pars):
     assert result.image.shape == pars['shape']
     assert result.image.dtype == pars['dtype']
     assert repr(result) == pars['repr']
-    assert_allclose(np.sum(result.image), pars['data_sum'])
+    assert_allclose(np.sum(result.image, dtype=float), pars['data_sum'])
     assert_allclose(result.image[200, 994], pars['data_1'])
     assert_allclose(result.image[200, 995], pars['data_2'])
     result.write_image(str(tmpdir / 'test.' + pars['file_format']))
