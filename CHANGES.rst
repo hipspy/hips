@@ -1,7 +1,7 @@
 0.2 (unreleased)
 ----------------
 
-- No changes yet
+- Change from ``healpy`` to ``astropy-healpix``. This means ``hips`` works on Windows!
 
 0.1
 ---

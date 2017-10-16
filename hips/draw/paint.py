@@ -6,7 +6,8 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta, fetch_tiles
 from ..tiles.tile import compute_image_shape
-from ..utils import WCSGeometry, healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
+from ..utils.wcs import WCSGeometry
+from ..utils.healpix import healpix_pixels_in_sky_image, hips_order_for_pixel_resolution
 
 __all__ = [
     'HipsPainter',

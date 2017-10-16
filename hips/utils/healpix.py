@@ -1,32 +1,19 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""HEALPix and HiPS utility functions.
-
-At the moment we use the following functions from ``healpy``:
-
-* compute HEALPix pixel indices in nested scheme: ``hp.ang2pix`` and ``hp.order2nside``
-* compute HEALPix pixel corners: ``hp.boundaries`` and ``hp.vec2ang``
-
-We would like to get rid of the dependency on ``healpy``
-and re-implement those functions here or in Astropy core.
-
-Contributions welcome!
-"""
-from typing import Tuple
+"""HEALPix and HiPS utility functions."""
 from functools import lru_cache
 import numpy as np
-import healpy as hp
-from astropy.coordinates import SkyCoord
+from astropy_healpix import HEALPix
+from astropy_healpix.core import level_to_nside
+from astropy.coordinates import SkyCoord, Angle, ICRS, Galactic, BaseCoordinateFrame
 from .wcs import WCSGeometry
 
 __all__ = [
     'healpix_order_to_npix',
-    'healpix_skycoord_to_theta_phi',
-    'healpix_theta_phi_to_skycoord',
-
-    'healpix_pixel_corners',
-    'healpix_pixels_in_sky_image',
-
     'hips_order_for_pixel_resolution',
+    'healpix_pixel_corners',
+
+    'healpix_pixels_in_sky_image',
+    'hips_tile_healpix_ipix_array',
 ]
 
 __doctest_skip__ = [
@@ -34,25 +21,10 @@ __doctest_skip__ = [
     'healpix_pixels_in_sky_image',
 ]
 
-HIPS_HEALPIX_NEST = True
-"""HiPS always uses the nested HEALPix pixel numbering scheme."""
-
 
 def healpix_order_to_npix(order: int) -> int:
     """HEALPix order to npix."""
-    return hp.nside2npix(hp.order2nside(order))
-
-
-def healpix_skycoord_to_theta_phi(skycoord: SkyCoord) -> Tuple[float, float]:
-    """Convert SkyCoord to theta / phi as used in healpy."""
-    theta = np.pi / 2 - skycoord.data.lat.radian
-    phi = skycoord.data.lon.radian
-    return theta, phi
-
-
-def healpix_theta_phi_to_skycoord(theta: float, phi: float, frame: str) -> SkyCoord:
-    """Convert theta/phi as used in healpy to SkyCoord."""
-    return SkyCoord(phi, np.pi / 2 - theta, unit='radian', frame=frame)
+    return HEALPix(nside=2 ** order, order='nested').npix
 
 
 def healpix_pixel_corners(order: int, ipix: int, frame: str) -> SkyCoord:
@@ -81,10 +53,9 @@ def healpix_pixel_corners(order: int, ipix: int, frame: str) -> SkyCoord:
     corners : `~astropy.coordinates.SkyCoord`
         Sky coordinates (array of length 4).
     """
-    nside = hp.order2nside(order)
-    boundary_coords = hp.boundaries(nside, ipix, nest=HIPS_HEALPIX_NEST)
-    theta, phi = hp.vec2ang(np.transpose(boundary_coords))
-    return healpix_theta_phi_to_skycoord(theta, phi, frame)
+    frame = make_frame(frame)
+    hp = HEALPix(nside=2 ** order, order='nested', frame=frame)
+    return hp.boundaries_skycoord(ipix, step=1)[0]
 
 
 def healpix_pixels_in_sky_image(geometry: WCSGeometry, order: int, healpix_frame: str) -> np.ndarray:
@@ -114,7 +85,7 @@ def healpix_pixels_in_sky_image(geometry: WCSGeometry, order: int, healpix_frame
     --------
     >>> from astropy.coordinates import SkyCoord
     >>> from hips import WCSGeometry
-    >>> from hips.utils import healpix_pixels_in_sky_image
+    >>> from hips.utils.healpix import healpix_pixels_in_sky_image
     >>> skycoord = SkyCoord(10, 20, unit="deg")
     >>> geometry = WCSGeometry.create(
     ...     skydir=skycoord, shape=(10, 20),
@@ -124,10 +95,9 @@ def healpix_pixels_in_sky_image(geometry: WCSGeometry, order: int, healpix_frame
     >>> healpix_pixels_in_sky_image(geometry, order=3, healpix_frame='galactic')
     array([321, 611, 614, 615, 617, 618, 619, 620, 621, 622])
     """
-    nside = hp.order2nside(order)
-    pixel_coords = geometry.pixel_skycoords.transform_to(healpix_frame)
-    theta, phi = healpix_skycoord_to_theta_phi(pixel_coords)
-    ipix = hp.ang2pix(nside, theta, phi, nest=HIPS_HEALPIX_NEST)
+    hp = HEALPix(nside=2 ** order, order='nested', frame=healpix_frame)
+    skycoord = geometry.pixel_skycoords  # .transform_to(healpix_frame)
+    ipix = hp.skycoord_to_healpix(skycoord)
     return np.unique(ipix)
 
 
@@ -146,16 +116,9 @@ def hips_order_for_pixel_resolution(tile_width: int, resolution: float) -> int:
     candidate_tile_order : int
         Best HiPS tile order
     """
-    tile_order = np.log2(tile_width)
-    full_sphere_area = 4 * np.pi * np.square(180 / np.pi)
-    # 29 is the maximum order supported by healpy and 3 is the minimum order
-    for candidate_tile_order in range(3, 29 + 1):
-        tile_resolution = np.sqrt(full_sphere_area / 12 / 4 ** (candidate_tile_order + tile_order))
-        # Finding the smaller tile order with a resolution equal to or better than geometric resolution
-        if tile_resolution <= resolution:
-            break
-
-    return candidate_tile_order
+    resolution = Angle(resolution, unit='deg')
+    nside = pixel_resolution_to_nside(resolution * tile_width, round='up')
+    return nside_to_level(nside)
 
 
 @lru_cache(maxsize=None)
@@ -208,3 +171,53 @@ def hips_tile_healpix_ipix_array(shift_order: int) -> np.ndarray:
         data2 = np.repeat(data2, repeats, axis=1)
 
         return data1 + data2
+
+
+# TODO: remove this function and call the one in `astropy_healpix`
+# as soon as astropy-healpix v0.3 is released
+def pixel_resolution_to_nside(resolution, round='nearest'):
+    resolution = Angle(resolution).radian
+    pixel_area = resolution * resolution
+    npix = 4 * np.pi / pixel_area
+    nside = np.sqrt(npix / 12)
+
+    # Now we have to round to the closest ``nside``
+    # Since ``nside`` must be a power of two,
+    # we first compute the corresponding ``level = log2(nside)`
+    # round the level and then go back to nside
+    level = np.log2(nside)
+
+    if round == 'up':
+        level = np.array(level, dtype=int) + 1
+    elif round == 'nearest':
+        level = np.array(level + 0.5, dtype=int)
+    elif round == 'down':
+        level = np.array(level, dtype=int)
+    else:
+        raise ValueError('Invalid value for round: {!r}'.format(round))
+
+    return level_to_nside(np.clip(level, 0, None))
+
+
+# TODO: move to astropy-healpix
+# Call from above as: HEALPix(nside, order='nested').level
+def nside_to_level(nside):
+    level = np.log2(nside)
+    return np.round(level).astype(int)
+
+
+# TODO: move to astropy-healpix
+# or maybe call this? `astropy.coordinates.frame_transform_graph.lookup_name(frame)`
+# See https://github.com/astropy/astropy-healpix/issues/56#issuecomment-336803290
+def make_frame(frame):
+    if isinstance(frame, BaseCoordinateFrame):
+        return frame
+    elif isinstance(frame, str):
+        if frame == 'icrs':
+            return ICRS()
+        elif frame == 'galactic':
+            return Galactic()
+        else:
+            raise ValueError(f'Invalid value for frame: {frame!r}')
+    else:
+        raise TypeError(f'Invalid type for frame: {type(frame)}')

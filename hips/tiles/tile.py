@@ -11,7 +11,7 @@ from astropy.utils.exceptions import AstropyWarning
 from astropy.io.fits.verify import VerifyWarning
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from ..utils import healpix_pixel_corners
+from ..utils.healpix import healpix_pixel_corners
 from .io import tile_default_url, tile_default_path
 
 __all__ = [
@@ -84,8 +84,8 @@ class HipsTileMeta:
     ( 264.375, -35.68533471), ( 270.   , -30.        )]>
     >>> tile_meta.tile_default_url
     'Norder3/Dir0/Npix450.fits'
-    >>> tile_meta.tile_default_path
-    PosixPath('Norder3/Dir0/Npix450.fits')
+    >>> tile_meta.tile_default_path.as_posix()
+    'Norder3/Dir0/Npix450.fits'
     """
 
     def __init__(self, order: int, ipix: int, file_format: str,
@@ -298,8 +298,8 @@ class HipsTile:
         elif fmt in {'jpg', 'png'}:
             with Image.open(bio) as image:
                 data = np.array(image)
-                # Flip tile to be consistent with FITS orientation
-                data = np.flipud(data)
+            # Flip tile to be consistent with FITS orientation
+            data = np.flipud(data)
         else:
             raise ValueError(f'Tile file format not supported: {fmt}. '
                              'Supported formats: fits, jpg, png')
