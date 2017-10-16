@@ -11,7 +11,7 @@ from astropy.utils.exceptions import AstropyWarning
 from astropy.io.fits.verify import VerifyWarning
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from ..utils import healpix_pixel_corners
+from ..utils.healpix import healpix_pixel_corners
 from .io import tile_default_url, tile_default_path
 
 __all__ = [

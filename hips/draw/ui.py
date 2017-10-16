@@ -4,8 +4,8 @@ import numpy as np
 from PIL import Image
 from astropy.io import fits
 from typing import List, Union
+from ..utils.wcs import WCSGeometry
 from ..tiles import HipsSurveyProperties, HipsTile
-from ..utils import WCSGeometry
 from .paint import HipsPainter
 
 __all__ = [
