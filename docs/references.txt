@@ -1,6 +1,6 @@
 .. _matplotlib: https://matplotlib.org
 .. _Numpy: https://www.numpy.org
-.. _Healpy: https://healpy.readthedocs.io
+.. _astropy-healpix: https://astropy-healpix.readthedocs.io
 .. _scikit-image: http://scikit-image.org
 .. _Pillow: https://python-pillow.org/
 .. _HiPS paper: https://www.aanda.org/articles/aa/pdf/2015/06/aa26075-15.pdf

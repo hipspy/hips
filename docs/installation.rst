@@ -6,6 +6,8 @@
 Installation
 ************
 
+The **hips** package works with Python 3.6 or later, on Linux, MacOS and Windows.
+
 Installing the latest stable version is possible either using pip or conda.
 
 How to install the latest development version is desribed on the :ref:`develop` page.
@@ -71,7 +73,7 @@ The ``hips`` package has the following requirements:
 * Python 3.6 or later!
 * `Numpy`_ 1.11 or later
 * `Astropy`_ 1.2 or later
-* `Healpy`_ 1.9 or later. (Older versions could work, but aren't tested.)
+* `astropy-healpix`_ 0.2 or later
 * `scikit-image`_ 0.12 or later. (Older versions could work, but aren't tested.)
 * `Pillow`_ 4.0 or later. (Older versions could work, but aren't tested.)
   Pillow is the friendly Python Imaging Library (``PIL``) fork, for JPEG and PNG tile I/O.
