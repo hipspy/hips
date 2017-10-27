@@ -102,7 +102,7 @@ More advanced examples
 
 This package is under heavy development, it's changing quickly.
 
-We'll add ddvance examples and detailed documentation once things have stabilised a bit.
+We'll add advanced examples and detailed documentation once things have stabilised a bit.
 
 For now, if you know Python, you can look at the code and tests to see what's available:
 https://github.com/hipspy/hips
