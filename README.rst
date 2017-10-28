@@ -22,8 +22,8 @@ Project status
 * .. image:: http://img.shields.io/travis/hipspy/hips.svg?branch=master
     :target: https://travis-ci.org/hipspy/hips
     :alt: Test Status travis-ci
-* .. image:: https://ci.appveyor.com/api/projects/status/9npru9xyu0ex32ln?svg=true
-    :target: https://ci.appveyor.com/project/cdeil/hips/branch/master
+* .. image:: https://ci.appveyor.com/api/projects/status/spq5jvtvb8ra263n/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/cdeil/hips-19275o3fsp6drby/branch/master
     :alt: Test Status Appveyor
 * .. image:: https://img.shields.io/coveralls/hipspy/hips.svg
     :target: https://coveralls.io/r/hipspy/hips
