@@ -1,7 +1,15 @@
-0.2 (unreleased)
-----------------
 
-- Change from ``healpy`` to ``astropy-healpix``. This means ``hips`` works on Windows!
+0.2
+---
+
+Version 0.2 of hips was released on October 28, 2017.
+
+- Change from using ``healpy`` to ``astropy-healpix``.
+  This means ``hips`` now works on Windows! [#109]
+- Introduce asynchronous fetching of HiPS tiles [#106]
+- Add progress bar support for fetching and drawing HiPS tiles [#105]
+- Add reporting functionality for HipsPainter [#104]
+- Fix tile splitting criterion [#101]
 
 0.1
 ---
