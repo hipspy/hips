@@ -21,6 +21,7 @@ __all__ = [
 
 __doctest_skip__ = [
     'HipsTile',
+    'HipsTileMeta',
 ]
 
 
