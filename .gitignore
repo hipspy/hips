@@ -29,6 +29,9 @@ docs/_build
 # Pycharm editor project files
 .idea
 
+# VS Code editor project files
+.vscode
+
 # Mypy cache
 .mypy_cache
 
