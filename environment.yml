@@ -1,0 +1,21 @@
+name: hips-dev
+channels:
+    - anaconda
+    - astropy
+    - conda-forge
+dependencies:
+    - python=3.6
+    - numpy>=1.11
+    - jupyter
+    - astropy>=1.3
+    - astropy-healpix
+    - scikit-image
+    - Pillow
+    - matplotlib>=2.0
+    - reproject>=0.3.1
+    - pytest>=3.0
+    - mypy>=0.501
+    - tqdm
+    - aiohttp
+    - sphinx
+    - sphinx_rtd_theme
