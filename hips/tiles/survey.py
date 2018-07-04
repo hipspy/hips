@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from io import StringIO
 from csv import DictWriter
+from pathlib import Path
 import urllib.request
 from typing import List, Union
 from astropy.table import Table
@@ -177,6 +178,29 @@ class HipsSurveyProperties:
     def tile_url(self, tile_meta: HipsTileMeta) -> str:
         """Tile URL on the server (str)."""
         return self.base_url + '/' + tile_meta.tile_default_url
+
+    def to_string(self):
+        """Convert properties to string"""
+        properties = ''
+        for key, value in self.data.items():
+            line = f'{key} = {value}\n'
+            properties += line
+
+        return properties
+
+    def write(self, path):
+        """
+        Write properties to text file.
+
+        Parameters
+        ----------
+        path : str or `~pathlib.Path`
+            Base path where to write the properties file.
+        """
+        text = self.to_string()
+        Path(path).write_text(text)
+
+
 
 
 class HipsSurveyPropertiesList:

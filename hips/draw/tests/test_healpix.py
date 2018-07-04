@@ -32,3 +32,6 @@ def test_healpix_to_hips(tmpdir, file_format):
             data = np.array(Image.open(filename))
             data = data.T
         assert_allclose(val, data)
+
+    properties = (tmpdir / 'properties').read_text(encoding=None)
+    assert file_format in properties

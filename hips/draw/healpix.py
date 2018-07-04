@@ -1,8 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from pathlib import Path
+from collections import OrderedDict
 import numpy as np
 from astropy_healpix import healpy as hp
-from ..tiles import HipsTile, HipsTileMeta
+from ..tiles import HipsTile, HipsTileMeta, HipsSurveyProperties
 from ..utils.healpix import hips_tile_healpix_ipix_array
 
 
@@ -76,12 +77,11 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
         filename.parent.mkdir(exist_ok=True, parents=True)
         tile.write(filename=filename)
 
-    # Write a minimal property file
-    properties = f"""
-    hips_tile_format = {file_format}
-    hips_tile_width = {tile_width}
-    hips_frame = {tile.meta.frame}
-    """
 
-    with (base_path / 'properties').open('w') as f:
-        f.write(properties)
+    data = OrderedDict()
+    data['hips_tile_format'] = file_format
+    data['hips_tile_width'] = tile_width
+    data['hips_frame'] = tile.meta.frame
+
+    properties = HipsSurveyProperties(data=data)
+    properties.write(base_path / 'properties')
