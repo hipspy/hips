@@ -9,23 +9,26 @@ from..healpix import healpix_to_hips
 
 @pytest.mark.parametrize('file_format', ['fits', 'png'])
 def test_healpix_to_hips(tmpdir, file_format):
-    npix = hp.nside2npix(2)
+    nside, tile_width = 4, 2
+    npix = hp.nside2npix(nside)
     hpx_data = np.arange(npix, dtype='uint8')
     healpix_to_hips(
         hpx_data=hpx_data,
-        tile_width=2,
+        tile_width=tile_width,
         base_path=tmpdir,
         file_format=file_format
         )
 
     # The test data is filled with np.arange(), here we reproduce the sum of the
     # indices in the nested scheme manually for comparison
-    desired = np.add.reduceat(hpx_data, range(0, 48, 4))
+    desired = hpx_data.reshape((-1, tile_width, tile_width))
 
     for idx, val in enumerate(desired):
-        filename = str(tmpdir / f'Norder0/Dir0/Npix{idx}.{file_format}')
+        filename = str(tmpdir / f'Norder1/Dir0/Npix{idx}.{file_format}')
         if file_format is 'fits':
             data = fits.getdata(filename)
+            data = np.rot90(data, k=-1)
         else:
             data = np.array(Image.open(filename))
-        assert_allclose(val, data.sum())
+            data = data.T
+        assert_allclose(val, data)
