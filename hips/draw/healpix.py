@@ -6,10 +6,14 @@ from astropy_healpix import healpy as hp
 from ..tiles import HipsTile, HipsTileMeta, HipsSurveyProperties
 from ..utils.healpix import hips_tile_healpix_ipix_array
 
+__all__ = [
+    'healpix_to_hips_tile',
+    'healpix_to_hips',
+]
+
 
 def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTile:
     """Create single hips tile from healpix data given a tile index.
-
 
     Parameters
     ----------
@@ -26,7 +30,6 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
     -------
     hips_tile : `HipsTile`
         Hips tile object.
-
     """
     shift_order = int(np.log2(tile_width))
     hpx_ipix = hips_tile_healpix_ipix_array(shift_order=shift_order)
@@ -39,7 +42,8 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
     # because the view information is lost on fits io
     data = np.rot90(data).copy()
 
-    hpx_order = int(np.log2(hp.npix2nside(hpx_data.size / tile_width ** 2)))
+    hpx_nside = hp.npix2nside(hpx_data.size / tile_width ** 2)
+    hpx_order = int(np.log2(hpx_nside))
 
     meta = HipsTileMeta(
         order=hpx_order,
@@ -47,14 +51,13 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
         width=tile_width,
         file_format=file_format,
         frame='galactic'
-        )
+    )
 
     return HipsTile.from_numpy(meta=meta, data=data)
 
 
 def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
-    """
-    Convert healpix image to hips.
+    """Convert HEALPix image to HiPS.
 
     Parameters
     ----------

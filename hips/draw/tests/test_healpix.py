@@ -5,7 +5,8 @@ from PIL import Image
 from astropy.io import fits
 from numpy.testing import assert_allclose
 from astropy_healpix import healpy as hp
-from..healpix import healpix_to_hips
+from ..healpix import healpix_to_hips
+
 
 @pytest.mark.parametrize('file_format', ['fits', 'png'])
 def test_healpix_to_hips(tmpdir, file_format):
@@ -17,7 +18,7 @@ def test_healpix_to_hips(tmpdir, file_format):
         tile_width=tile_width,
         base_path=tmpdir,
         file_format=file_format
-        )
+    )
 
     # The test data is filled with np.arange(), here we reproduce the sum of the
     # indices in the nested scheme manually for comparison
