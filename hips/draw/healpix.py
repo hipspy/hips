@@ -6,7 +6,6 @@ from ..tiles import HipsTile, HipsTileMeta
 from ..utils.healpix import hips_tile_healpix_ipix_array
 
 
-
 def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTile:
     """Create single hips tile from healpix data given a tile index.
 
@@ -45,7 +44,8 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
         order=hpx_order,
         ipix=tile_idx,
         width=tile_width,
-        file_format=file_format
+        file_format=file_format,
+        frame='galactic'
         )
 
     return HipsTile.from_numpy(meta=meta, data=data)
