@@ -17,3 +17,5 @@ dependencies:
     - mypy>=0.501
     - tqdm
     - aiohttp
+    - sphinx
+    - sphinx_rtd_theme

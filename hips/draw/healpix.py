@@ -12,14 +12,14 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
 
     Parameters
     ----------
-    hpx_data : np.ndarray
-        Healpix data.
+    hpx_data : `~numpy.ndarray`
+        Healpix data stored in the "nested" scheme.
     tile_width : int
-        Tile width
+        Width of the hips tile.
     tile_idx : int
-        Tile index.
-    file_format : str
-        File format.
+        Index of the hips tile.
+    file_format : {'fits', 'jpg', 'png'}
+        File format to store the hips tile in.
 
     Returns
     -------
@@ -57,14 +57,14 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
 
     Parameters
     ----------
-    hpx_data : np.ndarray
-        Healpix data.
+    hpx_data : `~numpy.ndarray`
+        Healpix data stored in the "nested" scheme.
     tile_width : int
-        Tile width.
+        Width of the hips tiles.
     base_bath : str or `~pathlib.Path`
         Base path.
-    file_format : str
-        File format.
+    file_format : {'fits', 'jpg', 'png'}
+        File format to store the hips in.
     """
     n_tiles = hpx_data.size // tile_width ** 2
 
