@@ -2,3 +2,4 @@
 """HiPS tile drawing."""
 from .paint import *
 from .ui import *
+from .healpix import *
