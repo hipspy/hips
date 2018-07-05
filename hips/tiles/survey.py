@@ -1,5 +1,4 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from collections import OrderedDict
 from io import StringIO
 from csv import DictWriter
 from pathlib import Path
@@ -24,7 +23,7 @@ class HipsSurveyProperties:
 
     Parameters
     ----------
-    data : `~collections.OrderedDict`
+    data : `dict`
         HiPS survey properties
 
     Examples
@@ -35,14 +34,14 @@ class HipsSurveyProperties:
     >>> hips_survey_property.base_url
     'http://alasky.u-strasbg.fr/DSS/DSS2Merged'
     """
-    hips_to_astropy_frame_mapping = OrderedDict([
-        ('equatorial', 'icrs'),
-        ('galactic', 'galactic'),
-        ('ecliptic', 'ecliptic'),
-    ])
+    hips_to_astropy_frame_mapping = {
+        'equatorial': 'icrs',
+        'galactic': 'galactic',
+        'ecliptic': 'ecliptic',
+    }
     """HIPS to Astropy SkyCoord frame string mapping."""
 
-    def __init__(self, data: OrderedDict) -> None:
+    def __init__(self, data: dict) -> None:
         self.data = data
 
     @classmethod
@@ -101,7 +100,7 @@ class HipsSurveyProperties:
         url : str
             Properties URL of HiPS
         """
-        data: OrderedDict = OrderedDict()
+        data = {}
         for line in text.split('\n'):
             # Skip empty or comment lines
             if line == '' or line.startswith('#'):

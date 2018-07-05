@@ -79,7 +79,7 @@ def fetch_tiles(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyPropertie
 
     # Sort tiles to match the tile_meta list
     # TODO: this doesn't seem like a great solution.
-    # Use OrderedDict instead?
+    # Use dict instead?
     out = []
     for tile_meta in tile_metas:
         for tile in tiles:
