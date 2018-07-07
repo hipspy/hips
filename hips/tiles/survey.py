@@ -180,8 +180,8 @@ class HipsSurveyProperties:
 
     def to_string(self):
         """Convert properties to string"""
-        lines = [f'{k:20s} = {v}' for k, v in self.data.items()]
-        return '\n'.join(lines)
+        lines = [f'{k:20s} = {v}\n' for k, v in self.data.items()]
+        return ''.join(lines)
 
     def write(self, path):
         """
