@@ -54,8 +54,13 @@ To build the documentation, do:
 Get the hips-extra test datasets
 ================================
 
-To run tests accessing files from `hips-extra <https://github.com/hipspy/hips-extra>`_
-repository, users must have it cloned on their system, otherwise some test cases
+To run tests accessing files from `hips-extra <https://github.com/hipspy/hips-extra>`_ repository:
+
+.. code-block:: bash
+
+    git clone https://github.com/hipspy/hips-extra.git
+
+Developers must have it cloned on their system, otherwise some test cases
 will be skipped. This contains tiles from different HiPS surveys which are used
 by the drawing module. After this, the ``HIPS_EXTRA`` environment variable must
 be set up on their system. On UNIX operating systems, this can be set using
