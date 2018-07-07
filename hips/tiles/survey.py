@@ -106,7 +106,7 @@ class HipsSurveyProperties:
             if line == '' or line.startswith('#'):
                 continue
             try:
-                key, value = [_.strip() for _ in line.split('=')]
+                key, value = [_.strip() for _ in line.split('=', maxsplit=1)]
                 data[key] = value
             except ValueError:
                 # Skip bad lines (silently, might not be a good idea to do this)
@@ -180,12 +180,8 @@ class HipsSurveyProperties:
 
     def to_string(self):
         """Convert properties to string"""
-        properties = ''
-        for key, value in self.data.items():
-            line = f'{key} = {value}\n'
-            properties += line
-
-        return properties
+        lines = [f'{k:20s} = {v}' for k, v in self.data.items()]
+        return '\n'.join(lines)
 
     def write(self, path):
         """
@@ -198,8 +194,6 @@ class HipsSurveyProperties:
         """
         text = self.to_string()
         Path(path).write_text(text)
-
-
 
 
 class HipsSurveyPropertiesList:
