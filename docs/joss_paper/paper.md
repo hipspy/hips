@@ -20,6 +20,10 @@ authors:
   orcid: 0000-0001-5035-4497
   affiliation: 3
 
+- name: Brigitta M Sipőcz
+  orcid: 0000-0002-3713-6337
+  affiliation: 4
+
 affiliations:
 - name: Max Planck Institute for Nuclear Physics, Heidelberg, Germany
   index: 1
@@ -27,7 +31,9 @@ affiliations:
   index: 2
 - name: National University of Computer and Emerging Sciences, Islamabad, Pakistan
   index: 3
-  
+- name: Institute of Astronomy, University of Cambridge, Madingley Road, Cambridge, CB3 0HA, UK
+  index: 4
+
 date: 5 July 2018
 bibliography: paper.bib
 ---
@@ -76,4 +82,3 @@ This procedure produces the following image:
 This project was initiated as part of Google Summer of Code 2017 program (\url{https://summerofcode.withgoogle.com}) under the Open Astronomy umbrella organization. The authors would like to thank Google for hosting this program. We gratefully acknowledge Astropy for their affiliated packages which are extensively used in this package.
 
 # References
-
