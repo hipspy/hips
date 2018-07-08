@@ -221,6 +221,30 @@ class HipsPainter:
                     transform=ax.get_transform('world'), **opts)
         ax.imshow(self.image, origin='lower')
 
+    def plot_mpl_hips_tile_number_grid(self) -> None:
+        """Plot output image and HiPS grid with matplotlib.
+
+        This is mainly useful for debugging the drawing algorithm,
+        not something end-users will call or need to know about.
+        """
+        import matplotlib.pyplot as plt
+        self.make_tile_list()
+        i = 0
+        for tile in self.draw_tiles:
+            corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
+            ax = plt.subplot(projection=self.geometry.wcs)
+            opts = dict(color='red', lw=1, )
+            ax.plot(corners.data.lon.deg, corners.data.lat.deg,
+                    transform=ax.get_transform('world'), **opts)
+            # ax.text(corners.data.lon.deg, corners.data.lat.deg,
+            #         '2', bbox=dict(facecolor='red', alpha=0.5),
+            #         transform=ax.get_transform('world'))
+            ax.text(0.5, 0.5,
+                '{:d}'.format(i), color='w', ha='center', va='center')
+            i += 1
+
+        ax.imshow(self.image, origin='lower')
+
 
 def measure_tile_lengths(corners: Tuple[np.ndarray, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
     """Compute length of tile edges and diagonals.
