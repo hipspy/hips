@@ -8,28 +8,32 @@ tags:
 - image-processing
 
 authors:
-- name: Christoph Deil
-  orcid:
-  affiliation: 1
-
-- name: Thomas Boch
-  orcid:
-  affiliation: 2
-
 - name: Adeel Ahmad
   orcid: 0000-0001-5035-4497
+  affiliation: 1
+
+- name: Christoph Deil
+  orcid: 0000-0002-4198-4005
+  affiliation: 2
+
+- name: Thomas Boch
+  orcid: 0000-0001-5818-2781
   affiliation: 3
 
 - name: Brigitta M Sipőcz
   orcid: 0000-0002-3713-6337
   affiliation: 4
 
+- name: Axel Donath
+  orcid:
+  affiliation: 2
+
 affiliations:
-- name: Max Planck Institute for Nuclear Physics, Heidelberg, Germany
-  index: 1
-- name: Centre de Données astronomiques de Strasbourg, Strasbourg, France
-  index: 2
 - name: National University of Computer and Emerging Sciences, Islamabad, Pakistan
+  index: 1
+- name: Max Planck Institute for Nuclear Physics, Heidelberg, Germany
+  index: 2
+- name: Université de Strasbourg, CNRS, Observatoire astronomique de Strasbourg
   index: 3
 - name: Institute of Astronomy, University of Cambridge, Madingley Road, Cambridge, CB3 0HA, UK
   index: 4
