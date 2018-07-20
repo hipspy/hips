@@ -100,17 +100,19 @@ class HipsDrawResult:
             stats=painter._stats,
         )
 
-    def write_image(self, filename: str) -> None:
+    def write_image(self, filename: str, overwrite: bool = False) -> None:
         """Write image to file.
 
         Parameters
         ----------
         filename : str
             Filename
+        overwrite : bool
+            Overwrite the output file, if it exists
         """
         if self.tile_format == 'fits':
             hdu = fits.PrimaryHDU(data=self.image, header=self.geometry.fits_header)
-            hdu.writeto(filename)
+            hdu.writeto(filename, overwrite)
         else:
             image = Image.fromarray(self.image)
             image.save(filename)
