@@ -74,12 +74,8 @@ def test_make_sky_image(tmpdir, pars):
     result.write_image(str(tmpdir / 'test.' + pars['file_format']), False)
 
     # Try and overwrite the image.
-    if pars['file_format'] == 'fits':
-        with pytest.raises(OSError):
-            result.write_image(str(tmpdir / 'test.' + pars['file_format']), False)
-    else:
-        with pytest.raises(FileExistsError):
-            result.write_image(str(tmpdir / 'test.' + pars['file_format']), False)
+    with pytest.raises(FileExistsError):
+        result.write_image(str(tmpdir / 'test.' + pars['file_format']), False)
 
     result.plot()
     result.report()

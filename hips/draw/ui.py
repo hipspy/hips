@@ -111,15 +111,15 @@ class HipsDrawResult:
         overwrite : bool
             Overwrite the output file, if it exists
         """
+        if overwrite == False and Path(filename).exists():
+            raise FileExistsError(f"File {filename} already exists.")
+
         if self.tile_format == 'fits':
             hdu = fits.PrimaryHDU(data=self.image, header=self.geometry.fits_header)
-            hdu.writeto(filename, overwrite=overwrite)
+            hdu.writeto(filename)
         else:
             image = Image.fromarray(self.image)
-            if overwrite == False and Path(filename).exists():
-                raise FileExistsError
-            else:
-                image.save(filename)
+            image.save(filename)
 
     def plot(self) -> None:
         """Plot the all sky image and overlay HiPS tile outlines.
