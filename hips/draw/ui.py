@@ -2,6 +2,7 @@
 """The high-level end user interface (UI)."""
 import numpy as np
 from PIL import Image
+from pathlib import Path
 from astropy.io import fits
 from typing import List, Union
 from ..utils.wcs import WCSGeometry
@@ -100,14 +101,19 @@ class HipsDrawResult:
             stats=painter._stats,
         )
 
-    def write_image(self, filename: str) -> None:
+    def write_image(self, filename: str, overwrite: bool = False) -> None:
         """Write image to file.
 
         Parameters
         ----------
         filename : str
             Filename
+        overwrite : bool
+            Overwrite the output file, if it exists
         """
+        if overwrite == False and Path(filename).exists():
+            raise FileExistsError(f"File {filename} already exists.")
+
         if self.tile_format == 'fits':
             hdu = fits.PrimaryHDU(data=self.image, header=self.geometry.fits_header)
             hdu.writeto(filename)

@@ -71,6 +71,11 @@ def test_make_sky_image(tmpdir, pars):
     assert_allclose(np.sum(result.image, dtype=float), pars['data_sum'])
     assert_allclose(result.image[200, 994], pars['data_1'])
     assert_allclose(result.image[200, 995], pars['data_2'])
-    result.write_image(str(tmpdir / 'test.' + pars['file_format']))
+    result.write_image(str(tmpdir / 'test.' + pars['file_format']), False)
+
+    # Try and overwrite the image.
+    with pytest.raises(FileExistsError):
+        result.write_image(str(tmpdir / 'test.' + pars['file_format']), False)
+
     result.plot()
     result.report()
