@@ -2,6 +2,7 @@
 """The high-level end user interface (UI)."""
 import numpy as np
 from PIL import Image
+from pathlib import Path
 from astropy.io import fits
 from typing import List, Union
 from ..utils.wcs import WCSGeometry
@@ -112,10 +113,13 @@ class HipsDrawResult:
         """
         if self.tile_format == 'fits':
             hdu = fits.PrimaryHDU(data=self.image, header=self.geometry.fits_header)
-            hdu.writeto(filename, overwrite)
+            hdu.writeto(filename, overwrite=overwrite)
         else:
             image = Image.fromarray(self.image)
-            image.save(filename)
+            if overwrite == False and Path(filename).exists():
+                raise FileExistsError
+            else:
+                image.save(filename)
 
     def plot(self) -> None:
         """Plot the all sky image and overlay HiPS tile outlines.
