@@ -10,4 +10,16 @@ geometry = WCSGeometry.create(
 )
 hips_survey = 'CDS/P/DSS2/red'
 result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format='fits')
-result.plot()
+
+# Draw the sky image
+import matplotlib.pyplot as plt
+from astropy.visualization.mpl_normalize import simple_norm
+
+# Perform normalization.
+norm = simple_norm(result.image, 'sqrt', min_percent=1, max_percent=99)
+
+# Display the image
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+im = ax.imshow(result.image, origin='lower', norm=norm, cmap='gray')
+fig.colorbar(im)

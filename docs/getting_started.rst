@@ -77,6 +77,32 @@ To print out summary information about the result::
 The `~hips.HipsDrawResult` object also gives access to the `~hips.HipsTile`
 objects that were used for drawing the sky image, as well as other things.
 
+Plot using Astropy visualization toolkit
+========================================
+
+Astropy provides a framework for plotting astronomical images with coordinates. It builds on top of Matplotlib and provides functionalities such as image normalization (scaling and stretching), smart histogram plotting, RGB color image creation from separate images. The framework also allows for customization of plotting styles.
+
+The example below is for the FITS format and controls the stretch of the image through normalization. For FITS tiles, the data type is either ``int16`` or ``float32``::
+
+    import matplotlib.pyplot as plt
+    from astropy.visualization.mpl_normalize import simple_norm
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    im = ax.imshow(result.image, origin='lower', norm=norm, cmap='gray')
+    fig.colorbar(im)
+
+.. plot:: plot_fits_astropy.py
+
+RGB tiles can be plotted in much the same way as above, however, it is uncommon to apply an extra stretch in this case. For ``jpg`` and ``png`` tiles, the data type is ``uint8``.
+
+.. note::
+
+    For ``png`` tiles, there are four channel i.e. RGBA. The alpha channel is used for controlling the transparency of the image.
+
+The example provided here is trivial. Astropy provides numerous other features, customizability options, and in-depth examples. Please see their documentation at:
+https://docs.astropy.org/en/stable/visualization
+
 Make a color sky image
 ======================
 
@@ -85,10 +111,9 @@ Making a color sky image works the same as the grayscale image example above,
 except that you get back a 3-dim Numpy array with ``(R, G, B)`` channels for ``jpg``
 or ``(R, G, B, A)`` channels (``A`` is transparency) for ``png``.
 
-Here's an example using ``jpg`` and http://alasky.u-strasbg.fr/Fermi/Color/ :
+Here's an example using ``jpg`` and http://alasky.u-strasbg.fr/Fermi/Color:
 
 .. plot:: plot_jpg.py
-
 
 HiPS data
 =========
