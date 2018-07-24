@@ -121,19 +121,27 @@ class HipsDrawResult:
             image = Image.fromarray(self.image)
             image.save(filename)
 
-    def plot(self) -> None:
+    def plot(self, show_grid: bool = False) -> None:
         """Plot the all sky image and overlay HiPS tile outlines.
+
+        Parameters
+        ----------
+        show_grid : bool
+            Enable grid around HiPS tile boundaries
 
         Uses `astropy.visualization.wcsaxes`.
         """
         import matplotlib.pyplot as plt
-        for tile in self.tiles:
-            corners = tile.meta.skycoord_corners
-            corners = corners.transform_to(self.geometry.celestial_frame)
-            ax = plt.subplot(projection=self.geometry.wcs)
-            opts = dict(color='red', lw=1, )
-            ax.plot(corners.data.lon.deg, corners.data.lat.deg,
-                    transform=ax.get_transform('world'), **opts)
+        ax = plt.subplot(projection=self.geometry.wcs)
+
+        if show_grid:
+            for tile in self.tiles:
+                corners = tile.meta.skycoord_corners
+                corners = corners.transform_to(self.geometry.celestial_frame)
+                opts = dict(color='red', lw=1)
+                ax.plot(corners.data.lon.deg, corners.data.lat.deg,
+                        transform=ax.get_transform('world'), **opts)
+
         ax.imshow(self.image, origin='lower')
 
     def report(self) -> None:
