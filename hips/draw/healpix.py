@@ -2,6 +2,7 @@
 import numpy as np
 import healpy as hp
 from pathlib import Path
+from typing import Union
 from astropy.io import fits
 
 from ..tiles import HipsTile, HipsTileMeta, HipsSurveyProperties
@@ -15,7 +16,8 @@ __all__ = [
 ]
 
 
-def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTile:
+def healpix_to_hips_tile(hpx_data: np.ndarray, tile_width: int,
+                         tile_idx: int, file_format: str) -> HipsTile:
     """Create single hips tile from healpix data given a tile index.
 
     Parameters
@@ -59,7 +61,8 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
     return HipsTile.from_numpy(meta=meta, data=data)
 
 
-def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
+def healpix_to_hips(hpx_data: np.ndarray, tile_width: int,
+                    base_path: Union[str, Path], file_format='fits') -> None:
     """Convert HEALPix image to HiPS.
 
     Parameters
