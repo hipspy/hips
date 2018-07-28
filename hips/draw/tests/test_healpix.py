@@ -1,11 +1,12 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import pytest
 import numpy as np
+import healpy as hp
 from PIL import Image
 from astropy.io import fits
 from numpy.testing import assert_allclose
-from astropy_healpix import healpy as hp
-from ..healpix import healpix_to_hips
+
+from ..healpix import healpix_to_hips, hips_to_healpix
 
 
 @pytest.mark.parametrize('file_format', ['fits', 'png'])
@@ -36,3 +37,10 @@ def test_healpix_to_hips(tmpdir, file_format):
 
     properties = (tmpdir / 'properties').read_text(encoding=None)
     assert file_format in properties
+
+def test_hips_to_healpix(tmpdir):
+    hips_to_healpix(hips_url='http://alasky.u-strasbg.fr/Pan-STARRS/DR1/g',
+                    npix=768,
+                    hpx_output_path=tmpdir / 'panstarrs-g.hpx')
+
+    healpix_map = hp.read_map(str(tmpdir / 'panstarrs-g.hpx'))

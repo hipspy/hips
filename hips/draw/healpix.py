@@ -1,13 +1,17 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from pathlib import Path
 import numpy as np
-from astropy_healpix import healpy as hp
+import healpy as hp
+from pathlib import Path
+from astropy.io import fits
+
 from ..tiles import HipsTile, HipsTileMeta, HipsSurveyProperties
 from ..utils.healpix import hips_tile_healpix_ipix_array
 
 __all__ = [
     'healpix_to_hips_tile',
     'healpix_to_hips',
+    'hips_to_healpix_array',
+    'hips_to_healpix'
 ]
 
 
@@ -88,3 +92,115 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
 
     properties = HipsSurveyProperties(data=data)
     properties.write(base_path / 'properties')
+
+def hips_to_healpix_array(order: int):
+    """Create array giving mapping between:
+
+    HEALPix index ==> XY index
+    XY index ==> HEALPix index
+
+    Parameters
+    ----------
+    order : int
+        Order of HEALPix array.
+    """
+    def fill_array(npix, nsize, pos):
+        size = nsize ** 2
+        npix_idx = [[0 for i in range(size // 4)] for j in range(4)]
+        nb = [0 for i in range(4)]
+
+        for i in range(size):
+            if (i % nsize) < (nsize // 2):
+                dg = 0
+            else:
+                dg = 1
+
+            if i < (size / 2):
+                bh = 1
+            else:
+                bh = 0
+
+            quad = (dg << 1) | bh
+
+            if pos is None:
+                j = i
+            else:
+                j = pos[i]
+
+            npix[j] = npix[j] << 2 | quad
+            npix_idx[quad][nb[quad]] = j
+            nb[quad] += 1
+
+        if size > 4:
+            for i in range(4):
+                fill_array(npix, nsize // 2, npix_idx[i])
+
+    if order == 0:
+        xy_to_healpix = healpix_to_xy = [0]
+        return
+
+    nsize = 2 ** order
+    xy_to_healpix = [0 for i in range(nsize ** 2)]
+    healpix_to_xy = [0 for i in range(nsize ** 2)]
+
+    fill_array(xy_to_healpix, nsize, None)
+
+    for i in range(len(xy_to_healpix)):
+        healpix_to_xy[xy_to_healpix[i]] = i
+
+    return healpix_to_xy, xy_to_healpix
+
+def hips_to_healpix(hips_url: str, npix: int, hpx_output_path: str):
+    """Given a HiPS survey, generate a HEALPix map.
+
+    Parameters
+    ----------
+    hips_url : str
+        URL of HiPS survey.
+    npix : int
+        HEALPix pixel number.
+    hpx_output_path : str
+        HEALPix output path.
+    """
+    # Query the HiPS survey properties.
+    hips_properties = HipsSurveyProperties.fetch(hips_url + "/properties")
+
+    hips_tile_width = hips_properties.tile_width
+    order = int(np.log2(hips_tile_width))
+
+    healpix_to_xy, xy_to_healpix = hips_to_healpix_array(order)
+
+    healpix_map = np.empty(hp.nside2npix(2 ** 12), dtype=np.double) # 2 ** 12?
+    healpix_map[:] = hp.pixelfunc.UNSEEN
+
+    for ipix in range(npix):
+        try:
+            tile = fits.open(f'{hips_url}/Norder3/Dir0/Npix{ipix}.fits')
+        except:
+            continue
+
+        # BSCALE and BZERO.
+        bzero = 0
+        bscale = 1
+        has_blank_value = False
+
+        if 'BZERO' in tile[0].header:
+            bzero = tile[0].header['BZERO']
+        if 'BSCALE' in tile[0].header:
+            bscale = tile[0].header['BSCALE']
+        if 'BLANK' in tile[0].header:
+            has_blank_value = True
+            blank_value_scaled = bscale * tile[0].header['BLANK'] + bzero
+
+        for k in range(hips_tile_width ** 2):
+            x = k % hips_tile_width
+            y = k // hips_tile_width
+            healpix_index = xy_to_healpix[k]
+            pixel_value = tile[0].data[y][x]
+
+            if has_blank_value and np.fabs(pixel_value - blank_value_scaled) < 1e-6:
+                pixel_value = hp.pixelfunc.UNSEEN
+
+            healpix_map[ipix * hips_tile_width * hips_tile_width + healpix_index] = pixel_value
+
+    hp.write_map(str(hpx_output_path), healpix_map, coord='C', nest=True)
