@@ -25,7 +25,7 @@ TEST_CASES = [
         tile_shape=(64, 64),
         # This is the same pixel as above, with the max value in the all-sky image
         tile_idx=281,
-        tile_pix_idx=[[46], [38]],
+        tile_pix_idx=([46], [38]),
         tile_pix_val=2174.190673828125,
 
     ),
@@ -47,7 +47,7 @@ TEST_CASES = [
         tile_shape=(64, 64),
         # This is the same pixel as above, with the max value in the all-sky image
         tile_idx=281,
-        tile_pix_idx=[[46], [38]],
+        tile_pix_idx=([46], [38]),
         tile_pix_val=244,
     ),
     dict(

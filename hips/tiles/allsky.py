@@ -172,7 +172,7 @@ class HipsTileAllskyArray(HipsTile):
         """Compute the 2-dim slice in the allsky ``data`` for a given tile."""
         w = tile_width
         row_idx, col_idx = divmod(ipix, n_tiles_in_row)
-        return [
+        return (
             slice(row_idx * w, (row_idx + 1) * w),
             slice(col_idx * w, (col_idx + 1) * w),
-        ]
+        )

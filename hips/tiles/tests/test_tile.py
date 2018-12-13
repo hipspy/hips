@@ -75,13 +75,13 @@ HIPS_TILE_TEST_CASES = [
 
         dtype='int16',
         shape=(512, 512),
-        pix_idx=[[510], [5]],
+        pix_idx=([510], [5]),
         pix_val=[3047],
 
         child_order=4,
         child_shape=(256, 256),
         child_ipix=[1852, 1853, 1854, 1855],
-        child_pix_idx=[[255], [255]],
+        child_pix_idx=([255], [255]),
         child_pix_val=[2437, 2153, 2124, 2418],
     ),
     dict(
@@ -92,13 +92,13 @@ HIPS_TILE_TEST_CASES = [
 
         dtype='uint8',
         shape=(512, 512, 3),
-        pix_idx=[[510], [5]],
+        pix_idx=([510], [5]),
         pix_val=[[132, 116, 83]],
 
         child_order=4,
         child_shape=(256, 256, 3),
         child_ipix=[1852, 1853, 1854, 1855],
-        child_pix_idx=[[255], [255]],
+        child_pix_idx=([255], [255]),
         child_pix_val=[[[255, 241, 225]], [[245, 214, 211]], [[109, 95, 86]], [[137, 97, 87]]],
     ),
     dict(
@@ -109,13 +109,13 @@ HIPS_TILE_TEST_CASES = [
 
         dtype='uint8',
         shape=(512, 512, 4),
-        pix_idx=[[253], [5]],
+        pix_idx=([253], [5]),
         pix_val=[[15, 15, 15, 255]],
 
         child_order=7,
         child_shape=(256, 256, 4),
         child_ipix=[24448, 24449, 24450, 24451],
-        child_pix_idx=[[255], [255]],
+        child_pix_idx=([255], [255]),
         child_pix_val=[[[15,  15,  15, 255]], [[17, 17, 17, 255]], [[20, 20, 20, 255]], [[13, 13, 13, 255]]],
     ),
 ]
