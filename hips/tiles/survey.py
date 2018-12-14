@@ -296,10 +296,11 @@ class HipsSurveyPropertiesList:
         rows = [properties.data for properties in self.data]
         fieldnames = sorted({key for row in rows for key in row})
         buffer = StringIO()
-        writer = DictWriter(buffer, fieldnames=fieldnames)
+        writer = DictWriter(buffer, fieldnames=fieldnames, dialect='unix')
         writer.writeheader()
         writer.writerows(rows)
-        return Table.read(buffer.getvalue(), format='ascii.csv', guess=False)
+        txt = buffer.getvalue()
+        return Table.read(txt, format='ascii.csv', guess=False, fast_reader=False)
 
     def from_name(self, name: str) -> 'HipsSurveyProperties':
         """Return a matching HiPS survey (`HipsSurveyProperties`)."""
