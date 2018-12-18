@@ -213,9 +213,9 @@ class HipsPainter:
         """
         import matplotlib.pyplot as plt
         self.make_tile_list()
+        ax = plt.subplot(projection=self.geometry.wcs)
         for tile in self.draw_tiles:
             corners = tile.meta.skycoord_corners.transform_to(self.geometry.celestial_frame)
-            ax = plt.subplot(projection=self.geometry.wcs)
             opts = dict(color='red', lw=1, )
             ax.plot(corners.data.lon.deg, corners.data.lat.deg,
                     transform=ax.get_transform('world'), **opts)
@@ -315,7 +315,8 @@ def plot_mpl_single_tile(geometry: WCSGeometry, tile: HipsTile, image: np.ndarra
     import matplotlib.pyplot as plt
     corners = tile.meta.skycoord_corners.transform_to(geometry.celestial_frame)
     colors = ['red', 'green', 'blue', 'yellow']
-    ax = plt.subplot(projection=geometry.wcs)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=geometry.wcs)
     for index, corner in enumerate(corners):
         opts = dict(s=80, color=colors[index])
         ax.scatter(corner.data.lon.deg, corner.data.lat.deg,
