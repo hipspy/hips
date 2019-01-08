@@ -14,15 +14,9 @@ from astropy.io import fits
 from ..utils.healpix import healpix_pixel_corners
 from .io import tile_default_url, tile_default_path
 
-__all__ = [
-    'HipsTileMeta',
-    'HipsTile',
-]
+__all__ = ["HipsTileMeta", "HipsTile"]
 
-__doctest_skip__ = [
-    'HipsTile',
-    'HipsTileMeta',
-]
+__doctest_skip__ = ["HipsTile", "HipsTileMeta"]
 
 
 # TODO: this could be a dict. Would that be better?
@@ -47,14 +41,14 @@ def compute_image_shape(width: int, height: int, fmt: str) -> tuple:
     shape : tuple
         Numpy array shape
     """
-    if fmt == 'fits':
+    if fmt == "fits":
         return height, width
-    elif fmt == 'jpg':
+    elif fmt == "jpg":
         return height, width, 3
-    elif fmt == 'png':
+    elif fmt == "png":
         return height, width, 4
     else:
-        raise ValueError(f'Invalid format: {fmt}')
+        raise ValueError(f"Invalid format: {fmt}")
 
 
 class HipsTileMeta:
@@ -89,8 +83,14 @@ class HipsTileMeta:
     'Norder3/Dir0/Npix450.fits'
     """
 
-    def __init__(self, order: int, ipix: int, file_format: str,
-                 frame: str = 'icrs', width: int = 512) -> None:
+    def __init__(
+        self,
+        order: int,
+        ipix: int,
+        file_format: str,
+        frame: str = "icrs",
+        width: int = 512,
+    ) -> None:
         self.order = order
         self.ipix = ipix
         self.file_format = file_format
@@ -99,20 +99,20 @@ class HipsTileMeta:
 
     def __repr__(self):
         return (
-            'HipsTileMeta('
-            f'order={self.order}, ipix={self.ipix}, '
-            f'file_format={self.file_format!r}, frame={self.frame!r}, '
-            f'width={self.width}'
-            ')'
+            "HipsTileMeta("
+            f"order={self.order}, ipix={self.ipix}, "
+            f"file_format={self.file_format!r}, frame={self.frame!r}, "
+            f"width={self.width}"
+            ")"
         )
 
-    def __eq__(self, other: 'HipsTileMeta') -> bool:
+    def __eq__(self, other: "HipsTileMeta") -> bool:
         return (
-            self.order == other.order and
-            self.ipix == other.ipix and
-            self.file_format == other.file_format and
-            self.frame == other.frame and
-            self.width == other.width
+            self.order == other.order
+            and self.ipix == other.ipix
+            and self.file_format == other.file_format
+            and self.frame == other.frame
+            and self.width == other.width
         )
 
     def copy(self):
@@ -180,14 +180,11 @@ class HipsTile:
         self.raw_data = raw_data
         self._data = None
 
-    def __eq__(self, other: 'HipsTile') -> bool:
-        return (
-            self.meta == other.meta and
-            self.raw_data == other.raw_data
-        )
+    def __eq__(self, other: "HipsTile") -> bool:
+        return self.meta == other.meta and self.raw_data == other.raw_data
 
     @classmethod
-    def from_numpy(cls, meta: HipsTileMeta, data: np.ndarray) -> 'HipsTile':
+    def from_numpy(cls, meta: HipsTileMeta, data: np.ndarray) -> "HipsTile":
         """Create a tile from given pixel data.
 
         Parameters
@@ -205,22 +202,24 @@ class HipsTile:
         fmt = meta.file_format
         bio = BytesIO()
 
-        if fmt == 'fits':
+        if fmt == "fits":
             hdu = fits.PrimaryHDU(data)
             hdu.writeto(bio)
-        elif fmt == 'jpg':
+        elif fmt == "jpg":
             # Flip tile to be consistent with FITS orientation
             data = np.flipud(data)
             image = Image.fromarray(data)
-            image.save(bio, format='jpeg')
-        elif fmt == 'png':
+            image.save(bio, format="jpeg")
+        elif fmt == "png":
             # Flip tile to be consistent with FITS orientation
             data = np.flipud(data)
             image = Image.fromarray(data)
-            image.save(bio, format='png')
+            image.save(bio, format="png")
         else:
-            raise ValueError(f'Tile file format not supported: {fmt}. '
-                             'Supported formats: fits, jpg, png')
+            raise ValueError(
+                f"Tile file format not supported: {fmt}. "
+                "Supported formats: fits, jpg, png"
+            )
 
         bio.seek(0)
         raw_data = bio.read()
@@ -228,14 +227,14 @@ class HipsTile:
         return cls(meta, raw_data)
 
     @property
-    def children(self) -> List['HipsTile']:
+    def children(self) -> List["HipsTile"]:
         """Create four children tiles from parent tile."""
         w = self.data.shape[0] // 2
         data = [
-            self.data[w: w * 2, 0: w],
-            self.data[0: w, 0: w],
-            self.data[w: w * 2, w: w * 2],
-            self.data[0: w, w: w * 2]
+            self.data[w : w * 2, 0:w],
+            self.data[0:w, 0:w],
+            self.data[w : w * 2, w : w * 2],
+            self.data[0:w, w : w * 2],
         ]
 
         tiles = []
@@ -245,7 +244,7 @@ class HipsTile:
                 self.meta.ipix * 4 + idx,
                 self.meta.file_format,
                 self.meta.frame,
-                len(data[0])
+                len(data[0]),
             )
             tile = self.from_numpy(meta, data[idx])
             tiles.append(tile)
@@ -261,10 +260,7 @@ class HipsTile:
         See the `to_numpy` function.
         """
         if self._data is None:
-            self._data = self.to_numpy(
-                self.raw_data,
-                self.meta.file_format,
-            )
+            self._data = self.to_numpy(self.raw_data, self.meta.file_format)
 
         return self._data
 
@@ -286,29 +282,31 @@ class HipsTile:
         """
         bio = BytesIO(raw_data)
 
-        if fmt == 'fits':
+        if fmt == "fits":
             # At the moment CDS is serving FITS tiles in non-standard FITS files
             # https://github.com/hipspy/hips/issues/42
             # The following warnings handling is supposed to suppress these warnings
             # (but hopefully still surface other issues in a useful way).
             with warnings.catch_warnings():
-                warnings.simplefilter('ignore', AstropyWarning)
-                warnings.simplefilter('ignore', VerifyWarning)
+                warnings.simplefilter("ignore", AstropyWarning)
+                warnings.simplefilter("ignore", VerifyWarning)
                 with fits.open(bio) as hdu_list:
                     data = hdu_list[0].data
-        elif fmt in {'jpg', 'png'}:
+        elif fmt in {"jpg", "png"}:
             with Image.open(bio) as image:
                 data = np.array(image)
             # Flip tile to be consistent with FITS orientation
             data = np.flipud(data)
         else:
-            raise ValueError(f'Tile file format not supported: {fmt}. '
-                             'Supported formats: fits, jpg, png')
+            raise ValueError(
+                f"Tile file format not supported: {fmt}. "
+                "Supported formats: fits, jpg, png"
+            )
 
         return data
 
     @classmethod
-    def read(cls, meta: HipsTileMeta, filename: str = None) -> 'HipsTile':
+    def read(cls, meta: HipsTileMeta, filename: str = None) -> "HipsTile":
         """Read HiPS tile data from a directory and load into memory (`~hips.HipsTile`).
 
         Parameters
@@ -322,7 +320,7 @@ class HipsTile:
         return cls(meta, raw_data)
 
     @classmethod
-    def fetch(cls, meta: HipsTileMeta, url: str) -> 'HipsTile':
+    def fetch(cls, meta: HipsTileMeta, url: str) -> "HipsTile":
         """Fetch HiPS tile and load into memory (`~hips.HipsTile`).
 
         Parameters
