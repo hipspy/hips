@@ -200,27 +200,22 @@ class TestHipsTile:
 
 
 class TestFromNumpyRoundTrip:
-    """Check if HipsTile.from_numpy().data == data.
+    """Check if HipsTile to / from Numpy roundtrips for a simple test case.
+
+    Exactly for FITS and PNG, and up to encoding noise for JPEG.
     """
     def test_fits(self):
-        data = np.array([[0, 1], [2, 3]], dtype='uint8')
+        data = np.array([[0, 1], [100, 200]], dtype='uint8')
         meta = HipsTileMeta(order=1, ipix=0, file_format='fits', width=2)
 
         tile = HipsTile.from_numpy(meta, data)
 
         assert tile.data.dtype == np.uint8
         assert tile.data.shape == (2, 2)
-        assert_allclose(tile.data, data)
+        assert_equal(tile.data, data)
 
-    # FIXME: This one is currently failing.
-    # Why is the pixel order not correct? Why is it OK for PNG, but not for JPG?
-    # E        x: array([1, 2, 4, 1, 2, 4, 1, 2, 4, 1, 2, 4], dtype=uint8)
-    # E        y: array([0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5], dtype=uint8)
-    # Looks like we never tested this, the TestHipsTile.test_write above
-    # only asserts that tile.raw_data round-trips, but I see no assert on
-    # the data in tile.data Numpy array.
     def test_jpg(self):
-        data = np.array([[0, 1], [2, 3]], dtype='uint8')
+        data = np.array([[0, 1], [100, 200]], dtype='uint8')
         data = np.moveaxis([data, data + 1, data + 2], 0, -1)
         meta = HipsTileMeta(order=1, ipix=0, file_format='jpg', width=2)
 
@@ -228,10 +223,14 @@ class TestFromNumpyRoundTrip:
 
         assert tile.data.dtype == np.uint8
         assert tile.data.shape == (2, 2, 3)
-        assert_allclose(tile.data, data)
+
+        # JPEG encoding noise is large. On my machine `diff = 23`
+        # So here we only do an approximate assert
+        diff = np.max(np.abs(tile.data.astype('float') - data))
+        assert diff < 30
 
     def test_png(self):
-        data = np.array([[0, 1], [2, 3]], dtype='uint8')
+        data = np.array([[0, 1], [100, 200]], dtype='uint8')
         data = np.moveaxis([data, data + 1, data + 2, data + 3], 0, -1)
         meta = HipsTileMeta(order=1, ipix=0, file_format='png', width=2)
 
@@ -239,4 +238,4 @@ class TestFromNumpyRoundTrip:
 
         assert tile.data.dtype == np.uint8
         assert tile.data.shape == (2, 2, 4)
-        assert_allclose(tile.data, data)
+        assert_equal(tile.data, data)
