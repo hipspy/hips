@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import logging
 from pathlib import Path
 import numpy as np
 from astropy_healpix import healpy as hp
@@ -7,9 +8,13 @@ from ..utils.healpix import hips_tile_healpix_ipix_array
 
 __all__ = ["healpix_to_hips_tile", "healpix_to_hips"]
 
+log = logging.getLogger(__name__)
 
-def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTile:
-    """Create single hips tile from healpix data given a tile index.
+
+def healpix_to_hips_tile(
+    hpx_data: np.ndarray, tile_width: int, tile_idx: int, file_format: str, frame: str
+) -> HipsTile:
+    """Create single HiPS tile from HEALPix data.
 
     Parameters
     ----------
@@ -20,7 +25,9 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
     tile_idx : int
         Index of the hips tile.
     file_format : {'fits', 'jpg', 'png'}
-        File format to store the hips tile in.
+        HiPS tile file format
+    frame : {'icrs', 'galactic', 'ecliptic'}
+        Sky coordinate frame
 
     Returns
     -------
@@ -44,16 +51,19 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
     meta = HipsTileMeta(
         order=hpx_order,
         ipix=tile_idx,
-        width=tile_width,
         file_format=file_format,
-        frame="galactic",
+        frame=frame,
+        width=tile_width,
     )
 
     return HipsTile.from_numpy(meta=meta, data=data)
 
 
-def healpix_to_hips(hpx_data, tile_width, base_path, file_format="fits"):
+def healpix_to_hips(hpx_data, tile_width, base_path, file_format, frame):
     """Convert HEALPix image to HiPS.
+
+    This function writes the HiPS to disk.
+    If you don't want that, use `healpix_to_hips_tile` directly.
 
     Parameters
     ----------
@@ -64,8 +74,23 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format="fits"):
     base_path : str or `~pathlib.Path`
         Base path.
     file_format : {'fits', 'jpg', 'png'}
-        File format to store the hips in.
+        HiPS tile file format
+    frame : {'icrs', 'galactic', 'ecliptic'}
+        Sky coordinate frame
     """
+    base_path = Path(base_path)
+    base_path.mkdir(exist_ok=True, parents=True)
+
+    path = base_path / "properties"
+    log.info(f"Writing {path}")
+    HipsSurveyProperties(
+        {
+            "hips_tile_format": file_format,
+            "hips_tile_width": tile_width,
+            "hips_frame": frame,
+        }
+    ).write(path)
+
     n_tiles = hpx_data.size // tile_width ** 2
 
     for tile_idx in range(n_tiles):
@@ -74,17 +99,10 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format="fits"):
             tile_width=tile_width,
             tile_idx=tile_idx,
             file_format=file_format,
+            frame=frame,
         )
 
-        filename = Path(base_path) / tile.meta.tile_default_path
-        filename.parent.mkdir(exist_ok=True, parents=True)
-        tile.write(filename=filename)
-
-    data = {
-        "hips_tile_format": file_format,
-        "hips_tile_width": tile_width,
-        "hips_frame": tile.meta.frame,
-    }
-
-    properties = HipsSurveyProperties(data=data)
-    properties.write(base_path / "properties")
+        path = base_path / tile.meta.tile_default_path
+        log.info(f"Writing {path}")
+        path.parent.mkdir(exist_ok=True, parents=True)
+        tile.write(path)
