@@ -5,10 +5,7 @@ from astropy_healpix import healpy as hp
 from ..tiles import HipsTile, HipsTileMeta, HipsSurveyProperties
 from ..utils.healpix import hips_tile_healpix_ipix_array
 
-__all__ = [
-    'healpix_to_hips_tile',
-    'healpix_to_hips',
-]
+__all__ = ["healpix_to_hips_tile", "healpix_to_hips"]
 
 
 def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTile:
@@ -49,13 +46,13 @@ def healpix_to_hips_tile(hpx_data, tile_width, tile_idx, file_format) -> HipsTil
         ipix=tile_idx,
         width=tile_width,
         file_format=file_format,
-        frame='galactic'
+        frame="galactic",
     )
 
     return HipsTile.from_numpy(meta=meta, data=data)
 
 
-def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
+def healpix_to_hips(hpx_data, tile_width, base_path, file_format="fits"):
     """Convert HEALPix image to HiPS.
 
     Parameters
@@ -64,7 +61,7 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
         Healpix data stored in the "nested" scheme.
     tile_width : int
         Width of the hips tiles.
-    base_bath : str or `~pathlib.Path`
+    base_path : str or `~pathlib.Path`
         Base path.
     file_format : {'fits', 'jpg', 'png'}
         File format to store the hips in.
@@ -72,19 +69,22 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format='fits'):
     n_tiles = hpx_data.size // tile_width ** 2
 
     for tile_idx in range(n_tiles):
-        tile = healpix_to_hips_tile(hpx_data=hpx_data, tile_width=tile_width,
-                                    tile_idx=tile_idx, file_format=file_format)
+        tile = healpix_to_hips_tile(
+            hpx_data=hpx_data,
+            tile_width=tile_width,
+            tile_idx=tile_idx,
+            file_format=file_format,
+        )
 
         filename = Path(base_path) / tile.meta.tile_default_path
         filename.parent.mkdir(exist_ok=True, parents=True)
         tile.write(filename=filename)
 
-
     data = {
-        'hips_tile_format': file_format,
-        'hips_tile_width': tile_width,
-        'hips_frame': tile.meta.frame,
+        "hips_tile_format": file_format,
+        "hips_tile_width": tile_width,
+        "hips_frame": tile.meta.frame,
     }
 
     properties = HipsSurveyProperties(data=data)
-    properties.write(base_path / 'properties')
+    properties.write(base_path / "properties")
