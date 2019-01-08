@@ -2,6 +2,7 @@
 from pathlib import Path
 import pytest
 from astropy.tests.helper import remote_data
+import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 from ...utils.testing import get_hips_extra_file, requires_hips_extra
 from ..tile import HipsTileMeta, HipsTile
@@ -116,7 +117,7 @@ HIPS_TILE_TEST_CASES = [
         child_shape=(256, 256, 4),
         child_ipix=[24448, 24449, 24450, 24451],
         child_pix_idx=([255], [255]),
-        child_pix_val=[[[15,  15,  15, 255]], [[17, 17, 17, 255]], [[20, 20, 20, 255]], [[13, 13, 13, 255]]],
+        child_pix_val=[[[15, 15, 15, 255]], [[17, 17, 17, 255]], [[20, 20, 20, 255]], [[13, 13, 13, 255]]],
     ),
 ]
 
@@ -196,3 +197,46 @@ class TestHipsTile:
         assert tile.children[0].data.shape == pars['child_shape']
         assert_equal(child_ipix, pars['child_ipix'])
         assert_equal(child_data, pars['child_pix_val'])
+
+
+class TestFromNumpyRoundTrip:
+    """Check if HipsTile.from_numpy().data == data.
+    """
+    def test_fits(self):
+        data = np.array([[0, 1], [2, 3]], dtype='uint8')
+        meta = HipsTileMeta(order=1, ipix=0, file_format='fits', width=2)
+
+        tile = HipsTile.from_numpy(meta, data)
+
+        assert tile.data.dtype == np.uint8
+        assert tile.data.shape == (2, 2)
+        assert_allclose(tile.data, data)
+
+    # FIXME: This one is currently failing.
+    # Why is the pixel order not correct? Why is it OK for PNG, but not for JPG?
+    # E        x: array([1, 2, 4, 1, 2, 4, 1, 2, 4, 1, 2, 4], dtype=uint8)
+    # E        y: array([0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5], dtype=uint8)
+    # Looks like we never tested this, the TestHipsTile.test_write above
+    # only asserts that tile.raw_data round-trips, but I see no assert on
+    # the data in tile.data Numpy array.
+    def test_jpg(self):
+        data = np.array([[0, 1], [2, 3]], dtype='uint8')
+        data = np.moveaxis([data, data + 1, data + 2], 0, -1)
+        meta = HipsTileMeta(order=1, ipix=0, file_format='jpg', width=2)
+
+        tile = HipsTile.from_numpy(meta, data)
+
+        assert tile.data.dtype == np.uint8
+        assert tile.data.shape == (2, 2, 3)
+        assert_allclose(tile.data, data)
+
+    def test_png(self):
+        data = np.array([[0, 1], [2, 3]], dtype='uint8')
+        data = np.moveaxis([data, data + 1, data + 2, data + 3], 0, -1)
+        meta = HipsTileMeta(order=1, ipix=0, file_format='png', width=2)
+
+        tile = HipsTile.from_numpy(meta, data)
+
+        assert tile.data.dtype == np.uint8
+        assert tile.data.shape == (2, 2, 4)
+        assert_allclose(tile.data, data)

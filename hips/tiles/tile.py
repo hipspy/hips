@@ -202,18 +202,34 @@ class HipsTile:
         tile : `~hips.HipsTile`
             HiPS tile object in the format requested in ``meta``.
         """
+        data = np.asarray(data)
         fmt = meta.file_format
         bio = BytesIO()
 
         if fmt == 'fits':
+            if data.ndim != 2 or data.shape != (meta.width, meta.width):
+                raise ValueError(
+                    f"Invalid data.shape: {data.shape}."
+                    " Must be (meta.width, meta.width)."
+                )
             hdu = fits.PrimaryHDU(data)
             hdu.writeto(bio)
         elif fmt == 'jpg':
+            if data.ndim != 3 or data.shape != (meta.width, meta.width, 3):
+                raise ValueError(
+                    f"Invalid data.shape: {data.shape}."
+                    " Must be (meta.width, meta.width, 3)."
+                )
             # Flip tile to be consistent with FITS orientation
             data = np.flipud(data)
             image = Image.fromarray(data)
             image.save(bio, format='jpeg')
         elif fmt == 'png':
+            if data.ndim != 3 or data.shape != (meta.width, meta.width, 4):
+                raise ValueError(
+                    f"Invalid data.shape: {data.shape}."
+                    " Must be (meta.width, meta.width, 4)."
+                )
             # Flip tile to be consistent with FITS orientation
             data = np.flipud(data)
             image = Image.fromarray(data)
