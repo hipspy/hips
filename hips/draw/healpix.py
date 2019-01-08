@@ -1,12 +1,12 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from typing import List
 import logging
-from pathlib import Path
 import numpy as np
 from astropy_healpix import healpy as hp
-from ..tiles import HipsTile, HipsTileMeta, HipsSurveyProperties
+from ..tiles import HipsTile, HipsTileMeta
 from ..utils.healpix import hips_tile_healpix_ipix_array
 
-__all__ = ["healpix_to_hips_tile", "healpix_to_hips"]
+__all__ = ["healpix_to_hips_tile", "healpix_to_hips_tiles"]
 
 log = logging.getLogger(__name__)
 
@@ -88,56 +88,37 @@ def healpix_to_hips_tile(
     return HipsTile.from_numpy(meta=meta, data=data)
 
 
-def healpix_to_hips(
+def healpix_to_hips_tiles(
     hpx_data: np.ndarray,
     tile_width: int,
-    base_path: str,
     file_format: str,
     frame: str = "icrs",
-):
-    """Convert HEALPix image to HiPS.
-
-    This function writes the HiPS to disk.
-    If you don't want that, use `healpix_to_hips_tile` directly.
+) -> List[HipsTile]:
+    """Convert HEALPix image to HiPS tiles,
 
     Parameters
     ----------
     hpx_data : `~numpy.ndarray`
-        Healpix data stored in the "nested" scheme.
+        HEALPix data stored in the "nested" scheme.
     tile_width : int
         Width of the hips tiles.
-    base_path : str or `~pathlib.Path`
-        Base path.
     file_format : {'fits', 'jpg', 'png'}
         HiPS tile file format
     frame : {'icrs', 'galactic', 'ecliptic'}
         Sky coordinate frame
+
+    Returns
+    -------
+    tiles : Generator of HipsTile
+        HiPS tiles
     """
-    base_path = Path(base_path)
-    base_path.mkdir(exist_ok=True, parents=True)
-
-    path = base_path / "properties"
-    log.info(f"Writing {path}")
-    HipsSurveyProperties(
-        {
-            "hips_tile_format": file_format,
-            "hips_tile_width": tile_width,
-            "hips_frame": frame,
-        }
-    ).write(path)
-
     n_tiles = hpx_data.shape[0] // tile_width ** 2
 
     for tile_idx in range(n_tiles):
-        tile = healpix_to_hips_tile(
+        yield healpix_to_hips_tile(
             hpx_data=hpx_data,
             tile_width=tile_width,
             tile_idx=tile_idx,
             file_format=file_format,
             frame=frame,
         )
-
-        path = base_path / tile.meta.tile_default_path
-        log.info(f"Writing {path}")
-        path.parent.mkdir(exist_ok=True, parents=True)
-        tile.write(path)

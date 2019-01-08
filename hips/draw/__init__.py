@@ -3,3 +3,4 @@
 from .paint import *
 from .ui import *
 from .healpix import *
+from .hipsgen import *
