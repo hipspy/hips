@@ -12,7 +12,11 @@ log = logging.getLogger(__name__)
 
 
 def healpix_to_hips_tile(
-    hpx_data: np.ndarray, tile_width: int, tile_idx: int, file_format: str, frame: str
+    hpx_data: np.ndarray,
+    tile_width: int,
+    tile_idx: int,
+    file_format: str,
+    frame: str = "icrs",
 ) -> HipsTile:
     """Create single HiPS tile from HEALPix data.
 
@@ -39,13 +43,38 @@ def healpix_to_hips_tile(
 
     offset_ipix = tile_idx * tile_width ** 2
     ipix = hpx_ipix + offset_ipix
-    data = hpx_data[ipix]
+
+    hpx_data = np.asarray(hpx_data)
+    if file_format == "fits":
+        if hpx_data.ndim != 1:
+            raise ValueError(
+                f"Invalid hpx_data.ndim = {hpx_data.ndim}."
+                " Must be ndim = 1 for file_format='fits'."
+            )
+        data = hpx_data[ipix]
+    elif file_format == "jpg":
+        if hpx_data.ndim != 2 or hpx_data.shape[1] != 3:
+            raise ValueError(
+                f"Invalid hpx_data.shape = {hpx_data.shape}."
+                " Must be shape = (npix, 3) to represent RGB color images."
+            )
+        data = hpx_data[ipix, :]
+    elif file_format == "png":
+        if hpx_data.ndim != 2 or hpx_data.shape[1] != 4:
+            raise ValueError(
+                f"Invalid hpx_data.shape = {hpx_data.shape}."
+                " Must be shape = (npix, 4) to represent RGBA color images."
+            )
+        data = hpx_data[ipix, :]
+    else:
+        raise ValueError(f"Invalid file_format: {file_format!r}")
 
     # np.rot90 returns a rotated view so we make a copy here
     # because the view information is lost on fits io
     data = np.rot90(data).copy()
 
-    hpx_nside = hp.npix2nside(hpx_data.size / tile_width ** 2)
+    hpx_npix = hpx_data.shape[0]
+    hpx_nside = hp.npix2nside(hpx_npix / tile_width ** 2)
     hpx_order = int(np.log2(hpx_nside))
 
     meta = HipsTileMeta(
@@ -59,7 +88,13 @@ def healpix_to_hips_tile(
     return HipsTile.from_numpy(meta=meta, data=data)
 
 
-def healpix_to_hips(hpx_data, tile_width, base_path, file_format, frame):
+def healpix_to_hips(
+    hpx_data: np.ndarray,
+    tile_width: int,
+    base_path: str,
+    file_format: str,
+    frame: str = "icrs",
+):
     """Convert HEALPix image to HiPS.
 
     This function writes the HiPS to disk.
@@ -91,7 +126,7 @@ def healpix_to_hips(hpx_data, tile_width, base_path, file_format, frame):
         }
     ).write(path)
 
-    n_tiles = hpx_data.size // tile_width ** 2
+    n_tiles = hpx_data.shape[0] // tile_width ** 2
 
     for tile_idx in range(n_tiles):
         tile = healpix_to_hips_tile(
