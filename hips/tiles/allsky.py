@@ -92,9 +92,6 @@ class HipsTileAllskyArray(HipsTile):
         """Create all-sky image from list of tiles."""
         meta = tiles[0].meta.copy()
         data = cls.tiles_to_allsky_array(tiles)
-        # TODO: check return type here.
-        # Pycharm warns that a `HipsTile` is returned here, not a `HipsTileAllskyArray`
-        # Is this true or a bug in their static code analysis?
         return cls.from_numpy(meta, data)
 
     @staticmethod
