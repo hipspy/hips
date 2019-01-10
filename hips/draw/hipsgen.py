@@ -38,11 +38,12 @@ HTML_TEMPLATE = r"""
 
 # TODO: change to class with each step as a method?
 def healpix_to_hips(
-        hpx_data: np.ndarray,
-        tile_width: int,
-        base_path: str,
-        file_format: str,
-        frame: str = "icrs",
+    hpx_data: np.ndarray,
+    hips_order: int,
+    tile_width: int,
+    base_path: str,
+    file_format: str,
+    frame: str = "icrs",
 ):
     """Convert HEALPix image to HiPS.
 
@@ -52,6 +53,8 @@ def healpix_to_hips(
     ----------
     hpx_data : `~numpy.ndarray`
         Healpix data stored in the "nested" scheme.
+    hips_order : int
+        HEALPix order for the HiPS tiles
     tile_width : int
         Width of the hips tiles.
     base_path : str or `~pathlib.Path`
@@ -70,19 +73,22 @@ def healpix_to_hips(
         {
             "hips_tile_format": file_format,
             "hips_tile_width": tile_width,
+            "hips_order": hips_order,
             "hips_frame": frame,
         }
     )
     properties.write(path)
 
     # Make and write index.html
-    txt = HTML_TEMPLATE.format_map({"name": "test123", "imgFormat": "fits"})
+    txt = HTML_TEMPLATE.format_map({"name": "test123", "imgFormat": file_format})
     path = base_path / "index.html"
     log.info(f"Writing {path}")
     path.write_text(txt)
 
     # Make and write tiles
-    for tile in healpix_to_hips_tiles(hpx_data, tile_width, file_format, frame):
+    for tile in healpix_to_hips_tiles(
+        hpx_data, hips_order, tile_width, file_format, frame
+    ):
         path = base_path / tile.meta.tile_default_path
         log.info(f"Writing {path}")
         path.parent.mkdir(exist_ok=True, parents=True)
@@ -90,8 +96,8 @@ def healpix_to_hips(
 
     # Make and write allsky file
     hips_survey = HipsSurvey(base_path)
-    allsky = hips_survey.make_allsky(order=0, file_format=file_format)
-    path = base_path / f"Norder0/Allsky.{file_format}"
+    allsky = hips_survey.make_allsky(order=hips_order, file_format=file_format)
+    path = base_path / f"Norder{hips_order}/Allsky.{file_format}"
     log.info(f"Writing {path}")
     allsky.write(path)
 
@@ -137,11 +143,11 @@ class HipsSurvey:
         return HipsTileAllskyArray.from_tiles(tiles)
 
     def read_tiles(self, order: int, file_format: str):
-        properties = HipsSurveyProperties.read(self.base_path / 'properties')
-        tile_path = self.base_path / f'Norder{order}'
+        properties = HipsSurveyProperties.read(self.base_path / "properties")
+        tile_path = self.base_path / f"Norder{order}"
 
         for path in tile_path.glob(f"Dir*/Npix*.{file_format}"):
-            ipix = int(path.as_posix().split('/')[-1].split('.')[0][4:])
+            ipix = int(path.as_posix().split("/")[-1].split(".")[0][4:])
             frame = properties.hips_frame
             width = properties.tile_width
             meta = HipsTileMeta(order, ipix, file_format, frame, width)

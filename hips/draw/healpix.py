@@ -2,7 +2,6 @@
 from typing import List
 import logging
 import numpy as np
-from astropy_healpix import healpy as hp
 from ..tiles import HipsTile, HipsTileMeta
 from ..utils.healpix import hips_tile_healpix_ipix_array
 
@@ -13,6 +12,7 @@ log = logging.getLogger(__name__)
 
 def healpix_to_hips_tile(
     hpx_data: np.ndarray,
+    hips_order: int,
     tile_width: int,
     tile_idx: int,
     file_format: str,
@@ -24,6 +24,8 @@ def healpix_to_hips_tile(
     ----------
     hpx_data : `~numpy.ndarray`
         Healpix data stored in the "nested" scheme.
+    hips_order : int
+        HEALPix order for the HiPS tiles
     tile_width : int
         Width of the hips tile.
     tile_idx : int
@@ -73,12 +75,8 @@ def healpix_to_hips_tile(
     # because the view information is lost on fits io
     data = np.rot90(data).copy()
 
-    hpx_npix = hpx_data.shape[0]
-    hpx_nside = hp.npix2nside(hpx_npix / tile_width ** 2)
-    hpx_order = int(np.log2(hpx_nside))
-
     meta = HipsTileMeta(
-        order=hpx_order,
+        order=hips_order,
         ipix=tile_idx,
         file_format=file_format,
         frame=frame,
@@ -90,6 +88,7 @@ def healpix_to_hips_tile(
 
 def healpix_to_hips_tiles(
     hpx_data: np.ndarray,
+    hips_order: int,
     tile_width: int,
     file_format: str,
     frame: str = "icrs",
@@ -100,6 +99,8 @@ def healpix_to_hips_tiles(
     ----------
     hpx_data : `~numpy.ndarray`
         HEALPix data stored in the "nested" scheme.
+    hips_order : int
+        HEALPix order for the HiPS tiles
     tile_width : int
         Width of the hips tiles.
     file_format : {'fits', 'jpg', 'png'}
@@ -112,11 +113,12 @@ def healpix_to_hips_tiles(
     tiles : Generator of HipsTile
         HiPS tiles
     """
-    n_tiles = hpx_data.shape[0] // tile_width ** 2
+    n_tiles = 12 * (2 ** hips_order)
 
     for tile_idx in range(n_tiles):
         yield healpix_to_hips_tile(
             hpx_data=hpx_data,
+            hips_order=hips_order,
             tile_width=tile_width,
             tile_idx=tile_idx,
             file_format=file_format,
