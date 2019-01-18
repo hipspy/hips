@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+import socket
 import asyncio
 import urllib.request
 import concurrent.futures
@@ -84,10 +85,19 @@ def fetch_tiles(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyPropertie
 
     return tiles
 
+
 def fetch_tile_urllib(url: str, timeout: float) -> dict:
     """Fetch a HiPS tile asynchronously."""
-    with urllib.request.urlopen(url, timeout=timeout) as conn:
-        return {'raw_data': conn.read(), 'url': url}
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as conn:
+            return {'raw_data': conn.read(), 'url': url}
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            error.msg = f'Tile not found at:\n{url}'
+        raise
+    except urllib.error.URLError as error:
+        if isinstance(error.reason, socket.timeout):
+            raise TimeoutError(f'The server timed out while fetching the tile at:\n{url}')
 
 
 def tiles_urllib(tile_urls: List[str], hips_survey: HipsSurveyProperties,
@@ -95,6 +105,7 @@ def tiles_urllib(tile_urls: List[str], hips_survey: HipsSurveyProperties,
     """Generator function to fetch HiPS tiles from a remote URL."""
     with concurrent.futures.ThreadPoolExecutor(max_workers=n_parallel) as executor:
         return list(executor.map(fetch_tile_urllib, tile_urls, [timeout] * len(tile_urls)))
+
 
 async def fetch_tile_aiohttp(url: str, session, timeout: float) -> dict:
     """Fetch a HiPS tile asynchronously using aiohttp."""
