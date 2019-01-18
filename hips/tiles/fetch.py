@@ -81,7 +81,11 @@ def fetch_tiles(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyPropertie
 
     tiles = []
     for idx, response in enumerate(response_all):
-        tiles.append(HipsTile(tile_metas[idx], response['raw_data']))
+        try:
+            response['raw_data']
+            tiles.append(HipsTile(tile_metas[idx], response['raw_data']))
+        except KeyError:
+            tiles.append(HipsTile(tile_metas[idx], b'', is_missing=True))
 
     return tiles
 
@@ -92,12 +96,14 @@ def fetch_tile_urllib(url: str, timeout: float) -> dict:
         with urllib.request.urlopen(url, timeout=timeout) as conn:
             return {'raw_data': conn.read(), 'url': url}
     except urllib.error.HTTPError as error:
+        # If the tile is missing, enable the `is_missing` flag in HipsTile.
         if error.code == 404:
-            error.msg = f'Tile not found at:\n{url}'
-        raise
+            print(f'Tile not found at:\n{url}')
+            return {'is_missing': True}
     except urllib.error.URLError as error:
         if isinstance(error.reason, socket.timeout):
-            raise TimeoutError(f'The server timed out while fetching the tile at:\n{url}')
+            print(f'The server timed out while fetching the tile at:\n{url}')
+            return {'is_missing': True}
 
 
 def tiles_urllib(tile_urls: List[str], hips_survey: HipsSurveyProperties,

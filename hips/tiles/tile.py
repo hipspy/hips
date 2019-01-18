@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from typing import List, Tuple
 from copy import deepcopy
+import socket
 import warnings
 import urllib.request
 from io import BytesIO
@@ -154,6 +155,8 @@ class HipsTile:
         Metadata of HiPS tile
     raw_data : `bytes`
         Raw data (copy of bytes from file)
+    is_missing : `bool`
+        To check whether the tile is missing or not
 
     Examples
     --------
@@ -175,9 +178,10 @@ class HipsTile:
     int16
     """
 
-    def __init__(self, meta: HipsTileMeta, raw_data: bytes) -> None:
+    def __init__(self, meta: HipsTileMeta, raw_data: bytes, is_missing: bool = False) -> None:
         self.meta = meta
         self.raw_data = raw_data
+        self.is_missing = is_missing
         self._data = None
 
     def __eq__(self, other: "HipsTile") -> bool:
@@ -259,8 +263,11 @@ class HipsTile:
 
         See the `to_numpy` function.
         """
-        if self._data is None:
+        if self._data is None and not self.is_missing:
             self._data = self.to_numpy(self.raw_data, self.meta.file_format)
+        elif self.is_missing:
+            self._data = np.zeros((compute_image_shape(self.meta.width, self.meta.width, self.meta.file_format)),
+                                  dtype=np.uint8)
 
         return self._data
 
@@ -295,6 +302,7 @@ class HipsTile:
         elif fmt in {"jpg", "png"}:
             with Image.open(bio) as image:
                 data = np.array(image)
+
             # Flip tile to be consistent with FITS orientation
             data = np.flipud(data)
         else:
@@ -316,8 +324,12 @@ class HipsTile:
         filename : str
             Filename
         """
-        raw_data = Path(filename).read_bytes()
-        return cls(meta, raw_data)
+        if Path(filename).exists():
+            return cls(meta, Path(filename).read_bytes())
+        else:
+            print(f'Tile not found at:\n{filename}')
+            return cls(meta, b'', is_missing=True)
+
 
     @classmethod
     def fetch(cls, meta: HipsTileMeta, url: str) -> "HipsTile":
@@ -330,10 +342,18 @@ class HipsTile:
         url : str
             URL containing HiPS tile
         """
-        with urllib.request.urlopen(url) as response:
-            raw_data = response.read()
-
-        return cls(meta, raw_data)
+        try:
+            with urllib.request.urlopen(url, timeout=10) as response:
+                raw_data = response.read()
+                return cls(meta, raw_data)
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                print(f'Tile not found at:\n{url}')
+                return cls(meta, b'', is_missing=True)
+        except urllib.error.URLError as error:
+            if isinstance(error.reason, socket.timeout):
+                print(f'The server timed out while fetching the tile at:\n{url}')
+                return cls(meta, b'', is_missing=True)
 
     def write(self, filename: str) -> None:
         """Write to file.
