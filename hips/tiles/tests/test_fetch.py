@@ -14,16 +14,6 @@ TILE_FETCH_TEST_CASES = [
         url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',
         progress_bar=True,
         data=[2101, 1945, 1828, 1871, 2079, 2336],
-        fetch_package='urllib',
-    ),
-    dict(
-        tile_indices=[69623, 69627, 69628, 69629, 69630, 69631],
-        tile_format='fits',
-        order=7,
-        url='http://alasky.unistra.fr/DSS/DSS2Merged/properties',
-        progress_bar=True,
-        data=[2101, 1945, 1828, 1871, 2079, 2336],
-        fetch_package='aiohttp',
     ),
 ]
 
@@ -48,7 +38,6 @@ def test_fetch_tiles(pars):
     tiles = fetch_tiles(
         tile_metas, hips_survey,
         progress_bar=pars['progress_bar'],
-        fetch_package=pars['fetch_package'],
     )
 
     for idx, val in enumerate(pars['data']):

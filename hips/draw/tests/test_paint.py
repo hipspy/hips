@@ -20,7 +20,7 @@ class TestHipsPainter:
             width=2000, height=1000, fov="3 deg",
             coordsys='icrs', projection='AIT',
         )
-        fetch_opts = dict(fetch_package='urllib', timeout=30, n_parallel=10)
+        fetch_opts = dict(timeout=30, n_parallel=10)
         cls.painter = HipsPainter(cls.geometry, cls.hips_survey, 'fits', fetch_opts=fetch_opts)
 
     def test_draw_hips_order(self):
@@ -44,7 +44,7 @@ class TestHipsPainter:
             coordsys='icrs', projection='AIT',
         )
 
-        fetch_opts = dict(fetch_package='urllib', timeout=30, n_parallel=10)
+        fetch_opts = dict(timeout=30, n_parallel=10)
         simple_tile_painter = HipsPainter(geometry, self.hips_survey, 'fits', fetch_opts=fetch_opts)
         assert simple_tile_painter.draw_hips_order == pars['order']
 

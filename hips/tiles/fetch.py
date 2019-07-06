@@ -17,7 +17,7 @@ __doctest_skip__ = [
 
 def fetch_tiles(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyProperties,
                 progress_bar: bool = True, n_parallel: int = 5,
-                timeout: float = 10, fetch_package: str = 'urllib') -> List[HipsTile]:
+                timeout: float = 10) -> List[HipsTile]:
     """Fetch a list of HiPS tiles.
 
     This function fetches a list of HiPS tiles based
@@ -38,8 +38,6 @@ def fetch_tiles(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyPropertie
         Number of tile fetch web requests to make in parallel
     timeout : float
         Seconds to timeout for fetching a HiPS tile
-    fetch_package : {'urllib', 'aiohttp'}
-        Package to use for fetching HiPS tiles
 
     Examples
     --------
@@ -69,15 +67,8 @@ def fetch_tiles(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyPropertie
     tiles : list
         A Python list of `~hips.HipsTile`
     """
-    if fetch_package == 'aiohttp':
-        fetch_fct = tiles_aiohttp
-    elif fetch_package == 'urllib':
-        fetch_fct = tiles_urllib
-    else:
-        raise ValueError(f'Invalid package name: {fetch_package}')
-
     tile_urls = [hips_survey.tile_url(meta) for meta in tile_metas]
-    response_all = fetch_fct(tile_urls, hips_survey, progress_bar, n_parallel, timeout)
+    response_all = do_fetch_tiles(tile_urls, hips_survey, progress_bar, n_parallel, timeout)
 
     tiles = []
     for idx, response in enumerate(response_all):
@@ -90,7 +81,7 @@ def fetch_tiles(tile_metas: List[HipsTileMeta], hips_survey: HipsSurveyPropertie
     return tiles
 
 
-def fetch_tile_urllib(url: str, timeout: float) -> dict:
+def do_fetch_single_tile(url: str, timeout: float) -> dict:
     """Fetch a HiPS tile asynchronously."""
     try:
         with urllib.request.urlopen(url, timeout=timeout) as conn:
@@ -106,45 +97,8 @@ def fetch_tile_urllib(url: str, timeout: float) -> dict:
             return {'is_missing': True}
 
 
-def tiles_urllib(tile_urls: List[str], hips_survey: HipsSurveyProperties,
-                 progress_bar: bool, n_parallel, timeout: float) -> List[dict]:
+def do_fetch_tiles(tile_urls: List[str], hips_survey: HipsSurveyProperties,
+                   progress_bar: bool, n_parallel, timeout: float) -> List[dict]:
     """Generator function to fetch HiPS tiles from a remote URL."""
     with concurrent.futures.ThreadPoolExecutor(max_workers=n_parallel) as executor:
-        return list(executor.map(fetch_tile_urllib, tile_urls, [timeout] * len(tile_urls)))
-
-
-async def fetch_tile_aiohttp(url: str, session, timeout: float) -> dict:
-    """Fetch a HiPS tile asynchronously using aiohttp."""
-    async with session.get(url, timeout=timeout) as response:
-        return {'raw_data': await response.read(), 'url': url}
-
-
-async def fetch_all_tiles_aiohttp(tile_urls: List[str], hips_survey: HipsSurveyProperties,
-                                  progress_bar: bool, n_parallel: int, timeout: float) -> List[dict]:
-    """Generator function to fetch HiPS tiles from a remote URL using aiohttp."""
-    import aiohttp
-
-    connector = aiohttp.TCPConnector(limit=n_parallel)
-    async with aiohttp.ClientSession(connector=connector) as session:
-        futures = []
-        for url in tile_urls:
-            future = asyncio.ensure_future(fetch_tile_aiohttp(url, session, timeout))
-            futures.append(future)
-
-        futures = asyncio.as_completed(futures)
-        if progress_bar:
-            from tqdm import tqdm
-            futures = tqdm(futures, total=len(tile_urls), desc='Fetching tiles')
-
-        response_all = []
-        for future in futures:
-            response_all.append(await future)
-
-    return response_all
-
-
-def tiles_aiohttp(tile_urls: List[str], hips_survey: HipsSurveyProperties,
-                  progress_bar: bool, n_parallel: int, timeout: float) -> List[dict]:
-    return asyncio.get_event_loop().run_until_complete(
-        fetch_all_tiles_aiohttp(tile_urls, hips_survey, progress_bar, n_parallel, timeout)
-    )
+        return list(executor.map(do_fetch_single_tile, tile_urls, [timeout] * len(tile_urls)))

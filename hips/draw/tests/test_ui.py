@@ -61,7 +61,7 @@ def test_make_sky_image(tmpdir, pars):
     hips_survey = HipsSurveyProperties.fetch(url=pars['url'])
     geometry = make_test_wcs_geometry()
 
-    fetch_opts = dict(fetch_package='urllib', timeout=30, n_parallel=10)
+    fetch_opts = dict(timeout=30, n_parallel=10)
     result = make_sky_image(geometry=geometry, hips_survey=hips_survey, tile_format=pars['file_format'],
                             precise=pars['precise'], fetch_opts=fetch_opts)
 
