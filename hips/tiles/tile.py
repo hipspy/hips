@@ -156,7 +156,7 @@ class HipsTile:
     raw_data : `bytes`
         Raw data (copy of bytes from file)
     is_missing : `bool`
-        To check whether the tile is missing or not
+        Specifies whether the tile is missing or not
 
     Examples
     --------
