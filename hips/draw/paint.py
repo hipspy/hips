@@ -3,6 +3,7 @@ import time
 import numpy as np
 from typing import List, Tuple, Union, Dict, Any
 from astropy.wcs.utils import proj_plane_pixel_scales
+from astropy_healpix.high_level import HEALPix
 from skimage.transform import ProjectiveTransform, warp
 from ..tiles import HipsSurveyProperties, HipsTile, HipsTileMeta, fetch_tiles
 from ..tiles.tile import compute_image_shape
@@ -159,7 +160,6 @@ class HipsPainter:
         for tile in self.draw_tiles:
             self._stats['consumed_memory'] += len(tile.raw_data)
 
-
     def make_tile_list(self):
         parent_tiles = self.tiles
 
@@ -167,7 +167,7 @@ class HipsPainter:
         # Leave TODO, to discuss with Thomas next week.
         # See also: https://github.com/hipspy/hips/issues/92
 
-        if self.precise == True:
+        if self.precise:
             tiles = []
             for tile in parent_tiles:
                 corners = tile.meta.skycoord_corners.to_pixel(self.geometry.wcs)
@@ -196,11 +196,12 @@ class HipsPainter:
         else:
             tiles = self.draw_tiles
 
+        hp = HEALPix(nside=2 ** self.tiles[0].meta.order, order='nested', frame=self.tiles[0].meta.frame)
+        image_ipix = hp.skycoord_to_healpix(self.geometry.pixel_skycoords)
+
         for tile in tiles:
             tile_image = self.warp_image(tile)
-            # TODO: put better algorithm here instead of summing pixels
-            # this can lead to pixels that are painted twice and become to bright
-            image += tile_image
+            np.putmask(image, np.array(image_ipix == tile.meta.ipix), tile_image.astype(np.float32))
 
         # Store the result
         self.float_image = image
