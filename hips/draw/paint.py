@@ -198,10 +198,16 @@ class HipsPainter:
 
         hp = HEALPix(nside=2 ** self.tiles[0].meta.order, order='nested', frame=self.tiles[0].meta.frame)
         image_ipix = hp.skycoord_to_healpix(self.geometry.pixel_skycoords)
-
         for tile in tiles:
             tile_image = self.warp_image(tile)
-            np.putmask(image, np.array(image_ipix == tile.meta.ipix), tile_image.astype(np.float32))
+            mask = np.array(image_ipix == tile.meta.ipix)
+
+            if tile.meta.file_format == 'jpg' or \
+               tile.meta.file_format == 'png':
+                for i in range(image.shape[-1]):
+                    np.putmask(image[..., i], np.array(image_ipix == tile.meta.ipix), tile_image[..., i].astype(np.float32))
+            else:
+                np.putmask(image, mask, tile_image.astype(np.float32))
 
         # Store the result
         self.float_image = image
