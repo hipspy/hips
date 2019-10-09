@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
 import numpy as np
+from scipy.ndimage import map_coordinates
 from typing import List, Tuple, Union, Dict, Any
 from astropy.wcs.utils import proj_plane_pixel_scales
 from astropy_healpix.high_level import HEALPix
@@ -201,6 +202,8 @@ class HipsPainter:
 
         for tile in tiles:
             tile_image = self.warp_image(tile)
+            indices = np.where(image_ipix == tile.meta.ipix)
+            tile_image[indices] = map_coordinates(tile_image, indices, mode='wrap')
             np.putmask(image, np.array(image_ipix == tile.meta.ipix), tile_image.astype(np.float32))
 
         # Store the result
