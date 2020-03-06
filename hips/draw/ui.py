@@ -119,7 +119,7 @@ class HipsDrawResult:
             hdu.writeto(filename, overwrite=overwrite)
         else:
             image = Image.fromarray(self.image)
-            image.save(filename,j, overwrite=overwrite)
+            image.save(filename, overwrite=overwrite)
 
     def plot(self, show_grid: bool = False) -> None:
         """Plot the all sky image and overlay HiPS tile outlines.
