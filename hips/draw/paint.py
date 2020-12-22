@@ -136,7 +136,9 @@ class HipsPainter:
     def warp_image(self, tile: HipsTile) -> np.ndarray:
         """Warp a HiPS tile and a sky image."""
         return warp(
-            tile.data,
+            # FITS images are big endian,
+            # but warp() only supports native byte order.
+            tile.data.astype(tile.data.dtype.newbyteorder('=')),
             self.projection(tile),
             output_shape=self.geometry.shape,
             preserve_range=True,
