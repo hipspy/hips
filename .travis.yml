@@ -51,7 +51,7 @@ matrix:
         # Docs build
         - os: linux
           env: SETUP_CMD='build_docs -w'
-               PIP_DEPENDENCIES='sphinx_rtd_theme'
+               PIP_DEPENDENCIES='sphinx_rtd_theme sphinx-astropy'
 
         # Check that install / tests work with minimal required dependencies
         - os: linux
