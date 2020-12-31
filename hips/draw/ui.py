@@ -116,10 +116,10 @@ class HipsDrawResult:
 
         if self.tile_format == 'fits':
             hdu = fits.PrimaryHDU(data=self.image, header=self.geometry.fits_header)
-            hdu.writeto(filename)
+            hdu.writeto(filename, overwrite=overwrite)
         else:
             image = Image.fromarray(self.image)
-            image.save(filename)
+            image.save(filename, overwrite=overwrite)
 
     def plot(self, show_grid: bool = False) -> None:
         """Plot the all sky image and overlay HiPS tile outlines.
