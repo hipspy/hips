@@ -15,6 +15,7 @@ A Python astronomy package for HiPS : Hierarchical Progressive Surveys.
    about
    installation
    getting_started
+   hipsgen
    api
    changelog
 
