@@ -147,7 +147,7 @@ class HipsDrawResult:
     def report(self) -> None:
         """Print a brief report for the fetched data."""
 
-        print (
+        print(
             f"Time for fetching tiles = {self.stats['fetch_time']} seconds\n"
             f"Time for drawing tiles = {self.stats['draw_time']} seconds\n"
             f"Total memory consumed = {self.stats['consumed_memory'] / 1e6} MB\n"
