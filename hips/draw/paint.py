@@ -192,6 +192,8 @@ class HipsPainter:
     def draw_all_tiles(self):
         """Make an empty sky image and draw all the tiles."""
         image = self._make_empty_sky_image()
+        """Make a coadd mask"""
+        coadds = self._make_empty_sky_image()
         if self.progress_bar:
             from tqdm import tqdm
             tiles = tqdm(self.draw_tiles, desc='Drawing tiles')
@@ -200,12 +202,19 @@ class HipsPainter:
 
         for tile in tiles:
             tile_image = self.warp_image(tile)
-            # TODO: put better algorithm here instead of summing pixels
-            # this can lead to pixels that are painted twice and become to bright
             image += tile_image
+            # The mask has a value of 1 wherever there is positive flux
+            # mask = image > 0.0
+            mask = np.where(tile_image > 0.0, 1, 0)
+            coadds += mask
+
+        # import matplotlib.pyplot as plt
+        # plt.imshow(coadds)
+
+        # TODO: use the mask to interpolate across the healpix seams rather than divide
 
         # Store the result
-        self.float_image = image
+        self.float_image = np.divide(image, coadds, where=coadds != 0)
 
     def plot_mpl_hips_tile_grid(self) -> None:
         """Plot output image and HiPS grid with matplotlib.
