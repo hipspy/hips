@@ -111,13 +111,12 @@ class HipsDrawResult:
         overwrite : bool
             Overwrite the output file, if it exists
         """
-        if overwrite == False and Path(filename).exists():
-            raise FileExistsError(f"File {filename} already exists.")
-
         if self.tile_format == 'fits':
             hdu = fits.PrimaryHDU(data=self.image, header=self.geometry.fits_header)
-            hdu.writeto(filename)
+            hdu.writeto(filename, overwrite=overwrite)
         else:
+            if overwrite is False and Path(filename).exists():
+                raise FileExistsError(f"File {filename} already exists.")
             image = Image.fromarray(self.image)
             image.save(filename)
 
