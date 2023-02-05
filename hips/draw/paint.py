@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import time
+import warnings
 import numpy as np
 from typing import List, Tuple, Union, Dict, Any
 from astropy.wcs.utils import proj_plane_pixel_scales
@@ -142,6 +143,8 @@ class HipsPainter:
             self.projection(tile),
             output_shape=self.geometry.shape,
             preserve_range=True,
+            mode="constant",
+            cval=np.nan,
         )
 
     def run(self) -> np.ndarray:
@@ -187,7 +190,7 @@ class HipsPainter:
             height=self.geometry.shape.height,
             fmt=self.tile_format,
         )
-        return np.zeros(shape, dtype=np.float32)
+        return np.full(shape, fill_value=np.nan, dtype=np.float32)
 
     def draw_all_tiles(self):
         """Make an empty sky image and draw all the tiles."""
@@ -200,9 +203,12 @@ class HipsPainter:
 
         for tile in tiles:
             tile_image = self.warp_image(tile)
-            # TODO: put better algorithm here instead of summing pixels
-            # this can lead to pixels that are painted twice and become to bright
-            image += tile_image
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore",
+                                        message="All-NaN slice encountered",
+                                        category=RuntimeWarning,
+                                        )
+                image = np.nanmedian(np.stack([image, tile_image]), axis=0)
 
         # Store the result
         self.float_image = image
